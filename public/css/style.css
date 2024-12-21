@@ -281,7 +281,7 @@ a.sidebar-link:hover {
     margin: auto;
 }
 
-.dropdown {
+.dropdownSearch {
     /* position: absolute; */
     z-index: 999;
     background: white;
@@ -295,17 +295,17 @@ a.sidebar-link:hover {
     height : 150px !important;
 }
 
-.dropdown.open {
+.dropdownSearch.open {
     display: block;
     z-index: 1050;
 }
 
-.dropdown div {
+.dropdownSearch div {
     /* padding: 8px; */
     cursor: pointer;
 }
 
-.dropdown div:hover {
+.dropdownSearch div:hover {
     background-color: #f0f0f0;
 }
 

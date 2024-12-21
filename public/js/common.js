@@ -102,7 +102,7 @@ function addSearch(id) {
     const options = getOptions(select);
 
     const searchInput = $('<input type="text" class="search-input" placeholder="Search...">');
-    const dropdown = $('<div class="dropdown"></div>');
+    const dropdown = $('<div class="dropdownSearch"></div>');
 
     select.before(searchInput);
     select.before(dropdown);
