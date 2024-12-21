@@ -578,7 +578,7 @@ tr.selected {
 
     $("#saveDate").on("click",function(){
         $("#datePickerModal").modal("hide");
-        showConfirmDialog('Are you sure you want to schedule?', saveTheOrder);
+        showConfirmDialog('Are you sure you want to '+flag+' schedule?', saveTheOrder);
     });
     function saveTheOrder(){
         let scheduleDate = $("#selectedDate").val();
@@ -612,6 +612,13 @@ tr.selected {
             },
             success:function(data){
                 $("#loadingDiv").hide();
+                if(data?.status){
+                    $('#postsTable').DataTable().ajax.reload();
+                    modelInfo(data?.messages);
+                }else{
+                    modelInfo("Server Error","error");
+                    console.log(data);
+                }
             },
             error:function(error){
                 console.log(error);

@@ -562,7 +562,7 @@ class RollController extends Controller
             return responseMsgs(false,$e->getMessage(),"");
         }
     }
-
+    /*
     public function rollPrintingSchedule(Request $request){
         try{            
             $roll = $this->_M_RollDetail->find($request->printingScheduleRollId);
@@ -665,6 +665,7 @@ class RollController extends Controller
             return responseMsgs(false,$e->getMessage(),"");
         }
     }
+    */
 
 
     #====== roll register =========================
@@ -936,7 +937,9 @@ class RollController extends Controller
                     ->whereNotNull("roll_details.client_detail_id");
                 }
                 $data->orderBy("roll_details.estimate_delivery_date","ASC");
-    
+                // DB::enableQueryLog();
+                // $data->get();
+                // dd(DB::getQueryLog());
                 
                 $list = DataTables::of($data)
                     ->addIndexColumn()
@@ -992,7 +995,41 @@ class RollController extends Controller
     }
 
     public function rollScheduleSet(Request $request){
-        dd($request->flag);
+        try{
+            $flag =  $request->flag;
+            $rules = [
+                "scheduleDate" => "required|date|after_or_equal:" . Carbon::now()->format("Y-m-d"),
+                "rolls" => "required|array",
+                "rolls.*.id" => "required|exists:" . $this->_M_RollDetail->getTable() . ",id",
+                "rolls.*.position" => "required|integer", // Use `integer` for clarity instead of `int`
+            ];
+            $validate = Validator::make($request->all(),$rules);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            DB::beginTransaction();
+            foreach($request->rolls as $roll){
+                $newRequest = new Request($roll);
+                $newRequest->merge([
+                    "roll_id"=>$roll["id"],
+                    "cutting_date"=>$request->scheduleDate,
+                    "printing_date"=>$request->scheduleDate,
+                    "sl"=> $roll["position"],
+                ]);
+                if($flag=="printing"){
+                    $this->_M_PrintingScheduleDetail->where("roll_id",$newRequest->roll_id)->update(["lock_status"=>true]);
+                    $this->_M_PrintingScheduleDetail->store($newRequest);
+                }elseif($flag=="cutting"){
+                    $this->_M_CuttingScheduleDetail->where("roll_id",$newRequest->roll_id)->update();
+                    $this->_M_CuttingScheduleDetail->store($newRequest);
+                }
+            }
+            DB::commit();
+            return responseMsgs(true,"Roll Schedule for ".$flag,"");
+
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
     }
 
     public function rollProduction(Request $request){

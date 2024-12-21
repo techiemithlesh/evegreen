@@ -89,7 +89,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("roll/register/printing/{machineId?}","rollRegisterPrinting")->name("roll.register.printing");
         Route::get("roll/register/cutting/{machineId?}","rollRegisterCutting")->name("roll.register.cutting");
         Route::get("roll/schedule/{flag?}","rollSchedule")->name("roll.schedule");
-        Route::post("roll/schedule-set/{flag?}","rollScheduleSet")->name("roll.schedule.set");
+        Route::post("roll/schedule-set/{flag}","rollScheduleSet")->name("roll.schedule.set");
         Route::get("roll/production/printing/{machineId?}","rollProduction")->name("roll.production.printing");
         Route::get("roll/production/cutting/{machineId?}","rollProductionCutting")->name("roll.production.cutting");
     });
