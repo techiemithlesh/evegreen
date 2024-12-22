@@ -13,36 +13,15 @@
 
         </div>
     </div>
-    <div class="container">
-        <div class="panel-body">
-            <form id="searchForm">
-                <div class="row g-3">
-                    <!-- From Date -->
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label class="form-label" for="fromDate">From Date</label>
-                            <input type="date" name="fromDate" id="fromDate" class="form-control" max="{{date('Y-m-d')}}" />
-                        </div>
-                    </div>
-
-                    <!-- Upto Date -->
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label class="form-label" for="uptoDate">Upto Date</label>
-                            <input type="date" name="uptoDate" id="uptoDate" class="form-control" max="{{date('Y-m-d')}}" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mt-3">
-                    <div class="col-sm-3">
-                        <!-- Search Button -->
-                        <input type="button" id="btn_search" class="btn btn-primary w-100" onclick="searchData()" value="Search"/>
-                    </div>
-                </div>
-            </form>
-
-        </div>
+    <div class="container">  
+        <div class="panel-heading">
+            <h5 class="panel-title">Roll List</h5> 
+            <div class="panel-control">
+                <button id="updateCuttingOpen" type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#UpdateCuttingModel" >
+                    Update Production <ion-icon name="add-circle-outline"></ion-icon>
+                </button>
+            </div>           
+        </div>       
         <div class="panel-body">
             <table id="postsTable" class="table table-striped table-bordered">
                 <thead>
@@ -70,7 +49,6 @@
                         <th>Printing Color</th>
                         <th>Loop Color</th>
                         <th>Cutting Schedule Date</th>
-                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,7 +59,7 @@
     </div>
 
     <!-- Modal -->
-    <x-cutting-update-form />
+    <x-update-cutting-model />
 </main>
 <script>
     
@@ -135,7 +113,6 @@
                 { data : "print_color", name: "print_color" },
                 { data : "loop_color", name: "loop_color" },
                 { data : "schedule_date_for_cutting", name: "schedule_date_for_cutting" },
-                { data: "action", name: "action", orderable: false, searchable: false },
             ],
             dom: 'lBfrtip', // This enables the buttons
             language: {
@@ -170,7 +147,7 @@
                 }
             },            
             initComplete: function () {
-                addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1]);
+                addFilter('postsTable',[0]);
             },
         });
         

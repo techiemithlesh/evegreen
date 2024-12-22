@@ -587,34 +587,7 @@ class RollController extends Controller
             return responseMsgs(false,$e->getMessage(),"");
         }
     }
-
-    public function rollPrintingUpdate(Request $request){        
-        try{
-            $rule = [
-                "printingUpdateRollId" => "required|exists:" . $this->_M_RollDetail->getTable() . ",id,is_printed,false",
-                "printingUpdateDate" => "required|date|date_format:Y-m-d|before_or_equal:" . Carbon::now()->format("Y-m-d"),
-                "printingUpdateWeight" => "required|numeric",
-                "printingUpdateMachineId" => "required|exists:" . $this->_M_Machine->getTable() . ",id,is_printing,true",
-            ];
-            $validate = Validator::make($request->all(),$rule);
-            if($validate->fails()){
-                return validationError($validate);
-            }
-            $roll = $this->_M_RollDetail->find($request->printingUpdateRollId);
-            $roll->is_printed = true;
-            $roll->printing_date = $request->printingUpdateDate;
-            $roll->weight_after_print = $request->printingUpdateWeight;
-            $roll->printing_machine_id = $request->printingUpdateMachineId;
-            DB::beginTransaction();
-            $roll->update();
-            DB::commit();
-            return responseMsgs(true,"Roll No ".$roll->roll_no." Printed","");
-
-        }catch(Exception $e){
-            DB::rollBack();
-            return responseMsgs(false,$e->getMessage(),"");
-        }
-    }
+    
 
     public function rollCuttingSchedule(Request $request){
         try{
@@ -638,33 +611,6 @@ class RollController extends Controller
         }
     }
 
-    public function rollCuttingUpdate(Request $request){        
-        try{
-            $rule = [
-                "cuttingUpdateRollId" => "required|exists:" . $this->_M_RollDetail->getTable() . ",id,is_cut,false",
-                "cuttingUpdateDate" => "required|date|date_format:Y-m-d|before_or_equal:" . Carbon::now()->format("Y-m-d"),
-                "cuttingUpdateWeight" => "required|numeric",
-                "cuttingUpdateMachineId" => "required|exists:" . $this->_M_Machine->getTable() . ",id,is_cutting,true",
-            ];
-            $validate = Validator::make($request->all(),$rule);
-            if($validate->fails()){
-                return validationError($validate);
-            }
-            $roll = $this->_M_RollDetail->find($request->cuttingUpdateRollId);
-            $roll->is_cut = true;
-            $roll->cutting_date = $request->cuttingUpdateDate;
-            $roll->weight_after_cutting = $request->cuttingUpdateWeight;
-            $roll->cutting_machine_id = $request->cuttingUpdateMachineId;
-            DB::beginTransaction();
-            $roll->update();
-            DB::commit();
-            return responseMsgs(true,"Roll No ".$roll->roll_no." cut","");
-
-        }catch(Exception $e){
-            DB::rollBack();
-            return responseMsgs(false,$e->getMessage(),"");
-        }
-    }
     */
 
 
@@ -917,7 +863,8 @@ class RollController extends Controller
                         })
                         ->where("roll_details.lock_status",false);
                 if($flag=="printing"){
-                    $data->where(function($where)use($currentDate){
+                    $data->where("roll_details.is_printed",false)
+                    ->where(function($where)use($currentDate){
                         $where->where("printing_schedule_details.printing_date","<",$currentDate)
                         ->orWhereNull("printing_schedule_details.id");
 
@@ -925,7 +872,8 @@ class RollController extends Controller
                 } 
 
                 if($flag=="cutting"){
-                    $data->where(function($where)use($currentDate){
+                    $data->where("roll_details.is_cut",false)
+                    ->where(function($where)use($currentDate){
                         $where->where("cutting_schedule_details.cutting_date","<",$currentDate)
                         ->orWhereNull("cutting_schedule_details.id");
 
@@ -1020,7 +968,7 @@ class RollController extends Controller
                     $this->_M_PrintingScheduleDetail->where("roll_id",$newRequest->roll_id)->update(["lock_status"=>true]);
                     $this->_M_PrintingScheduleDetail->store($newRequest);
                 }elseif($flag=="cutting"){
-                    $this->_M_CuttingScheduleDetail->where("roll_id",$newRequest->roll_id)->update();
+                    $this->_M_CuttingScheduleDetail->where("roll_id",$newRequest->roll_id)->update(["lock_status"=>true]);
                     $this->_M_CuttingScheduleDetail->store($newRequest);
                 }
             }
@@ -1040,7 +988,14 @@ class RollController extends Controller
             // dd($request->ajax());
             $fromDate = $request->fromDate;
             $uptoDate = $request->uptoDate;
-            $data = $this->_M_RollDetail->select("roll_details.*","vendor_detail_masters.vendor_name",
+            if(!$fromDate){
+                $fromDate = Carbon::now()->format("Y-m-d");
+            }
+            if(!$uptoDate){
+                $uptoDate = Carbon::now()->format("Y-m-d");
+            }
+            $data = $this->_M_RollDetail->select(
+                                "roll_details.*","vendor_detail_masters.vendor_name",
                                 "client_detail_masters.client_name",
                                 "bag_type_masters.bag_type",
                                 DB::raw("
@@ -1048,10 +1003,9 @@ class RollController extends Controller
                                     TO_CHAR(roll_details.estimate_delivery_date, 'DD-MM-YYYY') as estimate_delivery_date ,
                                     TO_CHAR(roll_details.delivery_date, 'DD-MM-YYYY') as delivery_date ,
                                     TO_CHAR(roll_details.printing_date, 'DD-MM-YYYY') as printing_date ,
-                                    TO_CHAR(printing_schedule_details.printing_date, 'DD-MM-YYYY') as schedule_date_for_print ,
-                                    TO_CHAR(cutting_schedule_details.cutting_date, 'DD-MM-YYYY') as schedule_date_for_cutting                                      
+                                    TO_CHAR(printing_schedule_details.printing_date, 'DD-MM-YYYY') as schedule_date_for_print                                      
                                     ")
-                                )
+                    )
                     ->join("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
                     ->leftJoin("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")
@@ -1059,15 +1013,12 @@ class RollController extends Controller
                         $join->on("printing_schedule_details.roll_id","=","roll_details.id")
                         ->where("printing_schedule_details.lock_status",false);
                     })
-                    ->leftJoin("cutting_schedule_details",function($join){
-                        $join->on("cutting_schedule_details.roll_id","=","roll_details.id")
-                        ->where("cutting_schedule_details.lock_status",false);
-                    })
                     ->where("roll_details.lock_status",false)
                     ->where("roll_details.is_printed",false)
-                    ->where("printing_schedule_details.machine_id",$machineId)
-                    ->orderBy(DB::raw("COUNT(*) OVER (PARTITION BY roll_details.size)"),"DESC")
-                    ->orderBy("roll_details.estimate_delivery_date","DESC");                     
+                    ->orderBy("printing_schedule_details.sl","ASC");
+            if($machineId==1){                
+                $data->where(DB::raw("json_array_length(roll_details.printing_color)"),"<=",2);
+            }                     
 
             if($fromDate && $uptoDate){             
                 $data->whereBetween("printing_schedule_details.printing_date",[$fromDate,$uptoDate]);
@@ -1131,19 +1082,17 @@ class RollController extends Controller
                     })
                     ->where("roll_details.lock_status",false)
                     ->where("roll_details.is_cut",false)
-                    ->where("cutting_schedule_details.machine_id",$machineId)
-                    ->orderBy(DB::raw("COUNT(*) OVER (PARTITION BY roll_details.size)"),"DESC")
-                    ->orderBy("roll_details.estimate_delivery_date","DESC");                     
+                    ->orderBy("cutting_schedule_details.sl","ASC");                     
 
             if($fromDate && $uptoDate){             
                 $data->whereBetween("cutting_schedule_details.cutting_date",[$fromDate,$uptoDate]);
             }
 
             elseif($fromDate){
-                $data->where("printing_schedule_details.cutting_date",">=",$fromDate);
+                $data->where("cutting_schedule_details.cutting_date",">=",$fromDate);
             }
             elseif($uptoDate){
-                $data->where("printing_schedule_details.cutting_date","<=",$uptoDate);
+                $data->where("cutting_schedule_details.cutting_date","<=",$uptoDate);
             } 
             $list = DataTables::of($data)
                 ->addIndexColumn()                
@@ -1167,6 +1116,94 @@ class RollController extends Controller
         }
         $data=[];
         return view("Roll/rollProductionCutting",$data);
+    }
+
+    public function rollSearchPrinting(Request $request){
+        try{
+            $data = $this->_M_RollDetail
+                    ->select("roll_details.*",
+                        "client_detail_masters.client_name",
+                        DB::raw("
+                                    TO_CHAR(roll_details.purchase_date, 'DD-MM-YYYY') as purchase_date ,
+                                    TO_CHAR(roll_details.estimate_delivery_date, 'DD-MM-YYYY') as estimate_delivery_date ,
+                                    TO_CHAR(roll_details.delivery_date, 'DD-MM-YYYY') as delivery_date
+                                "
+                                )
+                    )
+                    ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
+                    ->where("roll_details.roll_no",$request->rollNo)
+                    ->where("roll_details.is_printed",false)
+                    ->where("roll_details.lock_status",false)
+                    ->first();
+            if($data){
+                $data->printing_color = collect(json_decode($data->printing_color,true))->implode(",");
+            }
+            return responseMsgs(true,"Data Fetch",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function rollPrintingUpdate(Request $request){        
+        try{
+           
+            $rule = [
+                "id" => "required|exists:" . $this->_M_Machine->getTable() . ",id,is_printing,true",
+                "printingUpdate" => "required|date|date_format:Y-m-d|before_or_equal:" . Carbon::now()->format("Y-m-d"),
+                "roll" => "required|array",
+                "roll.*.id"=>"required|exists:".$this->_M_RollDetail->getTable().",id,lock_status,false,is_printed,false,is_cut,false",
+            ];
+            $validate = Validator::make($request->all(),$rule);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            DB::beginTransaction();
+            foreach($request->roll as $index=>$val){
+                $roll = $this->_M_RollDetail->find($val['id']);
+                $roll->is_printed = true;
+                $roll->printing_date = $request->printingUpdate;
+                $roll->weight_after_print = $val["printingWeight"];
+                $roll->printing_machine_id = $request->id;
+                $roll->update();
+            }
+            DB::commit();
+            return responseMsgs(true,"Roll No ".$roll->roll_no." Printed","");
+
+        }catch(Exception $e){
+            DB::rollBack();
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function rollCuttingUpdate(Request $request){        
+        try{
+           
+            $rule = [
+                "id" => "required|exists:" . $this->_M_Machine->getTable() . ",id,is_cutting,true",
+                "cuttingUpdate" => "required|date|date_format:Y-m-d|before_or_equal:" . Carbon::now()->format("Y-m-d"),
+                "roll" => "required|array",
+                "roll.*.id"=>"required|exists:".$this->_M_RollDetail->getTable().",id,lock_status,false,is_cut,false",
+            ];
+            $validate = Validator::make($request->all(),$rule);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            DB::beginTransaction();
+            foreach($request->roll as $index=>$val){
+                $roll = $this->_M_RollDetail->find($val['id']);
+                $roll->is_printed = true;
+                $roll->printing_date = $request->printingUpdate;
+                $roll->weight_after_print = $val["printingWeight"];
+                $roll->printing_machine_id = $request->id;
+                $roll->update();
+            }
+            DB::commit();
+            return responseMsgs(true,"Roll No ".$roll->roll_no." Printed","");
+
+        }catch(Exception $e){
+            DB::rollBack();
+            return responseMsgs(false,$e->getMessage(),"");
+        }
     }
 
 }

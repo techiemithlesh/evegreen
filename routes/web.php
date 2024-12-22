@@ -92,6 +92,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post("roll/schedule-set/{flag}","rollScheduleSet")->name("roll.schedule.set");
         Route::get("roll/production/printing/{machineId?}","rollProduction")->name("roll.production.printing");
         Route::get("roll/production/cutting/{machineId?}","rollProductionCutting")->name("roll.production.cutting");
+
+        Route::post("roll/search/printing","rollSearchPrinting")->name("roll.search.printing");
     });
 
 });

@@ -200,5 +200,8 @@ function observeSelectChanges(select, options, dropdown, searchInput) {
     observer.observe(select[0], { childList: true });
 }
 
+function resetFormById(id){
+    $("#"+id+" input[type='hidden'][name*='id']").val("");
+}
 
 
