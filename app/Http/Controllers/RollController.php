@@ -1017,7 +1017,10 @@ class RollController extends Controller
                     ->where("roll_details.is_printed",false)
                     ->orderBy("printing_schedule_details.sl","ASC");
             if($machineId==1){                
-                $data->where(DB::raw("json_array_length(roll_details.printing_color)"),"<=",2);
+                $data->where(function($where){
+                    $where->where(DB::raw("json_array_length(roll_details.printing_color)"),"<=",2)
+                        ->orWhereNull("roll_details.printing_color");
+                });
             }                     
 
             if($fromDate && $uptoDate){             
@@ -1191,10 +1194,10 @@ class RollController extends Controller
             DB::beginTransaction();
             foreach($request->roll as $index=>$val){
                 $roll = $this->_M_RollDetail->find($val['id']);
-                $roll->is_printed = true;
-                $roll->printing_date = $request->printingUpdate;
-                $roll->weight_after_print = $val["printingWeight"];
-                $roll->printing_machine_id = $request->id;
+                $roll->is_cut = true;
+                $roll->cutting_date = $request->cuttingUpdate;
+                $roll->weight_after_cutting = $val["cuttingWeight"];
+                $roll->cutting_machine_id = $request->id;
                 $roll->update();
             }
             DB::commit();

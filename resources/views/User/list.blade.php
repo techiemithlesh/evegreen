@@ -80,16 +80,21 @@
                 },
             },
             submitHandler: function(form) {
-                // If form is valid, prevent default form submission and submit via AJAX
+                // If form is valid, prevent default form submission and submit via AJAX                
                 addUser();
             }
         });
         addEventListenersToForm("userForm");
     });
     function addUser(){
+        let url = "{{route('user.add')}}";
+        let userId = $("#id").val();
+        if(userId!="" && userId!="undefined"){
+            url = "{{route('user.edit')}}"
+        }
         $.ajax({
                 type: "POST",
-                'url':"{{route('user.add')}}",            
+                'url':url,            
                                 
                 "deferRender": true,
                 "dataType": "json",
@@ -114,20 +119,23 @@
         ) 
     }   
 
-    function openModelEdit(id){
+    function userEditModal(id){
         $.ajax({
             type:"get",
-            url: "{{ route('roll.color.edit', ':id') }}".replace(':id', id),
+            url: "{{ route('user.id', ':id') }}".replace(':id', id),
             dataType: "json",
             beforeSend: function() {
                 $("#loadingDiv").show();
             },
             success:function(data){
                 if(data.status==true) {
-                    bagDtl = data.data;
-                    console.log(bagDtl); 
-                    $("#id").val(bagDtl?.id);
-                    $("#color").val(bagDtl?.color);
+                    userDtl = data.data;
+                    console.log(userDtl); 
+                    $("#passwordDiv").hide();
+                    $("#id").val(userDtl?.id);
+                    $("#name").val(userDtl?.name);                    
+                    $("#email").val(userDtl?.email);                    
+                    $("#user_type_id"+userDtl?.user_type_id).attr("checked",true);
                     $("#userModal").modal("show");
                 
                 } 

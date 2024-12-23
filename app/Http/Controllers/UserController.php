@@ -146,6 +146,25 @@ class UserController extends Controller
         }
     }
 
+    public function editUser(Request $request){
+        try{
+            $rule = [
+                "id"=>"required|exists:".$this->_M_User->getTable().",id",
+                "name"=>"required",
+                "email"=>"required|email|unique:".$this->_M_User->getTable().",email,".$request->id.",id" ,
+            ];
+            $validate = Validator::make($request->all(),$rule);
+            if($validate->fails()){                    
+                return validationError($validate);
+            }
+            $request->merge(["password"=>Hash::make($request->password)]);
+            $this->_M_User->edit($request->id,$request);
+            return responseMsgs(true,"New User Added","");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
     public function userList(Request $request){
         $user_type = Auth()->user()->user_type_id??"";
         if($request->ajax()){
@@ -174,5 +193,14 @@ class UserController extends Controller
 
         }
         return view("User.list");
+    }
+
+    public function userDtl(Request $request){
+        try{
+            $user = $this->_M_User->find($request->id);
+            return responseMsgs(true,"user Fetched",$user);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
     }
 }

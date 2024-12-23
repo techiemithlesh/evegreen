@@ -21,14 +21,32 @@
                         <label class="form-label" for="email">Email<span class="text-danger">*</span></label>
                         <input type="email" maxlength="100" id="email" name="email" class="form-control" placeholder="user@gmail.com" required>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="password">Password<span class="text-danger">*</span></label>
-                        <input type="text" maxlength="100" id="password" name="password" class="form-control" placeholder="password" required>
+                    <div id="passwordDiv">
+                        <div class="mb-3">
+                            <label class="form-label" for="password">Password<span class="text-danger">*</span></label>
+                            <input type="text" maxlength="100" id="password" name="password" class="form-control" placeholder="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="password_confirmation">Conform Password<span class="text-danger">*</span></label>
+                            <input type="text" maxlength="100" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="conformPassword Password" required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="password_confirmation">Conform Password<span class="text-danger">*</span></label>
-                        <input type="text" maxlength="100" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="conformPassword Password" required>
-                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label class="control-label"><b><u>Roll Type</u></b></label>
+                        </div>
+                        @if($user_type_list??"")
+                            @foreach ($user_type_list as $values) 
+                                <div class="col-sm-3">
+                                    <div class="checkbox">
+                                        <input type="radio" id="user_type_id{{$values['id']}}" name="user_type_id" class="magic-checkbox" value="{{$values['id']}}" required />
+                                    <label for="user_type_id{{$values['id']}}">{{$values['user_type']}}</label>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div> 
 
                     <!-- Submit Button -->
                     <div class="row mt-4">

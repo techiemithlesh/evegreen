@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        "user_type_id",
     ];
 
     /**
@@ -55,5 +56,12 @@ class User extends Authenticatable
         $user = new User($inputs->all());
         $user->save();
         return $user->id;
+    }
+
+    public function edit($id,$request){
+        $inputs = snakeCase($request)->filter(function($val,$index){
+            return (in_array($index,$this->fillable));
+        });
+        return self::where("id",$id)->update($inputs->all());
     }
 }

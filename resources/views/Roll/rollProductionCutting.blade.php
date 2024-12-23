@@ -170,21 +170,25 @@
                 cuttingUpdateModal();
             }
         });
-        addEventListenersToForm();
+
+        $("#UpdateCuttingModel").on("click",function(){
+            $("#id").val(machineId);
+        });
+        // addEventListenersToForm();
 
     });
 
-    function addEventListenersToForm() {
-        const form = document.getElementById("rollForm");
-        // Loop through all elements in the form
-        Array.from(form.elements).forEach((element) => {
-            // Add event listeners based on input type
-            if (element.tagName === "INPUT" || element.tagName === "SELECT" || element.tagName === "TEXTAREA") {
-                element.addEventListener("input", hideErrorMessage);
-                element.addEventListener("change", hideErrorMessage);
-            }
-        });
-    }
+    // function addEventListenersToForm() {
+    //     const form = document.getElementById("rollForm");
+    //     // Loop through all elements in the form
+    //     Array.from(form.elements).forEach((element) => {
+    //         // Add event listeners based on input type
+    //         if (element.tagName === "INPUT" || element.tagName === "SELECT" || element.tagName === "TEXTAREA") {
+    //             element.addEventListener("input", hideErrorMessage);
+    //             element.addEventListener("change", hideErrorMessage);
+    //         }
+    //     });
+    // }
 
     function hideErrorMessage(event) {
         const element = event.target;

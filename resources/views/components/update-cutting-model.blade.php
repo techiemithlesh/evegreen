@@ -117,15 +117,15 @@
         });
 
         // Handle Form Validation
-        $("#printingRoll").validate({
+        $("#cuttingRoll").validate({
             ignore: [],
             rules: {
                 id: { required: true },
-                printingUpdate: { required: true },
+                cuttingUpdate: { required: true },
             },
             submitHandler: function (form) {
                 // If form is valid, submit it
-                updateRollPrinting();
+                updateRollCutting();
             }
         });
     });
@@ -149,12 +149,12 @@
 
     // Update Roll Printing (Submit form via AJAX)
 
-    function updateRollPrinting() {
+    function updateRollCutting() {
         $.ajax({
             type: "POST",
-            url: "{{ route('roll.printing.update') }}",
+            url: "{{ route('roll.cutting.update') }}",
             dataType: "json",
-            data: $("#printingRoll").serialize(),
+            data: $("#cuttingRoll").serialize(),
             beforeSend: function () {
                 $("#loadingDiv").show();
             },
@@ -163,7 +163,7 @@
                 if (data.status) {
                     sl =0;
                     // Reset form and clear the table
-                    $("#printingRoll")[0].reset();
+                    $("#cuttingRoll")[0].reset();
                     $("#rollTableBody").empty();
                     $("#UpdateCuttingModel").modal('hide');
                     modelInfo(data.messages || "Update Successful!");

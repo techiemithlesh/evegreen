@@ -37,6 +37,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("user/list","userList")->name("user.list");
         Route::get("user/{id}","userDtl")->name("user.id");
         Route::post("user/add","createUser")->name("user.add");
+        Route::post("user/edit","editUser")->name("user.edit");
     });
 
     Route::controller(VendorController::class)->group(function(){
