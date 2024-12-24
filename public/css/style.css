@@ -240,11 +240,11 @@ a.sidebar-link:hover {
     font-size: small !important;
 } 
 .tr-client td{
-    background-color: #5da907  !important;
-    color: rgba(255, 255, 255, 0.9) !important;
+    /* background-color: #5da907  !important;
+    color: rgba(255, 255, 255, 0.9) !important; */
 }
 .tr-printed td{
-    background-color: #3193c7 !important;
+    background-color: #2ed825 !important;
     color: rgba(255, 255, 255, 0.9) !important;
 }
 .tr-client-printed td{
@@ -262,6 +262,10 @@ a.sidebar-link:hover {
 .tr-expiry-print td{
     background-color: #f63b3b !important;
     color: rgba(255, 255, 255, 0.9)!important;
+}
+.tr-gsm_variation td{
+    background-color: #e01111 !important;
+    color: rgba(205, 200, 200, 0.9)!important;
 }
 @keyframes blink {
     0%, 100% {
@@ -317,6 +321,7 @@ a.sidebar-link:hover {
     height: 2.5rem !important;
 
 }
+
 
 
 

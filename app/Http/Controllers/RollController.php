@@ -124,6 +124,7 @@ class RollController extends Controller
                 $data = $this->_M_RollTransit->select("roll_transits.*","vendor_detail_masters.vendor_name",
                             "client_detail_masters.client_name","bag_type_masters.bag_type",
                             DB::raw("
+                                    roll_transits.gsm_variation * 100 as gsm_variation,
                                     TO_CHAR(roll_transits.purchase_date, 'DD-MM-YYYY') as purchase_date ,
                                     TO_CHAR(roll_transits.estimate_delivery_date, 'DD-MM-YYYY') as estimate_delivery_date ,
                                     TO_CHAR(roll_transits.delivery_date, 'DD-MM-YYYY') as delivery_date ,
@@ -172,6 +173,15 @@ class RollController extends Controller
                     ->addIndexColumn()
                     ->addColumn("check",function ($val) {
                         return "<input type='checkbox' name='transitId[]' value='" . $val->id . "' /> " ;
+                    })
+                    ->addColumn('row_color', function ($val) {
+                        $color = "";
+                        $gsmVariationPer = $val->gsm_variation;
+                        if(!is_between($gsmVariationPer,-4,4)){
+                            $color="tr-gsm_variation";
+                        }
+                        
+                        return $color;
                     })
                     ->addColumn('color', function ($val) {
                         return collect(json_decode($val->printing_color,true))->implode(",");
@@ -851,7 +861,7 @@ class RollController extends Controller
                                     ")
                                     )
                         ->join("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
-                        ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
+                        ->Join("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
                         ->leftJoin("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")
                         ->leftJoin("printing_schedule_details",function($join){
                             $join->on("printing_schedule_details.roll_id","=","roll_details.id")
@@ -864,6 +874,7 @@ class RollController extends Controller
                         ->where("roll_details.lock_status",false);
                 if($flag=="printing"){
                     $data->where("roll_details.is_printed",false)
+                    ->whereNotNull(DB::raw("json_array_length(roll_details.printing_color)"))
                     ->where(function($where)use($currentDate){
                         $where->where("printing_schedule_details.printing_date","<",$currentDate)
                         ->orWhereNull("printing_schedule_details.id");
@@ -884,6 +895,7 @@ class RollController extends Controller
                     })
                     ->whereNotNull("roll_details.client_detail_id");
                 }
+
                 $data->orderBy("roll_details.estimate_delivery_date","ASC");
                 // DB::enableQueryLog();
                 // $data->get();
