@@ -66,8 +66,6 @@
 </body>
 <script>
     function modelInfo(msg){
-        
-        alert(msg)
         toastr.options = {
             closeButton: true,  // Add a close button
             progressBar: true,  // Add a progress bar
