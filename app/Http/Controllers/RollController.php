@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Excel as ExcelExcel;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\HeadingRowImport;
 use Yajra\DataTables\Facades\DataTables;
 
 class RollController extends Controller
@@ -113,7 +114,9 @@ class RollController extends Controller
         $data["items"] = $this->_M_RollTransit
                         ->select("roll_transits.vender_id","roll_transits.purchase_date",
                             "vendor_detail_masters.vendor_name",
-                            DB::raw("count(roll_transits.id) as total_count")
+                            DB::raw("count(roll_transits.id) as total_count,
+                                TO_CHAR(roll_transits.purchase_date, 'DD-MM-YYYY') as purchase_date 
+                            ")
                         )
                         ->join("vendor_detail_masters","vendor_detail_masters.id","roll_transits.vender_id")
                         ->where("roll_transits.lock_status",false)
@@ -192,6 +195,9 @@ class RollController extends Controller
                         }
                         
                         return $color;
+                    })
+                    ->addColumn('gsm_variation', function ($val) {                        
+                        return roundFigure($val->gsm_variation)."%";
                     })
                     ->addColumn('color', function ($val) {
                         return collect(json_decode($val->printing_color,true))->implode(",");
@@ -318,11 +324,48 @@ class RollController extends Controller
 
     public function importRoll(Request $request){
         try{
-            $validate = Validator::make($request->all(),["csvFile"=>"required|mimes:csv"]);
+            $validate = Validator::make($request->all(),["csvFile"=>"required|mimes:csv,xlsx"]);
             if($validate->fails()){
                 return validationError($validate);
             }
             $file = $request->file('csvFile');
+            $headings = (new HeadingRowImport())->toArray($file)[0][0];
+            $expectedHeadings = ['vendor_name', 'purchase_date', 'roll_size',"roll_type","hardness","roll_gsm","bopp","roll_color","roll_length","net_weight","gross_weight"];
+            if (array_diff($expectedHeadings, $headings)) {
+                return responseMsgs(false,"data in invalid Formate","");;
+            }
+
+            $rows = Excel::toArray([], $file);
+
+            // Validate rows
+            $validationErrors = [];
+            foreach ($rows[0] as $index => $row) {
+                // Skip the header row
+                if ($index == 0) continue;
+                // Validate each row
+                $rowData = array_combine($headings, $row);
+                $validator = Validator::make($rowData, [
+                    'vendor_name' => 'required|exists:'.$this->_M_VendorDetail->getTable().",vendor_name",
+                    'purchase_date' => 'required|date',
+                    'roll_size' => 'required',
+                    'roll_type' => 'nullable|in:NW,BOPP',
+                    "hardness" => "nullable",
+                    'roll_gsm' => 'required',
+                    'bopp' => 'required_if:roll_type,BOPP',
+                    'roll_color' => 'required|exists:'.$this->_M_RollColor->getTable().",color",
+                    'roll_length' => 'required|int',
+                    'net_weight' => 'required',
+                    'gross_weight' => 'required',
+                ]);
+
+                if ($validator->fails()) {
+                    $validationErrors[$index] = $validator->errors()->all();
+                }
+            }
+
+            if (!empty($validationErrors)) {
+                return responseMsgs(false,"data is invalid",$validationErrors);
+            }
 
             // Import the CSV file using the RollDetailsImport class
             DB::beginTransaction();
@@ -331,6 +374,7 @@ class RollController extends Controller
             return responseMsgs(true,"data import","");
 
         }catch(Exception $e){
+            dd($e);
             DB::rollBack();
             return responseMsgs(false,$e->getMessage(),"");
         }
@@ -381,6 +425,7 @@ class RollController extends Controller
                                 "client_detail_masters.client_name",
                                 "bag_type_masters.bag_type",
                                 DB::raw("
+                                    roll_details.gsm_variation * 100 as gsm_variation,
                                     TO_CHAR(roll_details.purchase_date, 'DD-MM-YYYY') as purchase_date ,
                                     TO_CHAR(roll_details.estimate_delivery_date, 'DD-MM-YYYY') as estimate_delivery_date ,
                                     TO_CHAR(roll_details.delivery_date, 'DD-MM-YYYY') as delivery_date ,
@@ -483,6 +528,10 @@ class RollController extends Controller
                 ->addIndexColumn()
                 ->addColumn('row_color', function ($val) use($flag) {
                     $color = "";
+                    $gsmVariationPer = $val->gsm_variation;
+                    if(!is_between($gsmVariationPer,-4,4)){
+                        $color="tr-gsm_variation";
+                    }
                     if($val->for_client_id && $val->is_printed){
                         $color="tr-client-printed";
                     }elseif($val->is_printed){
@@ -525,6 +574,9 @@ class RollController extends Controller
                     }
                     
                     return $color;
+                })
+                ->addColumn('gsm_variation', function ($val) {                        
+                    return roundFigure($val->gsm_variation)."%";
                 })
                 ->addColumn('print_color', function ($val) {                    
                     return collect(json_decode($val->printing_color,true))->implode(",");

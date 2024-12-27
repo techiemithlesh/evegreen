@@ -106,6 +106,17 @@
                 addRoll();
             }
         });
+        $("#importForm").validate({
+            rules: {
+                csvFile: {
+                    required: true,
+                }
+            },
+            submitHandler: function(form) {
+                importFile();
+                return false;
+            }
+        });
     });
 
     function addRoll() {
@@ -138,6 +149,48 @@
                         modelInfo("Something Went Wrong!!");
                     }
                 },
+            }
+
+        )
+    }
+
+    function importFile() {
+        var formData = new FormData($("#importForm")[0]);
+        $.ajax({
+                type: "POST",
+                'url': "{{route('roll.import')}}",
+                "deferRender": true,
+                processData: false, // Do not process data (let FormData handle it)
+                contentType: false, // Do not set content type (let the browser handle it)
+                dataType: "json",
+
+                'data': formData,
+                beforeSend: function() {
+                    $("#loadingDiv").show();
+                },
+                success: function(data) {
+                    $("#loadingDiv").hide();
+                    if (data.status) {
+                        document.getElementById("importForm").reset();
+                        $("#fileImportModal").modal('hide');
+                        modelInfo(data.messages);
+                        window.location.reload();
+                    } else if (data?.errors) {
+                        let errors = data?.errors;
+                        console.log(data?.errors?.rollNo[0]);
+                        modelInfo(data.messages);
+                        for (field in errors) {
+                            console.log(field);
+                            $(`#${field}-error`).text(errors[field][0]);
+                        }
+                    } else {
+                        modelInfo("Something Went Wrong!!");
+                    }
+                },
+                error: function(error) {
+                    $("#loadingDiv").hide();
+                    console.log(error);
+                }
             }
 
         )
