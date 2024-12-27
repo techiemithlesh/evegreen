@@ -71,6 +71,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::controller(RollController::class)->group(function(){
         Route::get("roll/order/punches","orderPunches")->name("order.punches");
+        Route::post("roll/order/punches/save","orderPunchesSave")->name("order.punches.save");
         Route::post("roll/client/old/order","oldOrderOfClient")->name("client.old.order");
         Route::post("roll/client/order/suggestion","orderSuggestionClient")->name("client.order.suggestion");
 

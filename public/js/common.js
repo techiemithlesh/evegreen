@@ -259,6 +259,25 @@ $(document).ready(function(){
         });
       });
 });
+
+function setHintDefault(id="") {
+    document.querySelectorAll(((id ? "#"+id : "")+" ")+'.movable').forEach((container) => {
+        // Reset position to default (top-left corner or a defined position)
+        container.style.left = '';
+        container.style.top = '';
+
+        // Expand all containers
+        const isCollapsed = container.classList.contains('collapsed');
+        if (isCollapsed) {
+            const icon = container.querySelector('.header .icons');
+            const content = container.querySelector('.content');
+            container.classList.remove('collapsed');
+            if (content) content.style.display = 'block';
+            if (icon) icon.textContent = '▼'; // Update icon to expanded state
+        }
+    });
+}
+
 //   end
 
 

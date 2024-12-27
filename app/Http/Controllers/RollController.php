@@ -11,6 +11,8 @@ use App\Models\ClientDetailMaster;
 use App\Models\ColorMaster;
 use App\Models\CuttingScheduleDetail;
 use App\Models\MachineMater;
+use App\Models\OrderPunchDetail;
+use App\Models\OrderRollBagType;
 use App\Models\PrintingMachine;
 use App\Models\PrintingScheduleDetail;
 use App\Models\RollColorMaster;
@@ -43,6 +45,8 @@ class RollController extends Controller
     private $_M_RollColor;
     private $_M_CuttingScheduleDetail;
     private $_M_Color;
+    private $_M_OrderPunches;
+    private $_M_OrderRollBagType;
     function __construct()
     {
         
@@ -56,6 +60,8 @@ class RollController extends Controller
         $this->_M_Machine = new MachineMater();
         $this->_M_CuttingScheduleDetail = new CuttingScheduleDetail();
         $this->_M_Color = new ColorMaster();
+        $this->_M_OrderPunches = new OrderPunchDetail();
+        $this->_M_OrderRollBagType = new OrderRollBagType();
     }
 
     #================ Roll Transit =====================
@@ -1305,12 +1311,11 @@ class RollController extends Controller
 
     public function orderSuggestionClient(Request $request){
         try{
-            // dd($request->all());
-            $roll=$this->_M_RollDetail
+            $roll=$this->_M_RollDetail->select("*",DB::raw("'stock' as stock"))
                     ->whereNull("client_detail_id")
                     ->where("lock_status",false)
                     ->get();
-            $transit = $this->_M_RollTransit
+            $transit = $this->_M_RollTransit->select("*",DB::raw("'transit' as stock"))
                         ->whereNull("client_detail_id")
                         ->where("lock_status",false)
                         ->get();
@@ -1318,6 +1323,48 @@ class RollController extends Controller
             $data["rollTransit"]= $transit;
             return responseMsgs(true,"data Fetched",$data);
         }catch(ExcelExcel $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function orderPunchesSave(Request $request){
+        try{
+            $request->merge([
+                "clientDetailId"=>$request->bookingForClientId,
+                "estimateDeliveryDate"=>$request->bookingEstimatedDespatchDate,
+            ]);
+            DB::beginTransaction();
+            $orderId = $this->_M_OrderPunches->store($request);
+            $type ="Pending";
+            if($request->roll){
+                foreach($request->roll as $val){
+                    $type ="Booked";
+                    $roll = $this->_M_RollDetail->find($val["id"]);
+                    if(!$roll){
+                        $roll = $this->_M_RollTransit->find($val["id"]);
+                    }
+                    if($roll->client_detail_id){
+                        throw new Exception($roll->roll_no." Roll Already Assign");
+                    }
+                    $roll->client_detail_id = $request->bookingForClientId;
+                    $roll->estimate_delivery_date = $request->bookingEstimatedDespatchDate;
+                    $roll->bag_type_id = $request->bookingBagTypeId;
+                    $roll->bag_unit = $request->bookingBagUnits;
+                    $roll->loop_color = $request->looColor;
+                    $roll->w = $request->w;
+                    $roll->l = $request->l;
+                    $roll->g = $request->g;
+                    $roll->printing_color = $request->bookingPrintingColor;
+                    $roll->update();
+                    $newRequest = new Request($roll->toArray());
+                    $newRequest->merge(["order_id"=>$orderId,"roll_id"=>$roll->id]);
+                    $this->_M_OrderRollBagType->store($newRequest);
+                }
+
+            }
+            DB::commit();
+            return responseMsgs(true,"Order Place On $type","");
+        }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
         }
     }
