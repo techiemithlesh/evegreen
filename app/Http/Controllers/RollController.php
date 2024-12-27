@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Excel as ExcelExcel;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -1276,12 +1277,49 @@ class RollController extends Controller
     }
 
     public function oldOrderOfClient(Request $request){
-        $roll = $this->_M_RollDetail
-                // ->select(DB::raw(""))
-                ->where("client_detail_id",$request->clientId)
-                ->where("lock_status",false)
-                ->orderBy("estimate_delivery_date")->get();
-        return responseMsgs(true,"old history",$roll);
+        try{
+            $roll = $this->_M_RollDetail
+                    ->select(DB::raw("roll_details.gsm,roll_details.roll_color,roll_details.length,roll_details.size,
+                                      roll_details.net_weight, roll_details.roll_type, roll_details.hardness, roll_details.bag_type_id,
+                                      roll_details.bag_unit, roll_details.w, roll_details.l, roll_details.g, roll_details.printing_color::text,
+                                      bag_type_masters.bag_type
+                                      ")
+                    )
+                    ->join("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")
+                    ->where("roll_details.client_detail_id",$request->clientId)
+                    ->where("roll_details.lock_status",false)
+                    ->groupBy(DB::raw("roll_details.gsm,roll_details.roll_color,roll_details.length,roll_details.size,
+                                      roll_details.net_weight, roll_details.roll_type, roll_details.hardness, roll_details.bag_type_id,
+                                      roll_details.bag_unit, roll_details.w, roll_details.l, roll_details.g, roll_details.printing_color::text,
+                                      bag_type_masters.bag_type
+                                      "))
+                    ->orderBy("roll_details.bag_type_id")
+                    ->get();
+            return responseMsgs(true,"old history",$roll);
+            
+
+        }catch(ExcelExcel $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function orderSuggestionClient(Request $request){
+        try{
+            // dd($request->all());
+            $roll=$this->_M_RollDetail
+                    ->whereNull("client_detail_id")
+                    ->where("lock_status",false)
+                    ->get();
+            $transit = $this->_M_RollTransit
+                        ->whereNull("client_detail_id")
+                        ->where("lock_status",false)
+                        ->get();
+            $data["roll"]=$roll;
+            $data["rollTransit"]= $transit;
+            return responseMsgs(true,"data Fetched",$data);
+        }catch(ExcelExcel $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
     }
 
 }

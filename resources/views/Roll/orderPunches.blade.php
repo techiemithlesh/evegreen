@@ -18,23 +18,48 @@
     </div>
     <div class="container">
         <div class="panel-body">
-            <form action="" id="myForm" class="row g-3">                
-                @csrf
-                <div class="row">
-                    <div style="text-align: center;">
-                        <div class="example-box movable">
+                <div style="text-align: center;" id="orderHistory">
+                    <div class="example-box movable" style="right: 30px; width:500px">
+                        <div class="header">
+                            <span>Old Orders</span>
+                            <span class="icons">▼</span>
+                        </div>
+                        <div class="content">
+                            <div id="history">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="suggestion" style="display: none;">
+                    <div style="text-align: center;" id="suggestion1">
+                        <div class="example-box movable" style="background-color: rgb(238, 80, 96); right: 20px; width:450px">
                             <div class="header">
-                                <span>Old Orders</span>
+                                <span>Roll Stock</span>
                                 <span class="icons">▼</span>
                             </div>
                             <div class="content">
-                                <div id="history">
-
+                                <div id="suggestionRoll"> a
                                 </div>
                             </div>
                         </div>
-
                     </div>
+                    <div style="text-align: center;" id="suggestion2">
+                        <div class="example-box movable" style="background-color: rgb(89, 199, 208); width:400px">
+                            <div class="header">
+                                <span>Roll Transit</span>
+                                <span class="icons">▼</span>
+                            </div>
+                            <div class="content">
+                                <div id="suggestionRollTransit">b
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <form action="" id="myForm" class="row g-3">                
+                @csrf
+                <div class="row">                    
                     <div class="row mt-3">
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -139,6 +164,7 @@
 
                 </div>
                 <div class="col-12">
+                    <button type="button" class="btn btn-primary" onclick="showRollSuggestion()"><i class="bi bi-camera-reels"></i></button>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
             </form>
@@ -150,7 +176,8 @@
 
 <script>
     $(document).ready(function(){
-        $('.select22').select2();       
+        $('.select22').select2(); 
+        $("#orderHistory").hide();      
 
         $('#bookingPrintingColor').select2({
             placeholder: "Select tags",
@@ -165,6 +192,32 @@
         });
         showHideLoop();
         addSearch("bookingForClientId");
+
+        $("#myForm").validate({
+            rules: {
+                bookingForClientId: {
+                    required: true,
+                },
+                bookingEstimatedDespatchDate:{
+                    required:true
+                },
+                bookingBagUnits: {
+                    required: true,
+                },
+                bookingBagTypeId: {
+                    required: true,
+                },
+                bookingPrintingColor: {
+                    required: true,
+                },
+                roll_id:{
+                    required:true,
+                }
+            },
+            submitHandler: function(form) {
+                bookForClient();
+            }
+        });
 
     });
     function openRollBookingClineModel(){
@@ -192,28 +245,6 @@
         var color = $(option.element).data('color');
         return $('<span style="background-color: ' + color + '; padding: 3px 10px; color: white; border-radius: 3px; z-index:40000">' + option.text + '</span>');
     }
-
-    // function showPrivOrder(event){
-    //     const clientId = $(event.target).val();
-    //     if(clientId!=""){
-    //         $.ajax({
-    //             url:"{{route('client.old.order')}}",
-    //             type:"post",
-    //             data:{"clientId":clientId},
-    //             dataType:"json",
-    //             beforeSend:function(){
-    //                 $("#loadingDiv").show();
-    //             },
-    //             success:function(data){
-    //                 $("#loadingDiv").hide();
-                    
-    //                 $("#history").html(data?.data)
-    //             }
-    //         })
-    //     }
-
-    // }
-
     function showPrivOrder(event) {
         const clientId = $(event.target).val();
         if (clientId != "") {
@@ -230,39 +261,52 @@
 
                     if (response.status && response.data.length > 0) {
                         // Clear previous content
+                        $("#orderHistory").show();
                         $("#history").empty();
 
                         // Create the table
                         const table = $("<table>").addClass("history-table");
                         const thead = $("<thead>").append(
                             $("<tr>").append(
-                                "<th>ID</th>",
-                                "<th>Roll No</th>",
-                                "<th>Purchase Date</th>",
+                                "<th>Sl</th>",
+                                "<th>Order</th>",
+                                "<th>GSM</th>",
                                 "<th>Roll Color</th>",
+                                "<th>Length</th>",
                                 "<th>Size</th>",
                                 "<th>Net Weight</th>",
-                                "<th>Gross Weight</th>",
+                                "<th>roll Type</th>",
+                                "<th>Hardness</th>",
+                                "<th>Bag</th>",
+                                "<th>Bag Unit</th>",
+                                "<th>W</th>",
+                                "<th>L</th>",
+                                "<th>G</th>",
                                 "<th>Printing Colors</th>",
-                                "<th>Delivered</th>"
                             )
                         );
 
                         const tbody = $("<tbody>");
                         
                         // Populate the rows
-                        response.data.forEach(item => {
-                            tbody.append(
+                        response.data.forEach((item,index) => {
+                            tbody.append(                               
                                 $("<tr>").append(
-                                    `<td>${item.id}</td>`,
-                                    `<td>${item.roll_no}</td>`,
-                                    `<td>${item.purchase_date}</td>`,
+                                    `<td>${index+1}</td>`,
+                                    `<td><button data-item='${JSON.stringify(item)}' id="or${index}" onclick="setOrderValue('or${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
+                                    `<td>${item.gsm}</td>`,
                                     `<td>${item.roll_color || "N/A"}</td>`,
+                                    `<td>${item.length || "N/A"}</td>`,
                                     `<td>${item.size || "N/A"}</td>`,
                                     `<td>${item.net_weight || "N/A"}</td>`,
-                                    `<td>${item.gross_weight || "N/A"}</td>`,
+                                    `<td>${item.roll_type || "N/A"}</td>`,
+                                    `<td>${item.hardness || "N/A"}</td>`,
+                                    `<td>${item.bag_type || "N/A"}</td>`,
+                                    `<td>${item.bag_unit || "N/A"}</td>`,
+                                    `<td>${item.w || "N/A"}</td>`,
+                                    `<td>${item.l || "N/A"}</td>`,
+                                    `<td>${item.g || "N/A"}</td>`,
                                     `<td>${JSON.parse(item.printing_color || "[]").join(", ")}</td>`,
-                                    `<td>${item.is_delivered ? "Yes" : "No"}</td>`
                                 )
                             );
                         });
@@ -290,6 +334,7 @@
                             fontWeight: "bold"
                         });
                     } else {
+                        $("#orderHistory").hide();
                         $("#history").html("<p>No records found.</p>");
                     }
                 },
@@ -298,8 +343,51 @@
                     $("#history").html("<p>An error occurred while fetching data.</p>");
                 }
             });
+        }else{
+            $("#orderHistory").hide();
         }
     }
+
+
+    function setOrderValue(id) {        
+        const item = JSON.parse($(event.target).attr("data-item"));
+
+        // Set individual field values
+        $("#bookingBagTypeId").val(item?.bag_type_id);
+        $("#bookingBagUnits").val(item?.bag_unit);
+        $("#l").val(item?.l);
+        $("#g").val(item?.g);
+        $("#w").val(item?.w);
+
+        
+        // Set the multi-select field for 'bookingPrintingColor'
+        try {
+            // Parse the printing_color string to an array
+            const printingColors = JSON.parse(item?.printing_color) || [];
+            $("#bookingPrintingColor").val(printingColors).trigger("change");; // Set the selected options
+        } catch (error) {
+            console.error("Error parsing printing_color:", error);
+            $("#bookingPrintingColor").val([]).trigger("change");; // Clear in case of error
+        }
+    }
+
+    function showRollSuggestion(){
+        $.ajax({
+            url:"{{route('client.order.suggestion')}}",
+            type:"post",
+            data:$("#myForm").serialize(),
+            dataType:"json",
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(data){
+                console.log(data);
+                $("#loadingDiv").hide();
+                $("#suggestion").show();
+            }
+        })
+    }
+
 
 </script>
 

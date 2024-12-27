@@ -334,6 +334,12 @@ a.sidebar-link:hover {
     width: 300px;
     border-radius: 8px;
     transition: height 0.3s ease, padding 0.3s ease;
+
+    top: 50px; /* Adjust vertical position */
+    right: 10px; /* Move it to the right side */
+    width: 200px;
+    padding: 10px;
+
   }
 
   .movable.collapsed {

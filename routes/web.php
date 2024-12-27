@@ -72,6 +72,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(RollController::class)->group(function(){
         Route::get("roll/order/punches","orderPunches")->name("order.punches");
         Route::post("roll/client/old/order","oldOrderOfClient")->name("client.old.order");
+        Route::post("roll/client/order/suggestion","orderSuggestionClient")->name("client.order.suggestion");
 
         Route::get("roll/transit/list","transitList")->name("roll.transit");
         Route::get("roll/transit/dtl/{vendor_id?}","transitDtl")->name("roll.transit.dtl");
