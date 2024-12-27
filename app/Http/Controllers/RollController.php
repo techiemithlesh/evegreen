@@ -8,6 +8,7 @@ use App\Models\BagType;
 use App\Models\BagTypeMaster;
 use App\Models\ClientDetail;
 use App\Models\ClientDetailMaster;
+use App\Models\ColorMaster;
 use App\Models\CuttingScheduleDetail;
 use App\Models\MachineMater;
 use App\Models\PrintingMachine;
@@ -40,6 +41,7 @@ class RollController extends Controller
     private $_M_RollTransit;
     private $_M_RollColor;
     private $_M_CuttingScheduleDetail;
+    private $_M_Color;
     function __construct()
     {
         
@@ -52,6 +54,7 @@ class RollController extends Controller
         $this->_M_PrintingScheduleDetail = new PrintingScheduleDetail();
         $this->_M_Machine = new MachineMater();
         $this->_M_CuttingScheduleDetail = new CuttingScheduleDetail();
+        $this->_M_Color = new ColorMaster();
     }
 
     #================ Roll Transit =====================
@@ -763,6 +766,7 @@ class RollController extends Controller
 
         }
         $data=[];
+        $data["machine"] = $this->_M_Machine->find($machineId);
         return view("Roll/rollRegisterPrinting",$data);
     }
 
@@ -834,6 +838,7 @@ class RollController extends Controller
 
         }
         $data=[];
+        $data["machine"] = $this->_M_Machine->find($machineId);
         return view("Roll/rollRegisterCutting",$data);
     }
     
@@ -1066,6 +1071,7 @@ class RollController extends Controller
 
         }
         $data=[];
+        $data["machine"] = $this->_M_Machine->find($machineId);
         return view("Roll/rollProduction",$data);
     }
 
@@ -1130,6 +1136,7 @@ class RollController extends Controller
 
         }
         $data=[];
+        $data["machine"] = $this->_M_Machine->find($machineId);
         return view("Roll/rollProductionCutting",$data);
     }
 
@@ -1148,6 +1155,45 @@ class RollController extends Controller
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
                     ->where("roll_details.roll_no",$request->rollNo)
                     ->where("roll_details.is_printed",false)
+                    ->where("roll_details.lock_status",false)
+                    ->first();
+            if($data){
+                $data->printing_color = collect(json_decode($data->printing_color,true))->implode(",");
+            }
+            return responseMsgs(true,"Data Fetch",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function rollSearchCutting(Request $request){
+        try{
+            DB::enableQueryLog();
+            $data = $this->_M_RollDetail
+                    ->select("roll_details.*",
+                        "client_detail_masters.client_name",
+                        DB::raw("
+                                    TO_CHAR(roll_details.purchase_date, 'DD-MM-YYYY') as purchase_date ,
+                                    TO_CHAR(roll_details.estimate_delivery_date, 'DD-MM-YYYY') as estimate_delivery_date ,
+                                    TO_CHAR(roll_details.delivery_date, 'DD-MM-YYYY') as delivery_date
+                                "
+                                )
+                    )
+                    ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
+                    ->where("roll_details.roll_no",$request->rollNo)
+                    ->where(function ($query) {
+                        $query->where(function($subQuery){
+                                    $subQuery->where('roll_details.is_printed', false)
+                                    ->whereNull(DB::raw('json_array_length(roll_details.printing_color)'));
+                                }                            
+                            )
+                            ->orWhere(function ($subQuery) {
+                                  $subQuery->whereNotNull(DB::raw('json_array_length(roll_details.printing_color)'))
+                                           ->where('roll_details.is_printed', true);
+                              });
+                    })                   
+                    ->where("roll_details.is_cut",false)
+                    ->whereNotNull("roll_details.client_detail_id")
                     ->where("roll_details.lock_status",false)
                     ->first();
             if($data){
@@ -1219,6 +1265,23 @@ class RollController extends Controller
             DB::rollBack();
             return responseMsgs(false,$e->getMessage(),"");
         }
+    }
+
+
+    public function orderPunches(Request $request){
+        $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->get();
+        $data["bagType"] = $this->_M_BagType->getBagListOrm()->get();
+        $data["color"] = $this->_M_Color->getColorListOrm()->get();
+        return view("Roll/orderPunches",$data);
+    }
+
+    public function oldOrderOfClient(Request $request){
+        $roll = $this->_M_RollDetail
+                // ->select(DB::raw(""))
+                ->where("client_detail_id",$request->clientId)
+                ->where("lock_status",false)
+                ->orderBy("estimate_delivery_date")->get();
+        return responseMsgs(true,"old history",$roll);
     }
 
 }

@@ -24,7 +24,7 @@
                                             <i class="bi bi-person-add"></i> Add Client
                                         </span> 
                                     </label>
-                                    <select name="bookingForClientId" id="bookingForClientId" class="form-select select-option" onchange="openCloseClientMode()">
+                                    <select name="bookingForClientId" id="bookingForClientId" class="form-select select-option">
                                         <option value="">Select</option>
                                         @foreach ($clientList as $val)
                                             <option value="{{ $val->id }}">{{ $val->client_name }}</option>

@@ -8,7 +8,7 @@
                 <ol class="breadcrumb fs-6">
                     <li class="breadcrumb-item fs-6"><a href="#">Production</a></li>
                     <li class="breadcrumb-item fs-6"><a href="#">Register</a></li>
-                    <li class="breadcrumb-item active fs-6" aria-current="page">Cutting Register</li>
+                    <li class="breadcrumb-item active fs-6" aria-current="page">{{$machine->name??""}} Register</li>
                 </ol>
             </nav>
 

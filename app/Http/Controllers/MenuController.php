@@ -160,6 +160,20 @@ class MenuController extends Controller
                     ->addColumn('menu_icon', function ($val) {
                         return '<i class="'.($val["menu_icon"]? $val["menu_icon"] :"lni lni-grid-alt").'"></i>';
                     })
+                    ->addColumn('parent_menu', function ($val) {
+                        $menuTab = "";
+                        $parenId = $val->parent_menu_mstr_id;
+                        while(true){
+                            $parent = $this->_M_MenuMaster->find($parenId);
+                            if(!$parent){
+                                break;
+                            }
+                            $parenId = $parent->parent_menu_mstr_id;
+                            $menuTab.=("->").$parent->menu_name??"";
+                        }
+                        $menuTab = implode("->",array_reverse(explode("->",$menuTab)));
+                        return trim($menuTab,"->");
+                    })
                     ->addColumn('role_name', function ($val) {
                         // Replace this with your logic to get the role_name
                         return collect($val->getUserTypeList()->get())->implode("user_type",",");

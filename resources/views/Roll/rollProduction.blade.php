@@ -1,271 +1,202 @@
 @include("layout.header")
 <!-- Main Component -->
 
+
+
+<!-- Modal Form -->
+<style>
+    .modal-body {
+        max-height: calc(100vh - 150px); /* Adjust height as needed */
+        overflow-y: auto; /* Enable vertical scrolling */
+    }
+</style>
+
 <main class="p-3">
     <div class="container-fluid">
         <div class="mb-3 text-left">
             <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
                 <ol class="breadcrumb fs-6">
                     <li class="breadcrumb-item fs-6"><a href="#">Roll</a></li>
-                    <li class="breadcrumb-item active fs-6" aria-current="page">List</li>
+                    <li class="breadcrumb-item active fs-6" aria-current="page">{{$machine->name??""}}</li>
                 </ol>
             </nav>
 
         </div>
     </div>
-    <div class="container">  
-        <div class="panel-heading">
-            <h5 class="panel-title">Roll List</h5> 
-            <div class="panel-control">
-                <button id="updatePrintingOpen" type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#UpdatePrintingModel" >
-                    Update Production <ion-icon name="add-circle-outline"></ion-icon>
-                </button>
-            </div>           
-        </div>      
+    <div class="container">       
         <div class="panel-body">
-            <table id="postsTable" class="table table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th >#</th>
-                        <th>Purchase Date</th>
-                        <th>Vendor Name</th>
-                        <th>Hardness</th>
-                        <th>Roll Type</th>
-                        <th>Roll Size</th>
-                        <th>GSM</th>
-                        <th>Roll Color</th>
-                        <th>Length</th>
+            <form id="printingRoll">
+                @csrf
+                <!-- Hidden field for Client ID -->
+                <input type="hidden" id="id" name="id" value="">
+
+                <div class="row mt-3">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="printingUpdate">Date <span class="text-danger">*</span></label>
+                            <input type="date" name="printingUpdate" id="printingUpdate" class="form-control" max="{{date('Y-m-d')}}" required />
+                            <span class="error-text" id="printingUpdate-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="rollNo">Roll No</label>
+                            <input type="text" id="rollNo" name="rollNo" class="form-control">
+                            <span class="error-text" id="rollNo-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 d-flex align-items-end">
+                        <button type="button" id="search" class="btn btn-primary w-100">Search</button>
+                    </div>
+                </div>
+                <hr>
+                <table class="table table-striped table-bordered table-responsive">
+                    <thead>
                         <th>Roll No</th>
-                        <th>Gross Weight</th>
-                        <th>Net Weight</th>
-                        <th>GSM Variation</th>
-
-                        <th>W</th>
-                        <th>L</th>
-                        <th>G</th>
-                        <th>Bag Type</th>
-                        <th>Unit</th>
-                        <th>Customer</th>
+                        <th>Punches Date</th>
+                        <th>Roll Size</th>
+                        <th>Roll Color</th>
+                        <th>Client Name</th>
                         <th>Printing Color</th>
-                        <th>Loop Color</th>
-                        <th>Printing Schedule Date</th>
-                    </tr>
-                </thead>
-                <tbody>
+                        <th>Weight After Printing</th>
+                        <th>Color Ratio</th>
+                        <th>Remove</th>
+                    </thead>
+                    <tbody id="rollTableBody">
+                    </tbody>
+                </table>
 
-                </tbody>
-            </table>
+                <!-- Submit Button -->
+                <div class="row mt-4">
+                    <div class="col-sm-12 text-end">
+                        <button type="submit" class="btn btn-success">Add</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Modal -->
-    <x-update-printing-model />
 </main>
+
 <script>
-    
-
+    let sl = 0;
     var machineId = window.location.pathname.split('/').pop();
-    $(document).ready(function() {  
+    $(document).ready(function () {
+        $("#id").val(machineId);
+        // Handle Search Button Click
+        $("#search").on("click", function () {
+            let rollNo = $("#rollNo").val();
+            if (rollNo != "") {
+                $.ajax({
+                    url: "{{ route('roll.search.printing') }}",
+                    type: "POST",
+                    dataType: "json",
+                    data: { "rollNo": rollNo },
+                    beforeSend: function () {
+                        $("#loadingDiv").show();
+                    },
+                    success: function (data) {
+                        $("#loadingDiv").hide();
+                        if (data.status && data.data) {
+                            $("#rollNo").val("");
+                            let roll = data.data;
+                            const rowId = `row${sl}`;
+                            const colors = roll.printing_color.split(",");
+                            const colorInputs = colors.map((color, index) => {
+                                return `<input type='text' name='roll[${sl}][color_${index}]' id='color${index}_${rowId}' class='form-control dynamic-field' required onkeypress="return isNumDot(event);" placeholder='${color}' /> <input type='hidden' name='roll[${sl}][colorName_${index}]' value='${color}' />`;
+                            }).join("");
 
-        const table = $('#postsTable').DataTable({
-            processing: true,
-            serverSide: false,
-            ajax: {
-                url: "{{route('roll.production.printing',':machineId')}}".replace(':machineId', machineId), // The route where you're getting data from
-                data: function(d) {
-
-                    // Add custom form data to the AJAX request
-                    var formData = $("#searchForm").serializeArray();
-                    $.each(formData, function(i, field) {
-                        d[field.name] = field.value; // Corrected: use d[field.name] instead of d.field.name
-                    });
-
-                },
-                beforeSend: function() {
-                    $("#btn_search").val("LOADING ...");
-                    $("#loadingDiv").show();
-                },
-                complete: function() {
-                    $("#btn_search").val("SEARCH");
-                    $("#loadingDiv").hide();
-                },
-            },
-            columns: [
-                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                { data: "purchase_date", name: "purchase_date" },
-                { data: "vendor_name", name: "vendor_name" },
-                { data: "hardness", name: "hardness" },
-                { data: "roll_type", name: "roll_type" },
-                { data: "size", name: "size" },
-                { data: "gsm", name: "gsm" },
-                { data: "roll_color", name: "roll_color" },
-                { data: "length", name: "length" },
-                { data: "roll_no", name: "roll_no" },
-                { data: "gross_weight", name: "gross_weight" },
-                { data: "net_weight", name: "net_weight" },
-                { data: "gsm_variation", name: "gsm_variation" },
-                { data : "w", name: "w" },
-                { data : "l", name: "l" },
-                { data : "g", name: "g" },
-                { data : "bag_type", name: "bag_type" },
-                { data : "bag_unit", name: "bag_unit" },
-                { data : "client_name", name: "client_name" },
-                { data : "print_color", name: "print_color" },
-                { data : "loop_color", name: "loop_color" },
-                { data : "schedule_date_for_print", name: "schedule_date_for_print" },
-            ],
-            dom: 'lBfrtip', // This enables the buttons
-            language: {
-                lengthMenu: "Show _MENU_" // Removes the "entries" text
-            },
-            lengthMenu: [
-                [10, 25, 50, 100, -1], // The internal values
-                ["10 Row", "25 Row", "50 Row", "100 Row", "All"] // The display values, replace -1 with "All"
-            ],
-            buttons: [{
-                    extend: 'excel',
-                    text: 'Export to Excel',
-                    className: 'btn btn-success',
-            }],
-            createdRow: function(row, data, dataIndex) {
-                // Apply the custom class to the row
-                if (data.row_color) {
-                    $(row).addClass(data.row_color);
-                    if(data.row_color=="tr-client"){
-                        $(row).attr("title", "book for client");
-                    }else if(data.row_color=="tr-client-printed"){
-                        $(row).attr("title", "roll have booked and printed");
-                    }else if(data.row_color=="tr-printed"){
-                        $(row).attr("title", "roll is printed");
-                    }else if(data.row_color=="tr-primary-print"){
-                        $(row).attr("title", "this roll will be delivering soon");
-                    }else if(data.row_color=="tr-expiry-print blink"){
-                        $(row).attr("title", "this roll  delivery has been expired");
-                    }else if(data.row_color=="tr-argent-print"){
-                        $(row).attr("title", "this roll  delivery is urgent");
+                            let row = `
+                                <tr id='${rowId}'>
+                                    <td>
+                                        <input type='hidden' name='roll[${sl}][id]' value='${roll.id}' />${roll.roll_no}
+                                    </td>
+                                    <td>${roll.purchase_date}</td>
+                                    <td>${roll.size}</td>
+                                    <td>${roll.roll_color}</td>
+                                    <td>${roll.client_name}</td>
+                                    <td>${roll.printing_color}</td>
+                                    <td>
+                                        <input type='text' name='roll[${sl}][printingWeight]' id='printingWeight${rowId}' class='form-control dynamic-field' min='${roll.net_weight}' onkeypress="return isNumDot(event);" required />
+                                    </td>
+                                    <td>${colorInputs}</td>
+                                    <td><span onclick='removeTr(this)' class='btn btn-sm btn-warning'>X</span></td>
+                                </tr>`;
+                            $("#rollTableBody").append(row);
+                            sl = sl+1;
+                            applyValidationRules(rowId);
+                        } else {
+                            modelInfo(data.messages || "Invalid Roll No", "warning");
+                        }
                     }
-                }
-            },            
-            initComplete: function () {
-                addFilter('postsTable',[0]);
-            },
-        });
-        $("#printingUpdateModalForm").validate({
-            rules: {
-                rollId:{
-                    required:true,                    
-                },
-                printingDate:{
-                    required:true
-                },
-                rollWeight:{
-                    required:true
-                }
-                
-            },
-            submitHandler: function(form) {
-                // If form is valid, prevent default form submission and submit via AJAX
-                updatePrinting();
+                });
             }
         });
 
-        $("#updatePrintingOpen").on("click",function(){
-            $("#id").val(machineId);
+        // Handle Form Validation
+        $("#printingRoll").validate({
+            ignore: [],
+            rules: {
+                id: { required: true },
+                printingUpdate: { required: true },
+            },
+            submitHandler: function (form) {
+                // If form is valid, submit it
+                updateRollPrinting();
+            }
         });
-        // addEventListenersToForm();
-
     });
 
-    function addEventListenersToForm() {
-        const form = document.getElementById("rollForm");
-        // Loop through all elements in the form
-        Array.from(form.elements).forEach((element) => {
-            // Add event listeners based on input type
-            if (element.tagName === "INPUT" || element.tagName === "SELECT" || element.tagName === "TEXTAREA") {
-                element.addEventListener("input", hideErrorMessage);
-                element.addEventListener("change", hideErrorMessage);
-            }
+    // Apply validation rules to dynamically added fields
+    function applyValidationRules(rowId) {
+        $(`#${rowId} input.dynamic-field`).each(function () {
+            $(this).rules("add", {
+                required: true,
+                messages: {
+                    required: "This field is required.",
+                },
+            });
         });
     }
 
-    function hideErrorMessage(event) {
-        const element = event.target;
-        // Find and hide the error message associated with the element
-        const errorMessage = document.getElementById(`${element.id}-error`);
-        if (errorMessage) {
-            errorMessage.innerHTML = "";
-        }
+    // Remove Row from Table
+    function removeTr(element) {
+        $(element).closest("tr").remove();
     }
 
-    function openPrintingUpdateModel(id){
+    // Update Roll Printing (Submit form via AJAX)
+
+    function updateRollPrinting() {
         $.ajax({
-            type:"GET",
-            url: "{{ route('roll.dtl', ':id') }}".replace(':id', id),
+            type: "POST",
+            url: "{{ route('roll.printing.update') }}",
             dataType: "json",
-            beforeSend: function() {
+            data: $("#printingRoll").serialize(),
+            beforeSend: function () {
                 $("#loadingDiv").show();
             },
-            success:function(data){
-                if(data.status==true) {
-                    rolDtl = data.data;
-                    console.log(rolDtl); 
-                    $("#printingUpdateRollId").val(rolDtl?.id);
-                    $('[display_roll_no="roll_no_display"]').each(function(index, element) {
-                        // Use jQuery to wrap the raw DOM element
-                        $(element).html(rolDtl?.roll_no || '');
-                    });
-                    $("#printingUpdateModal").modal("show");
-                
-                } 
+            success: function (data) {
                 $("#loadingDiv").hide();
-            },
-            error:function(error){
-                $("#loadingDiv").hide();
-            }
+                if (data.status) {
+                    sl =0;
+                    // Reset form and clear the table
+                    $("#printingRoll")[0].reset();
+                    $("#rollTableBody").empty();
+                    $("#UpdatePrintingModel").modal('hide');
+                    modelInfo(data.messages || "Update Successful!");
+                } else if (data.errors) {
+                    let errors = data.errors;
+                    for (field in errors) {
+                        $(`#${field}-error`).text(errors[field][0]);
+                    }
+                    modelInfo(data.messages || "Validation Error", "error");
+                } else {
+                    modelInfo("Something Went Wrong!!", "error");
+                }
+            },            
         });
     }
 
-    function updatePrinting(){
-        $.ajax({
-                type: "POST",
-                'url': "{{route('roll.printing.update')}}",
-
-                "deferRender": true,
-                "dataType": "json",
-                'data': $("#printingUpdateModalForm").serialize(),
-                beforeSend: function() {
-                    $("#loadingDiv").show();
-                },
-                success: function(data) {
-                    $("#loadingDiv").hide();
-                    if (data.status) {
-                        $("#printingUpdateModalForm").get(0).reset();
-                        $('[display_roll_no="roll_no_display"]').each(function(index, element) {
-                            // Use jQuery to wrap the raw DOM element
-                            $(element).html('');
-                        });
-                        $("#printingUpdateModal").modal('hide');
-                        $('#postsTable').DataTable().ajax.reload();
-                        modelInfo(data.messages);
-                    } else if (data?.errors) {
-                        let errors = data?.errors;
-                        console.log(data?.errors?.rollNo[0]);
-                        modelInfo(data.messages);
-                        for (field in errors) {
-                            console.log(field);
-                            $(`#${field}-error`).text(errors[field][0]);
-                        }
-                    } else {
-                        modelInfo("Something Went Wrong!!");
-                    }
-                },
-            }
-
-        );
-    }
-
-    function searchData(){
-        $('#postsTable').DataTable().ajax.reload();
-    }
 </script>
 @include("layout.footer")

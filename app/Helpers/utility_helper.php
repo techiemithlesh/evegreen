@@ -747,7 +747,7 @@ if(!function_exists("mapTree")){
             $hasChilde = ($val["childe"]??false) ? true :false;            
                 
             $m.='<li class="sidebar-item"  >
-                    <a id="p'.$val['id'].'" onclick="navBarMenuActive1('.$val['id'].', '.$val['id'].');" href="'.($hasChilde ?  "#" : (url('/')."/".$val["url_path"])).'" class="sidebar-link '.($hasChilde ? "collapsed" : "").'" '.($hasChilde ? ' data-bs-toggle="collapse" data-bs-target="#'.$val["id"].'" aria-expanded="false"' : "").'>
+                    <a id="p'.$val['id'].'" onclick="navBarMenuActive('.$parentId.', '.$val['id'].' , '.($hasChilde ? $parentId : 0).');" href="'.($hasChilde ?  "#" : (url('/')."/".$val["url_path"])).'" class="sidebar-link '.($hasChilde ? "collapsed" : "").'" '.($hasChilde ? ' data-bs-toggle="collapse" data-bs-target="#'.$val["id"].'" aria-expanded="false"' : "").'>
                         <i class="'.($val["menu_icon"]? $val["menu_icon"] :"lni lni-grid-alt").'"></i> 
                         <span>'.$val["menu_name"].'</span>
                     </a>

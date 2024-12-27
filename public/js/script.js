@@ -2,23 +2,148 @@ const toggler = document.querySelector(".toggler-btn");
 toggler.addEventListener("click", function () {
   document.querySelector("#sidebar").classList.toggle("collapsed");
 });
-
-function navBarMenuActive(menuName, subMenuName){
   
-  if (typeof(Storage) !== "undefined") {
-      sessionStorage.setItem("activeMenuName", menuName);
-      sessionStorage.setItem("activeSubMenuName", subMenuName);
-  }
-}
-if(typeof(Storage) !== "undefined") {
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('DOM is fully loaded and parsed!');
 
-      // var activeMenuName = sessionStorage.getItem('activeMenuName');
-      // var activeSubMenuName = sessionStorage.getItem('activeSubMenuName');
-      // $("#p"+activeMenuName).attr("aria-expanded","true");
-      // $("#"+activeMenuName).addClass("show");
-      // console.log($("#"+activeMenuName));
-      // $("#ul_"+activeSubMenuName).addClass("active-link");
+    // Get all the sidebar links
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+    // Event listener for when a sidebar link is clicked
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+            // Only prevent default action if it is a collapsible item
+            const targetId = e.target.closest('a').getAttribute('data-bs-target').slice(1); // Remove the '#' from the data-bs-target attribute
+
+            // Store the active menu and submenu names in sessionStorage
+            const parentMenu = e.target.closest('.sidebar-item');
+            if (parentMenu) {
+                const menuId = parentMenu.querySelector('a').getAttribute('id').slice(1); // Get the menu id without "p" prefix
+                const subMenuId = targetId;
+
+                // Call the function to store active menu and submenu state
+                navBarMenuActive(menuId, subMenuId);
+            }
+
+            // Get all collapsible items (menus)
+            const collapsibleItems = document.querySelectorAll('.sidebar-dropdown');
+
+            collapsibleItems.forEach(item => {
+                const itemId = item.id;
+                const collapse = new bootstrap.Collapse(item, {
+                    toggle: false // Don't toggle automatically
+                });
+
+                // Check if the clicked item is a child of the current item
+                if (!item.contains(e.target)) {
+                    if (itemId !== targetId) {
+                        collapse.hide(); // Hide other items
+                    } else {
+                        collapse.toggle(); // Toggle the clicked item
+                    }
+                }
+            });
+
+            // Only prevent the default action for links that are collapsible
+            if (e.target.closest('a').hasAttribute('data-bs-target')) {
+                e.preventDefault(); // Prevent default action for collapsible links
+            }
+        });
+    });
+
+    // Check sessionStorage to restore active menu and submenu state on page load
+    // if (typeof(Storage) !== "undefined") {
+    //     var activeMenuName = sessionStorage.getItem('activeMenuName');
+    //     var activeSubMenuName = sessionStorage.getItem('activeSubMenuName');
+    //     var activeSubSubMenuName = sessionStorage.getItem('activeSubSubMenuName');
+
+
+    //     if (activeMenuName && activeSubMenuName) {
+    //         // Set the menu and submenu as active
+    //         const activeMenu = document.getElementById('p' + activeMenuName);
+    //         const activeSubMenu = document.getElementById(activeSubMenuName);
+    //         const activeSubMenup = document.getElementById('p'+activeSubMenuName);
+
+    //         if (activeMenu) {
+    //             activeMenu.setAttribute("aria-expanded", "true"); // Ensure the parent is expanded
+    //             const parentDropdown = document.getElementById(activeMenuName);
+    //             if (parentDropdown) {
+    //                 parentDropdown.classList.add("show"); // Ensure the parent dropdown is visible
+    //             }
+    //         }
+
+    //         // Set the submenu as active
+    //         const subMenu = document.getElementById('ul_' + activeSubMenuName);
+    //         if (subMenu) {
+    //             subMenu.classList.add("active-link");
+    //         }
+
+    //         if (activeSubMenup) {
+    //             activeSubMenup.setAttribute("aria-expanded", "true"); // Ensure the parent is expanded
+    //             const parentDropdown = document.getElementById(activeSubMenuName);
+    //             if (parentDropdown) {
+    //                 parentDropdown.classList.add("show"); // Ensure the parent dropdown is visible
+    //             }
+    //         }
+    //         if (activeSubSubMenu) {
+    //             const thirdDropdown = document.getElementById(activeSubSubMenuName);
+    //             if (thirdDropdown) {
+    //                 thirdDropdown.classList.add("show");
+    //             }
+    //         }
+
+    //     }
+    // }
+
+    if (typeof(Storage) !== "undefined") {
+        const activeMenuName = sessionStorage.getItem('activeMenuName');
+        const activeSubMenuName = sessionStorage.getItem('activeSubMenuName');
+        const activeSubSubMenuName = sessionStorage.getItem('activeSubSubMenuName');
+
+        if (activeMenuName && activeSubMenuName) {
+            // Set the menu and submenu as active
+            const activeMenu = document.getElementById('p' + activeMenuName);
+            const activeSubMenu = document.getElementById(activeSubMenuName);
+            const activeSubSubMenu = document.getElementById(activeSubSubMenuName);
+
+            if (activeMenu) {
+                activeMenu.setAttribute("aria-expanded", "true"); // Ensure the parent is expanded
+                const parentDropdown = document.getElementById(activeMenuName);
+                if (parentDropdown) {
+                    parentDropdown.classList.add("show"); // Ensure the parent dropdown is visible
+                }
+            }
+
+            // Set the second-level submenu as active
+            if (activeSubMenu) {
+                activeSubMenu.classList.add("show");
+                const secondDropdown = document.getElementById(activeSubMenuName);
+                if (secondDropdown) {
+                    secondDropdown.classList.add("show");
+                }
+            }
+
+            // Set the third-level submenu as active
+            if (activeSubSubMenu) {
+                const thirdDropdown = document.getElementById(activeSubSubMenuName);
+                if (thirdDropdown) {
+                    thirdDropdown.classList.add("show");
+                }
+            }
+        }
+    }
+});
+
+// Function to store the active menu and submenu in sessionStorage
+function navBarMenuActive(menuName, subMenuName,subSubMenuName) {
+    if (typeof(Storage) !== "undefined") {
+        sessionStorage.setItem("activeMenuName", menuName);
+        sessionStorage.setItem("activeSubMenuName", subMenuName);
+        sessionStorage.setItem("activeSubSubMenuName", subSubMenuName);
+
+    }
 }
+
 
 function addFilter(tableName,indexNo=[]){
   // Define the table and first row headers

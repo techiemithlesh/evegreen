@@ -155,7 +155,8 @@
             processing: true,
             serverSide: true,
             ajax: "{{route('menu-list')}}",
-            columns: [{
+            columns: [
+                {
                     data: "DT_RowIndex",
                     name: "DT_RowIndex",
                     orderable: false,
@@ -186,6 +187,19 @@
                     searchable: false
                 },
             ],
+            createdRow: function(row, data, dataIndex) {
+                // Apply the custom class to the row
+                if (data?.menu_type==0 && data?.url_path!='#') {
+                    var cell = $('td', row).eq(2); // Targeting the 3rd column (0-based index)
+                    cell.html(cell.html() + '<br> <span class="text-danger text-xs" style="font-size:10px;">(LINK)</span>');
+                }else if (data?.parent_menu_mstr_id==0) {
+                    var cell = $('td', row).eq(2); // Targeting the 3rd column (0-based index)
+                    cell.html(cell.html() + '<br> <span class="text-danger text-xs" style="font-size:10px;">(Menu)</span>');                
+                }else if (data?.parent_menu_mstr_id && data?.parent_menu_mstr_id!=0) {
+                    var cell = $('td', row).eq(2); // Targeting the 3rd column (0-based index)
+                    cell.html(cell.html() + '<br> <span class="text-danger text-xs"  style="font-size:10px;">('+data.parent_menu+')</span>');                
+                }
+            },  
         });
         shoHidIcon();
 

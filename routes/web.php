@@ -70,6 +70,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::controller(RollController::class)->group(function(){
+        Route::get("roll/order/punches","orderPunches")->name("order.punches");
+        Route::post("roll/client/old/order","oldOrderOfClient")->name("client.old.order");
+
         Route::get("roll/transit/list","transitList")->name("roll.transit");
         Route::get("roll/transit/dtl/{vendor_id?}","transitDtl")->name("roll.transit.dtl");
         Route::post("roll/transit/add","addTransitRoll")->name("roll.transit.add");
@@ -95,6 +98,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("roll/production/cutting/{machineId?}","rollProductionCutting")->name("roll.production.cutting");
 
         Route::post("roll/search/printing","rollSearchPrinting")->name("roll.search.printing");
+        Route::post("roll/search/cutting","rollSearchCutting")->name("roll.search.cutting");
     });
 
 });

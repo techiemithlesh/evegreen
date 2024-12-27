@@ -101,7 +101,7 @@ function addSearch(id) {
     const select = $("#" + id);
     const options = getOptions(select);
 
-    const searchInput = $('<input type="text" class="search-input" placeholder="Search...">');
+    const searchInput = $('<input type="text" class="search-input form-control" placeholder="Search...">');
     const dropdown = $('<div class="dropdownSearch"></div>');
 
     select.before(searchInput);
@@ -169,7 +169,7 @@ function populateDropdown(filter = '', options, dropdown, searchInput, select) {
 }
 
 function setSelect(value, text, dropdown, searchInput, select) {
-    select.val(value);
+    select.val(value).trigger('change');
     dropdown.hide();
     searchInput.val(text);
     searchInput.hide();
@@ -183,6 +183,7 @@ function toggleSelectAndSearch(select, searchInput, dropdown) {
         select.show();
     } else {
         searchInput.show();
+        searchInput.css("display","block");
         searchInput.focus();
         dropdown.show();
         select.hide();
@@ -200,8 +201,64 @@ function observeSelectChanges(select, options, dropdown, searchInput) {
     observer.observe(select[0], { childList: true });
 }
 
+//end
+
 function resetFormById(id){
     $("#"+id+" input[type='hidden'][name*='id']").val("");
 }
+
+
+
+// drag and drop
+
+// Functionality for dragging
+$(document).ready(function(){
+        // Functionality for dragging
+        document.addEventListener('mousedown', (e) => {
+            const target = e.target.closest('.movable');
+            if (!target || e.target.closest('.header .icons')) return; // Ignore dragging when clicking the collapse icon
+    
+            let isDragging = true;
+            const rect = target.getBoundingClientRect();
+            const offsetX = e.clientX - rect.left;
+            const offsetY = e.clientY - rect.top;
+    
+            target.style.cursor = 'grabbing';
+    
+            const moveHandler = (e) => {
+            if (!isDragging) return;
+            target.style.left = `${e.clientX - offsetX}px`;
+            target.style.top = `${e.clientY - offsetY}px`;
+            };
+    
+            const stopDragging = () => {
+            isDragging = false;
+            target.style.cursor = 'grab';
+            document.removeEventListener('mousemove', moveHandler);
+            document.removeEventListener('mouseup', stopDragging);
+            };
+    
+            document.addEventListener('mousemove', moveHandler);
+            document.addEventListener('mouseup', stopDragging);
+        });
+  
+      // Functionality for collapsing the entire container
+      document.querySelectorAll('.movable .header .icons').forEach((icon) => {
+        icon.addEventListener('click', (e) => {
+          const container = e.target.closest('.movable');
+          const isCollapsed = container.classList.toggle('collapsed');
+          const content = container.querySelector('.content');
+          
+          if (isCollapsed) {
+            content.style.display = 'none'; // Hide the content
+            e.target.textContent = '▶';    // Update icon to collapsed state
+          } else {
+            content.style.display = 'block'; // Show the content
+            e.target.textContent = '▼';     // Update icon to expanded state
+          }
+        });
+      });
+});
+//   end
 
 
