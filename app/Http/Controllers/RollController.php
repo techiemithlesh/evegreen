@@ -240,6 +240,12 @@ class RollController extends Controller
             if($validate->fails()){
                 return validationError($validate);
             }
+
+            $request->merge([
+                "clientDetailId"=>$request->bookingForClientId,
+                "estimateDeliveryDate"=>$request->bookingEstimatedDespatchDate,
+            ]);
+
             $roll = $this->_M_RollTransit->find($request->rollId);
             $roll->client_detail_id = $request->bookingForClientId;
             $roll->estimate_delivery_date = $request->bookingEstimatedDespatchDate;
@@ -251,9 +257,13 @@ class RollController extends Controller
             $roll->printing_color = $request->bookingPrintingColor; 
             $roll->loop_color = $request->looColor;
                       
-
+            $newRequest = new Request($roll->toArray());
+            
             DB::beginTransaction();
             $roll->update();
+            $orderId = $this->_M_OrderPunches->store($request);
+            $newRequest->merge(["order_id"=>$orderId,"roll_id"=>$roll->id]);
+            $this->_M_OrderRollBagType->store($newRequest);
             DB::commit();
             return responseMsgs(true,"Roll No. ".$roll->roll_no." is Booked","");
         }catch(Exception $e){
@@ -396,6 +406,12 @@ class RollController extends Controller
             if($validate->fails()){
                 return validationError($validate);
             }
+
+            $request->merge([
+                "clientDetailId"=>$request->bookingForClientId,
+                "estimateDeliveryDate"=>$request->bookingEstimatedDespatchDate,
+            ]);
+
             $roll = $this->_M_RollDetail->find($request->rollId);
             $roll->client_detail_id = $request->bookingForClientId;
             $roll->estimate_delivery_date = $request->bookingEstimatedDespatchDate;
@@ -406,8 +422,16 @@ class RollController extends Controller
             $roll->g = $request->g;
             $roll->printing_color = $request->bookingPrintingColor; 
             $roll->loop_color = $request->looColor;
+
+            $newRequest = new Request($roll->toArray());
+
             DB::beginTransaction();
             $roll->update();
+            
+            $orderId = $this->_M_OrderPunches->store($request);
+            $newRequest->merge(["order_id"=>$orderId,"roll_id"=>$roll->id]);
+            $this->_M_OrderRollBagType->store($newRequest);
+
             DB::commit();
             return responseMsgs(true,"Roll No. ".$roll->roll_no." is Booked","");
         }catch(Exception $e){

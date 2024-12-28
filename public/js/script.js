@@ -1,5 +1,5 @@
 const toggler = document.querySelector(".toggler-btn");
-toggler.addEventListener("click", function () {
+toggler.addEventListener("click", function () {alert()
   document.querySelector("#sidebar").classList.toggle("collapsed");
 });
   
@@ -50,50 +50,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
-
-    // Check sessionStorage to restore active menu and submenu state on page load
-    // if (typeof(Storage) !== "undefined") {
-    //     var activeMenuName = sessionStorage.getItem('activeMenuName');
-    //     var activeSubMenuName = sessionStorage.getItem('activeSubMenuName');
-    //     var activeSubSubMenuName = sessionStorage.getItem('activeSubSubMenuName');
-
-
-    //     if (activeMenuName && activeSubMenuName) {
-    //         // Set the menu and submenu as active
-    //         const activeMenu = document.getElementById('p' + activeMenuName);
-    //         const activeSubMenu = document.getElementById(activeSubMenuName);
-    //         const activeSubMenup = document.getElementById('p'+activeSubMenuName);
-
-    //         if (activeMenu) {
-    //             activeMenu.setAttribute("aria-expanded", "true"); // Ensure the parent is expanded
-    //             const parentDropdown = document.getElementById(activeMenuName);
-    //             if (parentDropdown) {
-    //                 parentDropdown.classList.add("show"); // Ensure the parent dropdown is visible
-    //             }
-    //         }
-
-    //         // Set the submenu as active
-    //         const subMenu = document.getElementById('ul_' + activeSubMenuName);
-    //         if (subMenu) {
-    //             subMenu.classList.add("active-link");
-    //         }
-
-    //         if (activeSubMenup) {
-    //             activeSubMenup.setAttribute("aria-expanded", "true"); // Ensure the parent is expanded
-    //             const parentDropdown = document.getElementById(activeSubMenuName);
-    //             if (parentDropdown) {
-    //                 parentDropdown.classList.add("show"); // Ensure the parent dropdown is visible
-    //             }
-    //         }
-    //         if (activeSubSubMenu) {
-    //             const thirdDropdown = document.getElementById(activeSubSubMenuName);
-    //             if (thirdDropdown) {
-    //                 thirdDropdown.classList.add("show");
-    //             }
-    //         }
-
-    //     }
-    // }
 
     if (typeof(Storage) !== "undefined") {
         const activeMenuName = sessionStorage.getItem('activeMenuName');
