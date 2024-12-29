@@ -5,14 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderRollBagType extends Model
+class PendingOrderBagType extends OrderRollBagType
 {
     use HasFactory;
-
     protected $fillable = [
         'order_id',
         "bag_type_id",
-        "roll_id",
         "bag_unit",
         "loop_color",
         "w",
@@ -21,10 +19,4 @@ class OrderRollBagType extends Model
         "printing_color",
         "lock_status",
     ];
-
-    public function store($request){        
-        $inputs = snakeCase($request);
-        $id= self::create($inputs->all())->id;
-        return $id;
-    }
 }

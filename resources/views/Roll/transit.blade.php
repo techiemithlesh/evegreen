@@ -35,6 +35,7 @@
                         <th>Vendor Name</th>
                         <th>Purchase Date</th>
                         <th>Total Roll</th>
+                        <th>Book Roll</th>
                         <th>Action</th>
                     </tr>
                     
@@ -45,6 +46,7 @@
                         <td>{{ $item->vendor_name }}</td>
                         <td>{{ $item->purchase_date }}</td>
                         <td>{{ $item->total_count }}</td>
+                        <td class="text-info">{{ $item->total_book }}</td>
                         <td> <a href="{{ url('roll/transit/dtl/' . $item->vender_id.'?purchase_date='.$item->purchase_date) }}">View</a></td>
                     </tr>
                     @endforeach

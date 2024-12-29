@@ -15,7 +15,7 @@ class OrderPunchDetailObserver
     {
         if(!$orderPunchDetail->order_no){
             $orderDate = Carbon::parse(Carbon::now());
-            $rolNo = 'ORDER/'.$orderDate->clone()->format("dmY")."-";
+            $rolNo = 'ODR/'.$orderDate->clone()->format("dmy")."-";
             $sl = OrderPunchDetail::where(DB::raw("CAST(created_at AS DATE)"),$orderDate->clone()->format('Y-m-d'))->count("id");
             $slNo ="";
             while(true){   

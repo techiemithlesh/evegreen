@@ -75,6 +75,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post("roll/client/old/order","oldOrderOfClient")->name("client.old.order");
         Route::post("roll/client/order/suggestion","orderSuggestionClient")->name("client.order.suggestion");
 
+        Route::match(["get","post"],"roll/order/book","bookedOrder")->name("order.book");
+        Route::match(["get","post"],"roll/order/unbook","unBookedOrder")->name("order.unbook");
+
         Route::get("roll/transit/list","transitList")->name("roll.transit");
         Route::get("roll/transit/dtl/{vendor_id?}","transitDtl")->name("roll.transit.dtl");
         Route::post("roll/transit/add","addTransitRoll")->name("roll.transit.add");
