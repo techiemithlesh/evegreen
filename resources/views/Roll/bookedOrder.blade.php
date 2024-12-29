@@ -125,13 +125,13 @@
                 ["10 Row", "25 Row", "50 Row", "100 Row", "All"] // The display values, replace -1 with "All"
             ],
             buttons: [{
-                eextend: 'csv',
+                extend: 'csv',
                 text: 'Export to Excel',
                 className: 'btn btn-success',
             }],                        
-            initComplete: function () {
-                addFilter('postsTable',[0]);
-            },
+            // initComplete: function () {
+            //     addFilter('postsTable',[0]);
+            // },
         });
 
     });

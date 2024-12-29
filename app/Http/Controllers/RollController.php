@@ -1528,8 +1528,7 @@ class RollController extends Controller
                         ) AS order_roll_bag_types"),
                         "order_roll_bag_types.order_id","order_punch_details.id"
                     )                
-                    ->leftJoin("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")  
-                    ->join("bag_type_masters" ,"bag_type_masters.id" , "roll_details.bag_type_id")                  
+                    ->leftJoin("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")                   
                     ->where("order_punch_details.lock_status",false)
                     ->orderBy("order_punch_details.created_at","ASC");                               
 
@@ -1549,7 +1548,7 @@ class RollController extends Controller
             }
             // DB::enableQueryLog();
             // $data->get();
-            // dd(DB::getQueryLog());
+            // dd(DB::getQueryLog());            
             $list = DataTables::of($data)
                 ->addIndexColumn()                
                 ->addColumn('is_delivered', function ($val) {                    
