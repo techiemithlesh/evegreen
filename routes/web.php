@@ -5,6 +5,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\PackingController;
 use App\Http\Controllers\RollController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VendorController;
@@ -104,6 +105,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::post("roll/search/printing","rollSearchPrinting")->name("roll.search.printing");
         Route::post("roll/search/cutting","rollSearchCutting")->name("roll.search.cutting");
+    });
+
+    Route::controller(PackingController::class)->group(function(){
+        Route::get("packing/entry","packingEnter")->name("packing.entry");
+        Route::post("packing/entry/search","searchRoll")->name("packing.entry.search");
+        Route::post("packing/entry/add","packingEnterAdd")->name("packing.entry.add");
+        Route::match(["get","post"],"packing/stock","bagStock")->name("packing.stock");
+        Route::match(["get","post"],"packing/godown","bagGodown")->name("packing.godown");
+        Route::get("packing/inTransport","addBagInTransport")->name("packing.inTransport");
+        Route::post("packing/transport/search","searchPackingForTransport")->name("packing.transport.search");
+        Route::post("packing/transport/save","transportAdd")->name("packing.transport.save");
+        Route::post("packing/godown/reiving","reivingGodown")->name("packing.godown.reiving");
+        Route::post("packing/godown/add","addInGodown")->name("packing.godown.add");
     });
 
 });
