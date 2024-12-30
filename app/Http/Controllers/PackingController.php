@@ -187,7 +187,7 @@ class PackingController extends Controller
     }
 
     public function reivingGodown(Request $request){
-        
+        dd("old");
     }
 
     public function addBagInTransport(Request $request){        
