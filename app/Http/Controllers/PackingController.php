@@ -187,7 +187,88 @@ class PackingController extends Controller
     }
 
     public function reivingGodown(Request $request){
-        dd("old");
+        if($request->ajax()){
+            $data = $this->_M_PackTransport->select("pack_transports.id","pack_transports.bill_no","pack_transports.invoice_no","pack_transports.transport_date",
+                        DB::raw(
+                            "
+                            COUNT(transport_details.bag_packing_id) AS total_bag,
+                            COUNT( CASE WHEN transport_details.is_delivered = FALSE THEN transport_details.bag_packing_id END ) AS total_unverified_bag
+                            "
+                        )
+                    )
+                    ->join("transport_details","transport_details.pack_transport_id","pack_transports.id")
+                    ->where("pack_transports.transport_status",3)
+                    ->where("transport_details.lock_status",false)
+                    ->where("pack_transports.is_fully_reviewed",false)
+                    ->where("pack_transports.lock_status",false)
+                    ->groupBy("pack_transports.id","pack_transports.bill_no","pack_transports.invoice_no","pack_transports.transport_date");
+                
+            $list = DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('transport_date', function ($val) { 
+                    return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
+                })
+                ->addColumn('action', function ($val) {                 
+                    return '<button class="btn btn-sm btn-info" onClick="openReceivingModel('.$val->id.')" >Verify</button>';
+                })
+                ->rawColumns(['row_color', 'action'])
+                ->make(true);
+            return $list;
+        }
+        return view("Packing/reivingGodown");
+    }
+
+    public function reivingTransport(Request $request){
+        try{
+            $data = $this->_M_TransportDetail->select("bag_packings.*","transport_details.*")
+                    ->join("bag_packings","bag_packings.id","transport_details.bag_packing_id")
+                    ->where("transport_details.pack_transport_id",$request->id)
+                    ->where("transport_details.lock_status",false)
+                    ->where("transport_details.is_delivered",false)
+                    ->get();
+            return responseMsgs(true,"Data Fetched",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function addInGodown(Request $request){
+        try{
+            $validate = Validator::make($request->all(),[
+                "id"=>"required|exists:".$this->_M_TransportDetail->getTable().",id,is_delivered,false",
+            ]);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            $currentDate = Carbon::now()->format("Y-m-d");
+            $user = Auth()->user();
+
+            $transportDtl = $this->_M_TransportDetail->find($request->id);
+            $bagPackage = $this->_M_BagPacking->find($transportDtl->bag_packing_id);
+            $transport = $this->_M_PackTransport->find($transportDtl->pack_transport_id);
+
+            $transportDtl->is_delivered = true;
+            $transportDtl->reiving_user_id = $user->id;
+            $transportDtl->reiving_date = $currentDate;
+
+            $bagPackage->packing_status = 2;
+            
+            DB::beginTransaction();
+            $transportDtl->update();
+            $bagPackage->update();
+            $test = $this->_M_TransportDetail->where("is_delivered",false)->where("pack_transport_id",$transportDtl->pack_transport_id)->count("id");
+            if($test==0){
+                $transport->is_fully_reviewed = true;
+                $transport->reiving_date = $currentDate;
+                $transport->reiving_user_id = $user->id;
+            }
+            $transport->update();
+            DB::commit();
+            return responseMsgs(true,"Bag Verify","");
+        }catch(Exception $e){
+            DB::rollBack();
+            return responseMsgs(false,$e->getMessage(),"");
+        }
     }
 
     public function addBagInTransport(Request $request){        

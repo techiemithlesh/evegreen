@@ -12,6 +12,8 @@ class TransportDetail extends Model
     protected $fillable = [
         'pack_transport_id',
         "bag_packing_id",
+        "is_delivered",
+        "reiving_user_id",
         "lock_status",
     ];
 

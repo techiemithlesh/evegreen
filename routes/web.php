@@ -116,7 +116,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("packing/inTransport","addBagInTransport")->name("packing.inTransport");
         Route::post("packing/transport/search","searchPackingForTransport")->name("packing.transport.search");
         Route::post("packing/transport/save","transportAdd")->name("packing.transport.save");
-        Route::post("packing/godown/reiving","reivingGodown")->name("packing.godown.reiving");
+        Route::match(["get","post"],"packing/godown/reiving","reivingGodown")->name("packing.godown.reiving");
+        Route::post("packing/godown/transport","reivingTransport")->name("packing.godown.transport");
         Route::post("packing/godown/add","addInGodown")->name("packing.godown.add");
     });
 

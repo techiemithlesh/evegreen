@@ -17,6 +17,7 @@ class PackTransport extends Model
         'invoice_no',
         "transport_status",
         'user_id',
+        "reiving_user_id",
         'lock_status',
     ];
 
