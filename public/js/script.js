@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (itemId !== targetId) {
                         collapse.hide(); // Hide other items
                     } else {
-                        collapse.toggle(); // Toggle the clicked item
+                        // collapse.toggle(); // Toggle the clicked item
                     }
                 }
             });
@@ -100,7 +100,10 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function toggleNave(element){
-    console.log();
+    console.log(element.classList.toggle("collapsed"));
+    if(!element.classList.toggle("collapsed")){
+        element.classList.add("show");
+    }
 }
 
 // Function to store the active menu and submenu in sessionStorage
