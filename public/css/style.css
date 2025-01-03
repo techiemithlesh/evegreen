@@ -105,6 +105,10 @@ a.sidebar-link:hover {
     transition: all .2s ease-out;
 }
 
+.active-link{
+    background-color: #f9f6f630;
+}
+
 /* Screen size less than 768px */
 
 @media (max-width:768px) {

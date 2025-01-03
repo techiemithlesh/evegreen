@@ -1,5 +1,5 @@
 const toggler = document.querySelector(".toggler-btn");
-toggler.addEventListener("click", function () {alert()
+toggler.addEventListener("click", function () {
   document.querySelector("#sidebar").classList.toggle("collapsed");
 });
   
@@ -59,8 +59,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (activeMenuName && activeSubMenuName) {
             // Set the menu and submenu as active
             const activeMenu = document.getElementById('p' + activeMenuName);
-            const activeSubMenu = document.getElementById(activeSubMenuName);
+            const activeSubMenu = document.getElementById("p"+activeSubMenuName);
             const activeSubSubMenu = document.getElementById(activeSubSubMenuName);
+            console.log("activeMenu:",activeMenu);
+            console.log("activeSubMenu:",activeSubMenu);
+            console.log("activeSubSubMenu:",activeSubSubMenu);
 
             if (activeMenu) {
                 activeMenu.setAttribute("aria-expanded", "true"); // Ensure the parent is expanded
@@ -73,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Set the second-level submenu as active
             if (activeSubMenu) {
                 activeSubMenu.classList.add("show");
+                activeMenu.setAttribute("aria-expanded", "true"); 
                 const secondDropdown = document.getElementById(activeSubMenuName);
                 if (secondDropdown) {
                     secondDropdown.classList.add("show");
@@ -81,14 +85,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Set the third-level submenu as active
             if (activeSubSubMenu) {
+                activeSubSubMenu.setAttribute("aria-expanded", "true"); 
                 const thirdDropdown = document.getElementById(activeSubSubMenuName);
                 if (thirdDropdown) {
                     thirdDropdown.classList.add("show");
                 }
             }
+
+            if(activeSubMenu){
+                activeSubMenu.classList.add("active-link");
+            }
         }
     }
 });
+
+function toggleNave(element){
+    console.log();
+}
 
 // Function to store the active menu and submenu in sessionStorage
 function navBarMenuActive(menuName, subMenuName,subSubMenuName) {
@@ -96,6 +109,14 @@ function navBarMenuActive(menuName, subMenuName,subSubMenuName) {
         sessionStorage.setItem("activeMenuName", menuName);
         sessionStorage.setItem("activeSubMenuName", subMenuName);
         sessionStorage.setItem("activeSubSubMenuName", subSubMenuName);
+        const activeSubMenu = document.getElementById("p"+subMenuName);
+        if(activeSubMenu){
+            document.querySelectorAll(".active-link").forEach((element) => {
+                element.classList.remove("active-link");
+            });
+            
+            activeSubMenu.classList.add("active-link");
+        }
 
     }
 }

@@ -734,26 +734,26 @@ if(!function_exists("subtractYear")){
 }
 
 if(!function_exists("mapTree")){
-    function mapTree($tree,$parentId=0,$isChilde=false){            
+    function mapTree($tree,$parentId=0,$isChilde=false,$superParent=0){            
         $tree = collect($tree);
         if($parentId==0){
-            $m='<ul class="sidebar-nav p-0" >'; 
+            $m='<ul class="sidebar-nav p-0" onclick="toggleNave(this)">'; 
         }elseif($isChilde){
             $hasSubChilde = isset($tree[0]["childe"][0]["childe"]) && isset($tree[0]["childe"][0]["childe"]) ? true : false;
-            $m ='<ul id="'.$parentId.'" class="collapse sidebar-dropdown"  >'; 
+            $m ='<ul id="'.$parentId.'" class="collapse sidebar-dropdown" onclick="toggleNave(this)" >'; 
 
         }
         foreach($tree as $val){
             $hasChilde = ($val["childe"]??false) ? true :false;            
                 
             $m.='<li class="sidebar-item"  >
-                    <a id="p'.$val['id'].'" onclick="navBarMenuActive('.$parentId.', '.$val['id'].' , '.($hasChilde ? $parentId : 0).');" href="'.($hasChilde ?  "#" : (url('/')."/".$val["url_path"])).'" class="sidebar-link '.($hasChilde ? "collapsed" : "").'" '.($hasChilde ? ' data-bs-toggle="collapse" data-bs-target="#'.$val["id"].'" aria-expanded="false"' : "").'>
+                    <a id="p'.$val['id'].'" onclick="navBarMenuActive('.$parentId.', '.$val['id'].' , '.($hasChilde ? $parentId : $superParent).');" href="'.($hasChilde ?  "#" : (url('/')."/".$val["url_path"])).'" class="sidebar-link '.($hasChilde ? "collapsed" : "").'" '.($hasChilde ? ' data-bs-toggle="collapse" data-bs-target="#'.$val["id"].'" aria-expanded="false"' : "").'>
                         <i class="'.($val["menu_icon"]? $val["menu_icon"] :"lni lni-grid-alt").'"></i> 
                         <span>'.$val["menu_name"].'</span>
                     </a>
             ';
             if($val["childe"]){
-                $mm=mapTree($val["childe"],$val["id"],true);
+                $mm=mapTree($val["childe"],$val["id"],true,($hasChilde?$parentId:0));
                 $m.=$mm;
             }
             $m.="</li>";
