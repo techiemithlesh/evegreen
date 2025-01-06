@@ -13,6 +13,8 @@ class BagTypeMaster extends Model
         'bag_type',
         "gsm_variation",
         "roll_find",
+        "roll_find_as_weight",
+        "roll_size_find",
         'lock_status',
     ];
 

@@ -69,13 +69,15 @@
                                         <i class="bi bi-person-add"></i> Add Client
                                     </span> 
                                 </label>
-                                <select name="bookingForClientId" id="bookingForClientId" class="form-select select-option" onchange="showPrivOrder(event)">
-                                    <option value="">Select</option>
-                                    @foreach ($clientList as $val)
-                                        <option value="{{ $val->id }}">{{ $val->client_name }}</option>
-                                    @endforeach
-                                </select>
-                                <span class="error-text" id="bookingForClientId-error"></span>
+                                <div class="col-md-12">
+                                    <select name="bookingForClientId" id="bookingForClientId" class="form-control" onchange="showPrivOrder(event)" >
+                                        <option value="">Select</option>
+                                        @foreach ($clientList as $val)
+                                            <option value="{{ $val->id }}">{{ $val->client_name }}</option>
+                                        @endforeach
+                                    </select><br>
+                                    <span class="error-text" id="bookingForClientId-error"></span>
+                                </div>
                             </div>
                         </div>
                         <div class="col-sm-6">
@@ -101,13 +103,6 @@
                             </div>
                         </div>
                         
-                        <div class="col-sm-6" id="loopColorDiv">
-                            <div class="form-group">
-                                <label class="form-label" for="looColor">Loop Color</label>
-                                <input name="looColor" id="looColor" class="form-control" required />                               
-                                <span class="error-text" id="looColor-error"></span>
-                            </div>
-                        </div>
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagUnits">Bag Unit</label>
@@ -118,17 +113,27 @@
                                 </select>                                    
                                 <span class="error-text" id="bookingBagUnits-error"></span>
                             </div>
-                        </div>
+                        </div>                        
                     </div>
 
-                    <div class="row mt-3">                            
+                    <div class="row mt-3"> 
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label class="form-label" for="l">L </label>
-                                <input name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required />                                                                    
-                                <span class="error-text" id="l-error"></span>
+                                <label class="form-label" for="totalUnits">QTR</label>
+                                <input name="totalUnits" id="totalUnits" class="form-control" required onkeypress="return isNumDot(event);" />                                 
+                                <span class="error-text" id="bookingBagUnits-error"></span>
                             </div>
                         </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="form-label" for="bagGSM">GSM</label>
+                                <input name="bagGSM" id="bagGSM" class="form-control" required onkeypress="return isNumDot(event);" />                                 
+                                <span class="error-text" id="bagGSM-error"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">    
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label class="form-label" for="w">W</label>
@@ -136,9 +141,23 @@
                                 <span class="error-text" id="w-error"></span>
                             </div>
                         </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="form-label" for="l">L </label>
+                                <input name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required />                                                                    
+                                <span class="error-text" id="l-error"></span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="row mt-3">                            
+                    <div class="row mt-3" id="loopColorDiv"> 
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="form-label" for="looColor">Loop Color</label>
+                                <input name="looColor" id="looColor" class="form-control" required />                               
+                                <span class="error-text" id="looColor-error"></span>
+                            </div>
+                        </div>
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label class="form-label" for="g">G </label>
@@ -146,6 +165,9 @@
                                 <span class="error-text" id="g-error"></span>
                             </div>
                         </div>
+                    </div>
+                    <div class="row mt-3">                            
+                        
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label class="form-label" for="bookingPrintingColor">Printing Color</label>
@@ -214,7 +236,6 @@
             $('#rollBookingModal').css("z-index","");
         });
         showHideLoop();
-        addSearch("bookingForClientId");
 
         $("#myForm").validate({
             rules: {
@@ -242,6 +263,7 @@
             }
         });
 
+        $('#bookingForClientId').select2(); 
     });
     function openRollBookingClineModel(){
         $('#rollBookingModal').css("z-index",0);
@@ -396,6 +418,29 @@
     }
 
     function showRollSuggestion(){
+        let itsOk = true;
+        let inputs = [
+            { id: "#bookingBagTypeId", name: "Bag Type" },
+            { id: "#bookingBagUnits", name: "Bag Units" },
+            { id: "#totalUnits", name: "Total Units" },
+            { id: "#l", name: "Bag Length" },
+            { id: "#w", name: "Bag Width" },
+            { id: "#g", name: "Bag Gusset" }
+        ];
+        for (let input of inputs) {
+            $(input.id).css("border", "1px solid #cbcaca");
+            if (!$(input.id).val()) {
+                $(input.id).focus();
+                $(input.id).css("border", "2px solid red");
+                if(itsOk){
+                    itsOk= false;
+                }
+                //return;  // Exit the function after the first empty field
+            }
+        }
+        if(!itsOk){
+            return false;
+        }
         $.ajax({
             url:"{{route('client.order.suggestion')}}",
             type:"post",
@@ -427,7 +472,8 @@
                             "<th>Size</th>",
                             "<th>Net Weight</th>",
                             "<th>roll Type</th>",
-                            "<th>Hardness</th>",                            
+                            "<th>Hardness</th>", 
+                            "<th>Total Possible Product</th>",                            
                             "<th>Add To Book</th>",
                         )
                     );
@@ -446,7 +492,8 @@
                                 `<td>${item.size || "N/A"}</td>`,
                                 `<td>${item.net_weight || "N/A"}</td>`,
                                 `<td>${item.roll_type || "N/A"}</td>`,
-                                `<td>${item.hardness || "N/A"}</td>`,                                
+                                `<td>${item.hardness || "N/A"}</td>`,
+                                `<td>${item?.unit || "N/A"}</td>`,                                
                                 `<td><button data-item='${JSON.stringify(item)}' id="rl${index}" onclick="addToBook('rl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
                             )
                         );
@@ -497,7 +544,8 @@
                             "<th>Size</th>",
                             "<th>Net Weight</th>",
                             "<th>roll Type</th>",
-                            "<th>Hardness</th>",                            
+                            "<th>Hardness</th>",
+                            "<th>Total Possible Product</th>",                             
                             "<th>Add To Book</th>",
                         )
                     );
@@ -516,6 +564,7 @@
                                 `<td>${item.size || "N/A"}</td>`,
                                 `<td>${item.net_weight || "N/A"}</td>`,
                                 `<td>${item.roll_type || "N/A"}</td>`,
+                                `<td>${item.hardness || "N/A"}</td>`,
                                 `<td>${item.hardness || "N/A"}</td>`,                                
                                 `<td><button data-item='${JSON.stringify(item)}' id="tl${index}" onclick="addToBook('tl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
                             )
@@ -548,8 +597,14 @@
                     $("#suggestion2").hide();
                     $("#suggestionRollTransit").html("<p>No records found.</p>");
                 }
+            },
+            error:function(errors){
+                console.log(errors);
+                $("#loadingDiv").hide();
+                $("#suggestion1").hide();
+                $("#suggestion2").hide();
             }
-        })
+        });
     }
 
     function addToBook(id){

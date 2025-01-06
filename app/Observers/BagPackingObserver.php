@@ -14,11 +14,11 @@ class BagPackingObserver
     {
         if(!$bagPacking->packing_no){
             $orderDate = Carbon::parse(Carbon::now());
-            $rolNo = $orderDate->clone()->format("dmy")."-";
+            $rolNo = $orderDate->clone()->format("d/m/y")."-";
             $sl = BagPacking::where("packing_date",$orderDate->clone()->format('Y-m-d'))->count("id");
             $slNo ="";
             while(true){   
-                $slNo = str_pad((string)$sl,4,"0",STR_PAD_LEFT);
+                $slNo = str_pad((string)$sl,2,"0",STR_PAD_LEFT);
                 $sl=($sl+1);             
                 $test = BagPacking::where("packing_no",$rolNo.$slNo)->count();
                 if((!$test)){                    

@@ -28,6 +28,8 @@
                     <th>Bag Type</th>
                     <th>GSM Variation</th>
                     <th>Roll Finding</th>
+                    <th>Finding Roll By Weight</th>
+                    <th>Finding Roll size</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -66,12 +68,24 @@
                     name: "roll_find"
                 },
                 {
+                    data: "roll_find_as_weight",
+                    name: "roll_find_as_weight"
+                },
+                {
+                    data: "roll_size_find",
+                    name: "roll_size_find"
+                },
+                {
                     data: "action",
                     name: "action",
                     orderable: false,
                     searchable: false
                 },
             ],
+            createdRow: function(row, data, dataIndex) {
+                // $(row).style("font-size","xx-small");
+                row.style.fontSize = "x-small";
+            },
         });
         $('button[data-bs-target="#bagModal"]').on("click",()=>{
             $("#bagForm").get(0).reset();
@@ -144,6 +158,8 @@
                     $("#bagType").val(bagDtl?.bag_type);
                     $("#gsmVariation").val(bagDtl?.gsm_variation);
                     $("#rollFind").val(bagDtl?.roll_find);
+                    $("#rollFindAsWeight").val(bagDtl?.roll_find_as_weight);
+                    $("#rollSizeFind").val(bagDtl?.roll_size_find);
                     $("#bagModal").modal("show");
                 
                 } 

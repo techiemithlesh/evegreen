@@ -58,7 +58,7 @@
         </div>
         @endif
         <div class="panel-body">
-            <table id="postsTable" class="table table-striped table-bordered text-center">
+            <table id="postsTable" class="table table-striped table-bordered text-center table-fixed">
                 <thead>
                     <tr>
                         <th >#</th>
@@ -283,7 +283,7 @@
             },            
             initComplete: function () {
                 addFilter('postsTable',[0,flag=="history"?0:$('#postsTable thead tr:nth-child(1) th').length - 1]);
-            },
+            },     
         });
         if (flag === "history") {
             const columnsToHide = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];

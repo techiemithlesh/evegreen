@@ -103,9 +103,11 @@ function addSearch(id) {
 
     const searchInput = $('<input type="text" class="search-input form-control" placeholder="Search...">');
     const dropdown = $('<div class="dropdownSearch"></div>');
-
-    select.before(searchInput);
-    select.before(dropdown);
+    const div = $("<div id='div"+id+"' >");
+    div.append(searchInput);
+    div.append(dropdown);
+    select.before(div);
+    // select.before(dropdown);
 
     searchInput.css({
         width: select.outerWidth() + "px",
@@ -124,6 +126,15 @@ function addSearch(id) {
     select.on("click", function () {
         toggleSelectAndSearch(select, searchInput, dropdown);
     });
+
+    dropdown.on("mousedown", function (e) {
+        if (!div.is(e.relatedTarget) && !$(e.relatedTarget).closest(div).length) {
+            dropdown.hide();
+            searchInput.hide();
+            select.show();
+        }
+    });
+
 
     populateDropdown('', options, dropdown, searchInput, select);
 
@@ -181,7 +192,7 @@ function toggleSelectAndSearch(select, searchInput, dropdown) {
         searchInput.hide();
         dropdown.hide();
         select.show();
-    } else {
+    } else {        
         searchInput.show();
         searchInput.css("display","block");
         searchInput.focus();

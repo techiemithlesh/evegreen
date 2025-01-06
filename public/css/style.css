@@ -413,6 +413,24 @@ a.sidebar-link:hover {
     
   }
 
+  .table-fixed {
+    font-size: x-small !important;
+  }
+
+  .table-fixed td, .table-fixed th { /* Corrected the selector */
+            width: 100px; /* Adjust width as needed */
+            word-wrap: break-word;
+            white-space: normal; /* Allow text to wrap */
+            overflow: hidden; /* Prevent content overflow */
+            text-overflow: ellipsis; /* Show "..." for overflowed text */
+            padding: 8px; /* Optional: Add padding for better readability */
+            border: 1px solid #ddd; /* Optional: Add a border for clarity */
+            text-align: left;
+  }
+
+
+  
+
   /* end */
 
 

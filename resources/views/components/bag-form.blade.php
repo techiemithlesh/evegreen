@@ -35,12 +35,12 @@
                                     </tr>
                                     <tr>
                                         <td>W</td>
-                                        <td>Bag Weight</td>
+                                        <td>Bag Width</td>
                                     </tr>
                                     <tr>
-                                        <td>H</td>
-                                        <td>Bag Hight</td> 
-                                    </tr>
+                                        <td>G</td>
+                                        <td>Bag Gusset</td>
+                                    </tr>                                    
                                     <tr>
                                         <td></td>
                                         <td></td>
@@ -57,6 +57,10 @@
                                     <tr>
                                         <td>RW</td>
                                         <td>Roll Weight</td>
+                                    </tr>
+                                    <tr>
+                                        <td>RS</td>
+                                        <td>Roll Size</td>
                                     </tr>
                                     <tr>
                                         <td>GSM</td>
@@ -106,6 +110,14 @@
                     <div class="mb-3">
                         <label class="control-label" for="rollFind">Formula To Finding Roll<span class="text-danger">*</span></label>
                         <textarea id="rollFind" name="rollFind" class="form-control" placeholder="" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="control-label" for="rollFindAsWeight">Formula To Finding Roll By Weight <span class="text-danger">*</span></label>
+                        <textarea id="rollFindAsWeight" name="rollFindAsWeight" class="form-control" placeholder="" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="control-label" for="rollSizeFind">Formula To Finding Roll size By Bag <span class="text-danger">*</span></label>
+                        <textarea id="rollSizeFind" name="rollSizeFind" class="form-control" placeholder="" required></textarea>
                     </div>
 
                     <!-- Submit Button -->

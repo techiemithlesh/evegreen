@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Excel as ExcelExcel;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\HeadingRowImport;
+use PhpOffice\PhpSpreadsheet\Calculation\TextData\Replace;
 use Yajra\DataTables\Facades\DataTables;
 
 class RollController extends Controller
@@ -149,21 +150,15 @@ class RollController extends Controller
         if($request->ajax()){                            
                 $data = $this->_M_RollTransit->select("roll_transits.*","vendor_detail_masters.vendor_name",
                             "client_detail_masters.client_name","bag_type_masters.bag_type",
-                            DB::raw("
-                                    roll_transits.gsm_variation * 100 as gsm_variation,
-                                    TO_CHAR(roll_transits.purchase_date, 'DD-MM-YYYY') as purchase_date ,
-                                    TO_CHAR(roll_transits.estimate_delivery_date, 'DD-MM-YYYY') as estimate_delivery_date ,
-                                    TO_CHAR(roll_transits.delivery_date, 'DD-MM-YYYY') as delivery_date ,
-                                    TO_CHAR(roll_transits.printing_date, 'DD-MM-YYYY') as printing_date ,
-                                    TO_CHAR(roll_transits.cutting_date, 'DD-MM-YYYY') as cutting_date                                     
-                                    ")
-                            )
+                            DB::raw("roll_transits.gsm_variation * 100 as gsm_variation")
+                        )                            
                         ->join("vendor_detail_masters","vendor_detail_masters.id","roll_transits.vender_id")
                         ->leftJoin("client_detail_masters","client_detail_masters.id","roll_transits.client_detail_id")
                         ->leftJoin("bag_type_masters","bag_type_masters.id","roll_transits.bag_type_id")
                         ->where("roll_transits.lock_status",false)
                         ->orderBy("roll_transits.id","DESC");
                 if($request->purchase_date){
+                    $request->merge(["purchase_date"=>Carbon::parse($request->purchase_date)->format("Y-m-d")]);
                     $data->where("roll_transits.purchase_date",$request->purchase_date);
                 }
                 if($vendor_id){
@@ -214,6 +209,21 @@ class RollController extends Controller
                     })
                     ->addColumn('color', function ($val) {
                         return collect(json_decode($val->printing_color,true))->implode(",");
+                    })                    
+                    ->addColumn("purchase_date",function($val){
+                        return $val->purchase_date ? Carbon::parse($val->purchase_date)->format("d-m-Y") : "";                        
+                    })
+                    ->addColumn("estimate_delivery_date",function($val){
+                        return $val->estimate_delivery_date ? Carbon::parse($val->estimate_delivery_date)->format("d-m-Y") : "";                        
+                    })
+                    ->addColumn("delivery_date",function($val){
+                        return $val->delivery_date ? Carbon::parse($val->delivery_date)->format("d-m-Y") : "";                        
+                    })
+                    ->addColumn("printing_date",function($val){
+                        return $val->printing_date ? Carbon::parse($val->printing_date)->format("d-m-Y") : "";                        
+                    })
+                    ->addColumn("cutting_date",function($val){
+                        return $val->cutting_date ? Carbon::parse($val->cutting_date)->format("d-m-Y") : "";                        
                     })
                     ->addColumn('action', function ($val) {                    
                         $button = "";
@@ -1408,6 +1418,65 @@ class RollController extends Controller
                         ->whereNull("client_detail_id")
                         ->where("lock_status",false)
                         ->get();
+            
+            if($request->bookingBagTypeId && $request->totalUnits && $request->bookingBagUnits){
+                $bestFind = "";
+                $bag = $this->_M_BagType->find($request->bookingBagTypeId);
+                if($request->bookingBagUnits=="Kg"){
+                    $bestFind = $bag->roll_find_as_weight;
+                }elseif($request->bookingBagUnits=="Pice"){
+                    $bestFind = $bag->roll_find;
+                }
+                $roll = $roll->map(function($val)use($request,$bestFind){
+                    $variables = [
+                        "RL"=>$val->length,
+                        "RW"=>$val->net_weight,
+                        "RS"=>$val->size,
+                        "GSM"=>$val->gsm,
+                        "X"=>"*",
+                        "*"=>"*",
+                        "x"=>"*",
+                        "/"=>"/",
+                        "+"=>"+",
+                        "-"=>"-",
+                        "L"=> $request->l ? $request->l : 0,
+                        "W"=>$request->w ? $request->w : 0,
+                        "G"=>$request->g ? $request->g : 0,
+                    ];                    
+                    $formula = $bestFind;
+                    foreach ($variables as $key => $value) {                                               
+                        $formula = str_replace($key, $value, $formula);                        
+                    }
+                    $val->result = roundFigure(eval(" return ".$formula." ;"));
+                    $val->unit = $val->result." ".$request->bookingBagUnits;
+                    return $val;
+                })->sortBy('result');
+                $transit = $transit->map(function($val)use($request,$bestFind){
+                    $variables = [
+                        "RL"=>$val->length,
+                        "RW"=>$val->net_weight,
+                        "RS"=>$val->size,
+                        "GSM"=>$val->gsm,
+                        "X"=>"*",
+                        "*"=>"*",
+                        "x"=>"*",
+                        "/"=>"/",
+                        "+"=>"+",
+                        "-"=>"-",
+                        "L"=>$request->l,
+                        "W"=>$request->w,
+                        "G"=>$request->g
+                    ];                    
+                    $formula = $bestFind;
+                    foreach ($variables as $key => $value) {                                               
+                        $formula = str_replace($key, $value, $formula);                        
+                    }
+                    $val->result = roundFigure(eval(" return ".$formula." ;"));
+                    $val->unit = $val->result." ".$request->bookingBagUnits;
+                    return $val;
+                })->sortBy('result');
+            }
+                        
             $data["roll"]=$roll;
             $data["rollTransit"]= $transit;
             return responseMsgs(true,"data Fetched",$data);
