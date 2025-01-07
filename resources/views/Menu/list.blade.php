@@ -17,7 +17,7 @@
         <div class="panel-heading">
             <h5 class="panel-title">Menu List</h5>
             <div class="panel-control">
-                <a href="#" class="btn btn-mint">User Type Update Menu</a>
+                <a href="{{route('menu.update.user.list')}}" class="btn btn-primary">User Type Update Menu</a>
                 <button type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#addMenuModel" onclick="resetFormById('myForm')">
                     Add <ion-icon name="add-circle-outline"></ion-icon>
                 </button>

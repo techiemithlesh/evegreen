@@ -10,6 +10,7 @@ use App\Models\UserTypeMaster;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
@@ -153,8 +154,7 @@ class MenuController extends Controller
                 return redirect()->to('/home');
             }
             if($request->ajax()){
-                DB::enableQueryLog();
-                $data = $this->_M_MenuMaster->where("lock_status",false);
+                $data = $this->_M_MenuMaster->where("lock_status",false)->orderBy("id","ASC");
                 return DataTables::of($data)
                     ->addIndexColumn()
                     ->addColumn('menu_icon', function ($val) {
@@ -207,6 +207,36 @@ class MenuController extends Controller
             return responseMsgs(false,$e->getMessage(),"");
         }
     }
+
+    public function updateMenuUserTypeList(Request $request){
+        if($request->ajax()){
+            $data = $this->_M_UserTypeMaster->where("lock_status",false)->orderBy("id","ASC");
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($val) {
+                    return '<button class="btn btn-sm btn-info" onClick="updateMenu('.$val->id.')" >Update</button>';
+                })->rawColumns(['menu_icon', 'action'])
+                ->make(true);
+        }
+        return view("Menu/userType");
+    }
+    public function updateMenuByUserType(Request $request){
+        try{
+            $userType = $this->_M_UserTypeMaster->find($request->id);
+            $pemitedMenu = $userType->getMenuList();
+                            
+            $menuId = $pemitedMenu->unique("menu_master_id")->pluck("menu_master_id");
+            $menus = $this->_M_MenuMaster->whereIn("id",$menuId)
+                                            ->where("lock_status",false)
+                                            ->get();                                        
+            $tree = $this->generateMenuTree($menus); 
+            Redis::set("menu_list_".$userType->id,$tree);
+            return responseMsgs(true,"Menu Update","");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
     public function generateMenuTree($data,$parenId=0){       
         $data = collect($data); 
         

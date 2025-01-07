@@ -24,6 +24,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     Route::controller(MenuController::class)->group(function(){
         Route::get("/menu-list","getMenuList")->name("menu-list");
+        Route::get("/menu/update/user-list","updateMenuUserTypeList")->name("menu.update.user.list");
+        Route::post("/menu/update/user-type","updateMenuByUserType")->name("menu.update.user.type");
         Route::get("/menu-submenu","getSubMenuList")->name("submenu-list");
         Route::post("/menu-add","add")->name("menu-add");
         Route::get("/menu-edit/{id}","getMenuDtl")->name("menu-edit");
