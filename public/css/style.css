@@ -390,11 +390,14 @@ a.sidebar-link:hover {
     font-size: 18px;
     cursor: pointer;
   }
-
+  .content{
+    max-height: 300px;
+  }
   .movable .content {
     margin-top: 10px;
     display: block;
     overflow-x: auto;
+    overflow-y: auto;
     margin: 10px 0px;
   }
 

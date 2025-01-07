@@ -22,6 +22,7 @@ use App\Models\RollPrintColor;
 use App\Models\RollTransit;
 use App\Models\VendorDetail;
 use App\Models\VendorDetailMaster;
+use App\Traits\Formula;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -37,6 +38,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class RollController extends Controller
 {
+    use Formula;
+
     private $_M_RollDetail;
     private $_M_VendorDetail;
     private $_M_PrintingScheduleDetail;
@@ -254,7 +257,7 @@ class RollController extends Controller
                 "rollId"=>"required|exists:".$this->_M_RollTransit->getTable().",id,lock_status,false",
                 "bookingForClientId"=>"required|exists:".$this->_M_ClientDetails->getTable().",id,lock_status,false",
                 "bookingEstimatedDespatchDate"=>"required|date",
-                "bookingBagUnits"=>"required|in:Kg,Pice",
+                "bookingBagUnits"=>"required|in:Kg,Piece",
                 "bookingBagTypeId"=>"required|exists:".$this->_M_BagType->getTable().",id",
                 "bookingPrintingColor"=>"required|array",
                 "bookingPrintingColor.*"=>"required",
@@ -420,7 +423,7 @@ class RollController extends Controller
                 "rollId"=>"required|exists:".$this->_M_RollDetail->getTable().",id,lock_status,false",
                 "bookingForClientId"=>"required|exists:".$this->_M_ClientDetails->getTable().",id,lock_status,false",
                 "bookingEstimatedDespatchDate"=>"required|date",
-                "bookingBagUnits"=>"required|in:Kg,Pice",
+                "bookingBagUnits"=>"required|in:Kg,Piece",
                 "bookingBagTypeId"=>"required|exists:".$this->_M_BagType->getTable().",id",
                 "bookingPrintingColor"=>"required|array",
                 "bookingPrintingColor.*"=>"required",
@@ -1375,31 +1378,47 @@ class RollController extends Controller
 
 
     public function orderPunches(Request $request){
-        $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->get();
-        $data["bagType"] = $this->_M_BagType->getBagListOrm()->get();
-        $data["color"] = $this->_M_Color->getColorListOrm()->get();
+        $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->orderBy("id")->get();
+        $data["bagType"] = $this->_M_BagType->getBagListOrm()->orderBy("id")->get();
+        $data["color"] = $this->_M_Color->getColorListOrm()->orderBy("id")->get();
         return view("Roll/orderPunches",$data);
     }
 
     public function oldOrderOfClient(Request $request){
         try{
-            $roll = $this->_M_RollDetail
-                    ->select(DB::raw("roll_details.gsm,roll_details.roll_color,roll_details.length,roll_details.size,
-                                      roll_details.net_weight, roll_details.roll_type, roll_details.hardness, roll_details.bag_type_id,
-                                      roll_details.bag_unit, roll_details.w, roll_details.l, roll_details.g, roll_details.printing_color::text,
-                                      bag_type_masters.bag_type
+            // DB::enableQueryLog();
+            $roll = $this->_M_OrderPunches
+                    ->select(DB::raw("order_punch_details.bag_type_id,
+                                    order_punch_details.bag_quality,
+                                    order_punch_details.bag_gsm,
+                                    order_punch_details.units,
+                                    order_punch_details.total_units,
+                                    order_punch_details.rate_per_unit,
+                                    order_punch_details.bag_w,
+                                    order_punch_details.bag_l,
+                                    order_punch_details.bag_g,
+                                    order_punch_details.bag_loop_color,
+                                    order_punch_details.bag_color::text,
+                                    order_punch_details.created_at,
+                                    bag_type_masters.bag_type
                                       ")
                     )
-                    ->join("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")
-                    ->where("roll_details.client_detail_id",$request->clientId)
-                    ->where("roll_details.lock_status",false)
-                    ->groupBy(DB::raw("roll_details.gsm,roll_details.roll_color,roll_details.length,roll_details.size,
-                                      roll_details.net_weight, roll_details.roll_type, roll_details.hardness, roll_details.bag_type_id,
-                                      roll_details.bag_unit, roll_details.w, roll_details.l, roll_details.g, roll_details.printing_color::text,
-                                      bag_type_masters.bag_type
-                                      "))
-                    ->orderBy("roll_details.bag_type_id")
+                    ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")
+                    ->where("order_punch_details.client_detail_id",$request->clientId)
+                    ->where("order_punch_details.lock_status",false)
+                    ->orderBy("order_punch_details.created_at")
                     ->get();
+
+            // Remove duplicates based on the specified columns
+            $roll = $roll->unique(function ($item) {
+                return implode('|', [
+                    $item->bag_type_id, $item->bag_quality, $item->bag_gsm, $item->units, 
+                    $item->total_units, $item->rate_per_unit, $item->bag_w, $item->bag_l, 
+                    $item->bag_g, $item->bag_loop_color, $item->bag_color, $item->bag_type
+                ]);
+            });
+
+                    // dd(DB::getQueryLog());
             return responseMsgs(true,"old history",$roll);
             
 
@@ -1410,75 +1429,79 @@ class RollController extends Controller
 
     public function orderSuggestionClient(Request $request){
         try{
-            $roll=$this->_M_RollDetail->select("*",DB::raw("'stock' as stock"))
-                    ->whereNull("client_detail_id")
-                    ->where("lock_status",false)
-                    ->get();
-            $transit = $this->_M_RollTransit->select("*",DB::raw("'transit' as stock"))
-                        ->whereNull("client_detail_id")
-                        ->where("lock_status",false)
-                        ->get();
-            
+            $roll=$this->_M_RollDetail->select("roll_details.*",DB::raw("'stock' as stock, client_detail_masters.client_name"))
+                    ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
+                    ->where("roll_details.is_cut",false)
+                    ->where("roll_details.is_printed",false)
+                    ->where("roll_details.lock_status",false);
+                    
+            $transit = $this->_M_RollTransit->select("roll_transits.*",DB::raw("'transit' as stock, client_detail_masters.client_name"))
+                        ->leftJoin("client_detail_masters","client_detail_masters.id","roll_transits.client_detail_id")
+                        ->where("roll_transits.is_cut",false)
+                        ->where("roll_transits.is_printed",false)
+                        ->where("roll_transits.lock_status",false);
+                        
+            if($request->bagQuality){
+                $roll->where("roll_details.roll_type",$request->bagQuality);
+                $transit->where("roll_transits.roll_type",$request->bagQuality);
+            }
+            if($request->bagGsm){
+                $roll->where("roll_details.gsm",(int)$request->bagGsm);
+                $transit->where("roll_transits.gsm",(int)$request->bagGsm);
+            }
+
+            $roll= $roll->get();
+            $transit = $transit->get();
+
             if($request->bookingBagTypeId && $request->totalUnits && $request->bookingBagUnits){
                 $bestFind = "";
                 $bag = $this->_M_BagType->find($request->bookingBagTypeId);
                 if($request->bookingBagUnits=="Kg"){
                     $bestFind = $bag->roll_find_as_weight;
-                }elseif($request->bookingBagUnits=="Pice"){
+                }elseif($request->bookingBagUnits=="Piece"){
                     $bestFind = $bag->roll_find;
                 }
                 $roll = $roll->map(function($val)use($request,$bestFind){
-                    $variables = [
-                        "RL"=>$val->length,
-                        "RW"=>$val->net_weight,
-                        "RS"=>$val->size,
-                        "GSM"=>$val->gsm,
-                        "X"=>"*",
-                        "*"=>"*",
-                        "x"=>"*",
-                        "/"=>"/",
-                        "+"=>"+",
-                        "-"=>"-",
-                        "L"=> $request->l ? $request->l : 0,
-                        "W"=>$request->w ? $request->w : 0,
-                        "G"=>$request->g ? $request->g : 0,
-                    ];                    
-                    $formula = $bestFind;
-                    foreach ($variables as $key => $value) {                                               
-                        $formula = str_replace($key, $value, $formula);                        
-                    }
-                    $val->result = roundFigure(eval(" return ".$formula." ;"));
-                    $val->unit = $val->result." ".$request->bookingBagUnits;
+                    $newRequest = new Request($val->toArray());
+                    $newRequest->merge([
+                        "formula"=>$bestFind,
+                        "bookingBagUnits"=>$request->bookingBagUnits,
+                        "length" => $val->length,
+                        "netWeight" => $val->net_weight,
+                        "size" => $val->size,
+                        "gsm" => $val->gsm,
+                        "bagL"=> $request->l,
+                        "bagW"=> $request->w,
+                        "bagG"=> $request->g,
+                    ]);
+                    $result = $this->calculatePossibleProduction($newRequest);
+                    $val->result = $result["result"]??"";
+                    $val->unit = $result["unit"]??"";
                     return $val;
-                })->sortBy('result');
+                })->where("result","<=",$request->totalUnits)->sortBy('result');
+
                 $transit = $transit->map(function($val)use($request,$bestFind){
-                    $variables = [
-                        "RL"=>$val->length,
-                        "RW"=>$val->net_weight,
-                        "RS"=>$val->size,
-                        "GSM"=>$val->gsm,
-                        "X"=>"*",
-                        "*"=>"*",
-                        "x"=>"*",
-                        "/"=>"/",
-                        "+"=>"+",
-                        "-"=>"-",
-                        "L"=>$request->l,
-                        "W"=>$request->w,
-                        "G"=>$request->g
-                    ];                    
-                    $formula = $bestFind;
-                    foreach ($variables as $key => $value) {                                               
-                        $formula = str_replace($key, $value, $formula);                        
-                    }
-                    $val->result = roundFigure(eval(" return ".$formula." ;"));
-                    $val->unit = $val->result." ".$request->bookingBagUnits;
+                    $newRequest = new Request($val->toArray());
+                    $newRequest->merge([
+                        "formula"=>$bestFind,
+                        "bookingBagUnits"=>$request->bookingBagUnits,
+                        "length" => $val->length,
+                        "netWeight" => $val->net_weight,
+                        "size" => $val->size,
+                        "gsm" => $val->gsm,
+                        "bagL"=> $request->l,
+                        "bagW"=> $request->w,
+                        "bagG"=> $request->g,
+                    ]);
+                    $result = $this->calculatePossibleProduction($newRequest);
+                    $val->result = $result["result"]??"";
+                    $val->unit = $result["unit"]??"";
                     return $val;
-                })->sortBy('result');
+                })->where("result","<=",$request->totalUnits)->sortBy('result');
             }
                         
-            $data["roll"]=$roll;
-            $data["rollTransit"]= $transit;
+            $data["roll"]= collect($roll->values());
+            $data["rollTransit"]= collect($transit->values());
             return responseMsgs(true,"data Fetched",$data);
         }catch(ExcelExcel $e){
             return responseMsgs(false,$e->getMessage(),"");
@@ -1490,50 +1513,105 @@ class RollController extends Controller
             $request->merge([
                 "clientDetailId"=>$request->bookingForClientId,
                 "estimateDeliveryDate"=>$request->bookingEstimatedDespatchDate,
-            ]);
+                "bagTypeId"=>$request->bookingBagTypeId,
+                "units"=>$request->bookingBagUnits,
+                "bag_w"=>$request->w,
+                "bag_l"=>$request->l,
+                "bag_g"=>$request->g,
+                "bag_loop_color"=>$request->looColor,
+                "bag_color"=>$request->bookingPrintingColor,
+            ]);            
             DB::beginTransaction();
-            $orderId = $this->_M_OrderPunches->store($request);
+            if($request->id){
+                $orderId = $request->id;
+            }else{
+                $orderId = $this->_M_OrderPunches->store($request);
+            }
+            $orderNew = $this->_M_OrderPunches->find($orderId);
+            // dd($orderNew);
             $type ="Pending";
+            $bookOrders = 0;
             if($request->roll){
+                $type ="Booked";
                 foreach($request->roll as $val){
-                    $type ="Booked";
                     $roll = $this->_M_RollDetail->find($val["id"]);
                     if(!$roll){
                         $roll = $this->_M_RollTransit->find($val["id"]);
                     }
                     if($roll->client_detail_id){
-                        throw new Exception($roll->roll_no." Roll Already Assign");
+                        $orderRoll = $this->_M_OrderRollBagType->where("roll_id",$roll->id)->where("lock_status",false)->first();
+                        if($orderRoll){
+                            $order = $this->_M_OrderPunches->find($orderRoll->order_id);
+                            $bag = $this->_M_BagType->find($order->bag_type_id);
+                            $bestFind = "";
+                            if($order->units=="Kg"){
+                                $bestFind = $bag->roll_find_as_weight;
+                            }elseif($order->units=="Piece"){
+                                $bestFind = $bag->roll_find;
+                            }
+                            $newRequest = new Request();
+                            $newRequest->merge(
+                                [
+                                "bookingBagUnits" => $order->units,
+                                "formula" => $bestFind,
+                                "length" => $roll->length,
+                                "netWeight"=>$roll->net_weight,
+                                "size"=>$roll->size,
+                                "gsm"=>$roll->gsm,
+
+                                "bagL"=>$order->bag_l,
+                                "bagW"=>$order->bag_w,
+                                "bagG"=>$order->bag_g
+                                ]
+                            );
+                            $result = $this->calculatePossibleProduction($newRequest);
+                            $order->booked_units = $order->booked_units - $result["result"]??0;
+                            $orderRoll->lock_status=true;
+                            $order->update();
+                        }                        
                     }
-                    $roll->client_detail_id = $request->bookingForClientId;
-                    $roll->estimate_delivery_date = $request->bookingEstimatedDespatchDate;
-                    $roll->bag_type_id = $request->bookingBagTypeId;
-                    $roll->bag_unit = $request->bookingBagUnits;
-                    $roll->loop_color = $request->looColor;
-                    $roll->w = $request->w;
-                    $roll->l = $request->l;
-                    $roll->g = $request->g;
-                    $roll->printing_color = $request->bookingPrintingColor;
+                    $roll->client_detail_id = $orderNew->client_detail_id;
+                    $roll->estimate_delivery_date = $orderNew->estimate_delivery_date;
+                    $roll->bag_type_id = $orderNew->bag_type_id;
+                    $roll->bag_unit = $orderNew->units;
+                    $roll->loop_color = $orderNew->bag_loop_color;
+                    $roll->w = $orderNew->bag_w;
+                    $roll->l = $orderNew->bag_l;
+                    $roll->g = $orderNew->bag_g;
+                    $roll->printing_color = $request->bag_color?json_decode($request->bag_color,true):null;
                     $roll->update();
                     $newRequest = new Request($roll->toArray());
                     $newRequest->merge(["order_id"=>$orderId,"roll_id"=>$roll->id]);
                     $this->_M_OrderRollBagType->store($newRequest);
-                }
 
-            }else{
-                $request->merge(
-                    [
-                        "bag_type_id" => $request->bookingBagTypeId,
-                        "bag_unit" => $request->bookingBagUnits,
-                        "loop_color" => $request->looColor,
-                        "w" => $request->w,
-                        "l" => $request->l,
-                        "g" => $request->g,
-                        "printing_color" => $request->bookingPrintingColor,
-                        "order_id"=>$orderId,
-                    ]
-                );
-                $this->_M_PendingOrderBagType->store($request);
+                    $bag = $this->_M_BagType->find($orderNew->bag_type_id);
+                    $formula = "";
+                    if($request->bookingBagUnits=="Kg"){
+                        $formula = $bag->roll_find_as_weight;
+                    }elseif($request->bookingBagUnits=="Piece"){
+                        $formula = $bag->roll_find;
+                    }
+                    $newRequest = new Request();
+                    $newRequest->merge(
+                        [
+                        "bookingBagUnits" => $orderNew->bookingBagUnits,
+                        "formula" => $formula,
+                        "length" => $roll->length,
+                        "netWeight"=>$roll->net_weight,
+                        "size"=>$roll->size,
+                        "gsm"=>$roll->gsm,
+
+                        "bagL"=>$orderNew->bag_l,
+                        "bagW"=>$orderNew->bag_w,
+                        "bagG"=>$orderNew->bag_g
+                        ]
+                    );
+                    $result = $this->calculatePossibleProduction($newRequest);
+                    $bookOrders += $result["result"]??0; 
+                }                
+                $orderNew->booked_units = $orderNew->booked_units+$bookOrders;
             }
+            $orderNew->update();
             DB::commit();
             return responseMsgs(true,"Order Place On $type","");
         }catch(Exception $e){
@@ -1541,7 +1619,7 @@ class RollController extends Controller
         }
     }
 
-    public function bookedOrder(Request $request){
+    public function bookedOrder_old1(Request $request){
         
         if($request->ajax())
         {
@@ -1552,8 +1630,7 @@ class RollController extends Controller
             $data = $this->_M_OrderPunches
                     ->select(
                                 "order_punch_details.*","order_roll_bag_types.*",
-                                "client_detail_masters.client_name",
-                                
+                                "client_detail_masters.client_name",                                
                     )
                     ->join(
                         DB::raw("(
@@ -1639,7 +1716,90 @@ class RollController extends Controller
         return view("Roll/bookedOrder");
     }
 
-    public function unBookedOrder(Request $request){
+    public function bookedOrder(Request $request){
+        if($request->ajax())
+        {
+            $fromDate = $request->fromDate;
+            $uptoDate = $request->uptoDate;
+            $orderNo = $request->orderNo;            
+            $data = $this->_M_OrderPunches
+                    ->select(
+                                "order_punch_details.*","order_roll_bag_types.*",
+                                "client_detail_masters.client_name",  
+                                "bag_type_masters.bag_type" ,                       
+                    )
+                    ->join(
+                        DB::raw("(
+                            SELECT *
+                            FROM(
+                                    (
+                                        SELECT order_roll_bag_types.order_id, STRING_AGG(roll_details.roll_no,' , ') as roll_no 
+                                        FROM order_roll_bag_types
+                                        JOIN roll_details on roll_details.id = order_roll_bag_types.roll_id
+                                        WHERE order_roll_bag_types.lock_status = false
+                                        GROUP BY order_roll_bag_types.order_id
+                                    )
+                                    UNION ALL(
+                                        SELECT order_roll_bag_types.order_id, STRING_AGG(roll_transits.roll_no,' , ') as roll_no 
+                                        FROM order_roll_bag_types
+                                        JOIN roll_transits on roll_transits.id = order_roll_bag_types.roll_id
+                                        WHERE order_roll_bag_types.lock_status = false
+                                        GROUP BY order_roll_bag_types.order_id
+                                    )
+                            )
+                        ) AS order_roll_bag_types"),
+                        "order_roll_bag_types.order_id","order_punch_details.id"
+                    )                
+                    ->leftJoin("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id") 
+                    ->leftJoin("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")                   
+                    ->where("order_punch_details.lock_status",false)
+                    ->where(function($where){
+                        $where->where(DB::raw("order_punch_details.total_units"),"<=",DB::raw("order_punch_details.booked_units + order_punch_details.disbursed_units"));
+                    })
+                    ->orderBy("order_punch_details.created_at","DESC");                               
+
+            if($fromDate && $uptoDate){             
+                $data->whereBetween(DB::raw("order_punch_details.created_at::date"),[$fromDate,$uptoDate]);
+            }
+
+            elseif($fromDate){
+                $data->where(DB::raw("order_punch_details.created_at::date"),">=",$fromDate);
+            }
+            elseif($uptoDate){
+                $data->where(DB::raw("order_punch_details.created_at::date"),"<=",$uptoDate);
+            } 
+
+            if($orderNo){
+                $data->where("order_punch_details.order_no",$orderNo);
+            }         
+            $list = DataTables::of($data)
+                ->addIndexColumn()                
+                ->addColumn('is_delivered', function ($val) {                    
+                    return $val->is_delivered ? "YES" : "NO";
+                })
+                ->addColumn("bag_color",function($val){
+                    return $val->bag_color ? collect(json_decode($val->bag_color,true))->implode(",") : "";
+                })
+                ->addColumn("total_units",function($val){
+                    return $val->total_units ? $val->total_units." ".$val->units : "";
+                })
+                ->addColumn('created_at', function ($val) {                    
+                    return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    
+                })
+                ->addColumn('estimate_delivery_date', function ($val) {                    
+                    return $val->estimate_delivery_date ? Carbon::parse($val->estimate_delivery_date)->format("d-m-Y") : "";                    
+                })
+                ->addColumn('delivery_date', function ($val) {                    
+                    return $val->delivery_date ? Carbon::parse($val->delivery_date)->format("d-m-Y") : "";                    
+                })
+                ->make(true);
+            return $list;
+
+        }
+        return view("Roll/bookedOrder");
+    }
+
+    public function unBookedOrder_old1(Request $request){
         
         if($request->ajax())
         {
@@ -1708,5 +1868,171 @@ class RollController extends Controller
         }
         return view("Roll/unBookedOrder");
     }
+
+    public function unBookedOrder(Request $request){
+        
+        if($request->ajax())
+        {
+            $fromDate = $request->fromDate;
+            $uptoDate = $request->uptoDate;
+            $orderNo = $request->orderNo;            
+            $data = $this->_M_OrderPunches
+                    ->select(
+                                "order_punch_details.*","order_roll_bag_types.*",
+                                "client_detail_masters.client_name",  
+                                "bag_type_masters.bag_type" ,                       
+                    )
+                    ->join(
+                        DB::raw("(
+                            SELECT *
+                            FROM(
+                                    (
+                                        SELECT order_roll_bag_types.order_id, STRING_AGG(roll_details.roll_no,' , ') as roll_no 
+                                        FROM order_roll_bag_types
+                                        JOIN roll_details on roll_details.id = order_roll_bag_types.roll_id
+                                        WHERE order_roll_bag_types.lock_status = false
+                                        GROUP BY order_roll_bag_types.order_id
+                                    )
+                                    UNION ALL(
+                                        SELECT order_roll_bag_types.order_id, STRING_AGG(roll_transits.roll_no,' , ') as roll_no 
+                                        FROM order_roll_bag_types
+                                        JOIN roll_transits on roll_transits.id = order_roll_bag_types.roll_id
+                                        WHERE order_roll_bag_types.lock_status = false
+                                        GROUP BY order_roll_bag_types.order_id
+                                    )
+                            )
+                        ) AS order_roll_bag_types"),
+                        "order_roll_bag_types.order_id","order_punch_details.id"
+                    )                
+                    ->leftJoin("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id") 
+                    ->leftJoin("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")                   
+                    ->where("order_punch_details.lock_status",false)
+                    ->where(function($where){
+                        $where->where(DB::raw("order_punch_details.total_units"),">",DB::raw("order_punch_details.booked_units + order_punch_details.disbursed_units"));
+                    })
+                    ->orderBy("order_punch_details.created_at","ASC");                               
+
+            if($fromDate && $uptoDate){             
+                $data->whereBetween(DB::raw("order_punch_details.created_at::date"),[$fromDate,$uptoDate]);
+            }
+
+            elseif($fromDate){
+                $data->where(DB::raw("order_punch_details.created_at::date"),">=",$fromDate);
+            }
+            elseif($uptoDate){
+                $data->where(DB::raw("order_punch_details.created_at::date"),"<=",$uptoDate);
+            } 
+
+            if($orderNo){
+                $data->where("order_punch_details.order_no",$orderNo);
+            }         
+            $list = DataTables::of($data)
+                ->addIndexColumn()                
+                ->addColumn('is_delivered', function ($val) {                    
+                    return $val->is_delivered ? "YES" : "NO";
+                })
+                ->addColumn("bag_color",function($val){
+                    return $val->bag_color ? collect(json_decode($val->bag_color,true))->implode(",") : "";
+                })
+                ->addColumn("total_units",function($val){
+                    return $val->total_units ? $val->total_units." ".$val->units : "";
+                })
+                ->addColumn('created_at', function ($val) {                    
+                    return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    
+                })
+                ->addColumn('estimate_delivery_date', function ($val) {                    
+                    return $val->estimate_delivery_date ? Carbon::parse($val->estimate_delivery_date)->format("d-m-Y") : "";                    
+                })
+                ->addColumn('delivery_date', function ($val) {                    
+                    return $val->delivery_date ? Carbon::parse($val->delivery_date)->format("d-m-Y") : "";                    
+                })
+                ->addColumn('action', function ($val) {     
+                    $button ='<button class="btn btn-sm btn-success mx-2" onClick="openBookingModel('.$val->id.')" >Search</button>';      
+                    $button .= '<button class="btn btn-sm btn-warning mx-2" onClick="disbursedOrder('.$val->id.')" >Disbursed</button>';
+                    $button .= '<button class="btn btn-sm btn-danger mx-2" onClick="deactivate('.$val->id.')" >Discard Order</button>';         
+                    return $button;                    
+                })
+                ->make(true);
+            return $list;
+
+        }
+        return view("Roll/unBookedOrder");
+    }
+
+    public function rebookOrder(Request $request){
+        try{
+            $order = $this->_M_OrderPunches->find($request->id);
+            $bag = $order->getBagType();
+            $client = $order->getClient();
+            $order->bag_type = $bag->bag_type??"";
+            $order->client_name = $client->client_name??"";
+            $request->merge([
+                "bagQuality"=>$order->bag_quality,
+                "bagGsm"=>$order->bag_gsm,
+                "bookingBagTypeId"=>$order->bag_type_id,
+                "totalUnits"=> $order->total_units - $order->booked_units - $order->disbursed_units,
+                "bookingBagUnits"=>$order->units,
+
+                "l"=>$order->bag_l,
+                "w"=>$order->bag_w,
+                "g"=>$order->bag_g,
+                
+            ]);
+            $result = $this->orderSuggestionClient($request)->original;
+            $data["order"] =$order;
+            $data["roll"] =[];
+            $data["rollTransit"] =[];
+            if($result["status"]){
+                $data["roll"] = $result["data"]["roll"];
+                $data["rollTransit"] = $result["data"]["rollTransit"];
+            }
+            $message="Data Fetched";
+            if(sizeof($data["roll"])<=0 && sizeof($data["rollTransit"])<=0){
+                $message=" Roll Not Found For ".$request->totalUnits." ".$request->bookingBagUnits;
+            }
+            return responseMsgs(true,$message,$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function disbursedOrder(Request $request){
+        try{
+            $validate = Validator::make($request->all(),[
+                "id"=>"required|exists:".$this->_M_OrderPunches->getTable().",id",
+            ]);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            $order = $this->_M_OrderPunches->find($request->id);
+            $order->disbursed_units = $order->total_units - $order->booked_units;
+            DB::beginTransaction();
+            $order->update();
+            DB::commit();
+            return responseMsgs(true,"Order Disbursed","");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function deactivateOrder(Request $request){
+        try{
+            $validate = Validator::make($request->all(),[
+                "id"=>"required|exists:".$this->_M_OrderPunches->getTable().",id",
+            ]);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            $order = $this->_M_OrderPunches->find($request->id);
+            $order->lock_status = true;
+            DB::beginTransaction();
+            $order->update();
+            DB::commit();
+            return responseMsgs(true,"Order Is Deactivated","");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+    
 
 }

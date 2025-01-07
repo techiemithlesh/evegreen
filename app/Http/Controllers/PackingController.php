@@ -85,7 +85,7 @@ class PackingController extends Controller
                     function ($attribute, $value, $fail) use($request){
                         $key = explode(".",$attribute)[1];
                         $roll = $this->_M_RollDetail->find($request->roll[$key]["id"]);
-                        if($roll && $roll->bag_unit=="Pice" && (!$value))
+                        if($roll && $roll->bag_unit=="Piece" && (!$value))
                         {
                             $fail('The '.$attribute.' id required');
                         }

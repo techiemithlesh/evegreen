@@ -75,6 +75,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post("roll/order/punches/save","orderPunchesSave")->name("order.punches.save");
         Route::post("roll/client/old/order","oldOrderOfClient")->name("client.old.order");
         Route::post("roll/client/order/suggestion","orderSuggestionClient")->name("client.order.suggestion");
+        Route::post("roll/order/re-book-suggestion","rebookOrder")->name("order.rebook");
+        Route::post("roll/order/disabused","disbursedOrder")->name("order.disabused");
+        Route::post("roll/order/deactivate","deactivateOrder")->name("order.deactivate");
 
         Route::match(["get","post"],"roll/order/book","bookedOrder")->name("order.book");
         Route::match(["get","post"],"roll/order/unbook","unBookedOrder")->name("order.unbook");

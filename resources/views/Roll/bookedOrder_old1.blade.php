@@ -36,12 +36,12 @@
                             <input type="date" name="uptoDate" id="uptoDate" class="form-control" value="{{date('Y-m-d')}}" max="{{date('Y-m-d')}}" />
                         </div>
                     </div>
-                    <!-- <div class="col-sm-3">
+                    <div class="col-sm-3">
                         <div class="form-group">
                             <label class="form-label" for="orderNo">Order No</label>
                             <input type="text" name="orderNo" id="orderNo" class="form-control"  />
                         </div>
-                    </div> -->
+                    </div>
                 </div>
 
                 <div class="row mt-3">
@@ -54,17 +54,16 @@
 
         </div>
         <div class="panel-body">
-            <table id="postsTable" class="table table-striped table-bordered text-center table-fixed">
+            <table id="postsTable" class="table table-striped table-bordered text-center">
                 <thead>
                     <tr>
                         <th >#</th>
-                        <!-- <th>Order No</th> -->
+                        <th>Order No</th>
                         <th>Booking Date</th>
                         <th>Client Name</th>
                         <th>Estimate Delivery Date</th>
                         <th>Bag Type</th>
                         <th>Bag Unit</th>
-                        <th>Qtr</th>
                         <th>Bag Color</th>
                         <th>Roll No</th>
                         <th>Is Delivered</th>
@@ -106,14 +105,13 @@
 
             columns: [
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                // { data: "order_no", name: "order_no" },
+                { data: "order_no", name: "order_no" },
                 { data: "created_at", name: "created_at" },
                 { data: "client_name", name: "client_name" },
                 { data: "estimate_delivery_date", name: "estimate_delivery_date" },
                 { data: "bag_type", name: "bag_type" },
-                { data: "units", name: "units" },
-                { data: "total_units", name: "total_units" },
-                { data: "bag_color", name: "bag_color" },
+                { data: "bag_unit", name: "bag_unit" },
+                { data: "printing_color", name: "printing_color" },
                 { data: "roll_no", name: "roll_no" },
                 { data: "is_delivered", name: "is_delivered" },
                 
@@ -130,7 +128,10 @@
                 extend: 'csv',
                 text: 'Export to Excel',
                 className: 'btn btn-success',
-            }],     
+            }],                        
+            // initComplete: function () {
+            //     addFilter('postsTable',[0]);
+            // },
         });
 
     });

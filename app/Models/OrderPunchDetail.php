@@ -15,6 +15,19 @@ class OrderPunchDetail extends Model
         "delivery_date",
         "is_delivered",
         "payment_mode_id",
+        "bag_type_id",
+        "bag_quality",
+        "bag_gsm",
+        "units",
+        "total_units",
+        "rate_per_unit",
+        "bag_w",
+        "bag_l",
+        "bag_g",
+        "bag_loop_color",
+        "bag_color",
+        "booked_units",
+        "disbursed_units",
         "lock_status",
     ];
 
@@ -22,5 +35,13 @@ class OrderPunchDetail extends Model
         $inputs = snakeCase($request);
         $id= self::create($inputs->all())->id;
         return $id;
+    }
+
+    public function getBagType(){
+        return $this->belongsTo(BagTypeMaster::class,"bag_type_id","id")->first();
+    }
+
+    public function getClient(){
+        return $this->belongsTo(ClientDetailMaster::class,"client_detail_id","id")->first();
     }
 }

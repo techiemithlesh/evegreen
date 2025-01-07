@@ -12,7 +12,7 @@
                             <th>#</th>
                             <th>Packing No</th>
                             <th>Bag Weight</th>
-                            <th>Bag Pice</th>
+                            <th>Bag Piece</th>
                             <th>Verify</th>
                         </tr>
                     </thead>

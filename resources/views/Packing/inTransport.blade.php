@@ -78,7 +78,7 @@
                                 <th>Bag Unit</th> 
                                 <th>Bag Color</th>                      
                                 <th>Bag Weight</th>
-                                <th>Bag Pice</th>
+                                <th>Bag Piece</th>
                                 <th>Bag L</th>
                                 <th>Bag W</th>
                                 <th>Bag G</th>

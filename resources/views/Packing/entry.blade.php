@@ -92,7 +92,7 @@
                                 <th>roll Type</th>
                                 <th>Hardness</th>
                                 <th>Bag Weight</th>
-                                <th>Bag Pice</th>
+                                <th>Bag Piece</th>
                                 <th>Remove</th>
                             </tr>
                         </thead>
@@ -272,7 +272,7 @@
                                 `<td>${item.roll_type || "N/A"}</td>`,
                                 `<td>${item.hardness || "N/A"}</td>`,  
                                 `<td><input type='text' id='roll[${sl}][weight]' name='roll[${sl}][weight]' required onkeypress="return isNumDot(event);" /> <span class="error-text" id="roll[${sl}][weight]-error"></span></td>`, 
-                                `<td><input type='text' id ='roll[${sl}][pieces]' name='roll[${sl}][pieces]' ${item.bag_unit=='Pice' ? 'required' :''} onkeypress="return isNumDot(event);" /> <span class="error-text" id="roll[${sl}][pieces]-error"></span> </td>`,                              
+                                `<td><input type='text' id ='roll[${sl}][pieces]' name='roll[${sl}][pieces]' ${item.bag_unit=='Piece' ? 'required' :''} onkeypress="return isNumDot(event);" /> <span class="error-text" id="roll[${sl}][pieces]-error"></span> </td>`,                              
                                 `<td><span onclick='removeTr(this)' class='btn btn-sm btn-warning'>X</span></td>`,
                             );
         $("#orderRoll tbody").append(tr);

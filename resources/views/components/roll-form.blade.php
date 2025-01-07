@@ -148,7 +148,7 @@
                                     <select name="bookingBagUnits" id="bookingBagUnits" class="form-select">
                                         <option value="">Select</option>
                                         <option value="Kg">Kg</option>
-                                        <option value="Pice">Pice</option>
+                                        <option value="Piece">Piece</option>
                                     </select>                                    
                                     <span class="error-text" id="bookingBagUnits-error"></span>
                                 </div>

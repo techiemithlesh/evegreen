@@ -18,7 +18,7 @@
     </div>
     <div class="container">
         <div class="panel-body">
-            <div style="text-align: center;" id="orderHistory">
+            <div style="text-align: center; max-height:50px" id="orderHistory">
                 <div class="example-box movable" style="right: 30px; width:500px">
                     <div class="header">
                         <span>Old Orders</span>
@@ -89,6 +89,26 @@
                         </div>
                     </div>
 
+                    <div class="row mt-3"> 
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="form-label" for="bagQuality">Bag Quality </label>
+                                <select name="bagQuality" id="bagQuality" class="form-select" required >
+                                    <option value="">Select</option>                                    
+                                    <option value="NW">NW</option>
+                                    <option value="BOPP">BOPP</option>
+                                </select>                                                                       
+                                <span class="error-text" id="bagQuality-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="form-label" for="ratePerUnit">Rate Per Unit</label>
+                                <input type="text" name="ratePerUnit" id="ratePerUnit" class="form-control" required onkeypress="return isNumDot(event);" />                                                     
+                                <span class="error-text" id="ratePerUnit-error"></span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row mt-3">                            
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -106,10 +126,10 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagUnits">Bag Unit</label>
-                                <select name="bookingBagUnits" id="bookingBagUnits" class="form-select">
+                                <select name="bookingBagUnits" id="bookingBagUnits" class="form-select" onchange="emptyTable()">
                                     <option value="">Select</option>
                                     <option value="Kg">Kg</option>
-                                    <option value="Pice">Pice</option>
+                                    <option value="Piece">Piece</option>
                                 </select>                                    
                                 <span class="error-text" id="bookingBagUnits-error"></span>
                             </div>
@@ -120,15 +140,15 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label class="form-label" for="totalUnits">QTR</label>
-                                <input name="totalUnits" id="totalUnits" class="form-control" required onkeypress="return isNumDot(event);" />                                 
+                                <input name="totalUnits" id="totalUnits" class="form-control" required onkeypress="return isNumDot(event);" onchange="getBalance()"/>                                 
                                 <span class="error-text" id="bookingBagUnits-error"></span>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label class="form-label" for="bagGSM">GSM</label>
-                                <input name="bagGSM" id="bagGSM" class="form-control" required onkeypress="return isNumDot(event);" />                                 
-                                <span class="error-text" id="bagGSM-error"></span>
+                                <label class="form-label" for="bagGsm">GSM</label>
+                                <input name="bagGsm" id="bagGsm" class="form-control" required onkeypress="return isNumDot(event);" />                                 
+                                <span class="error-text" id="bagGsm-error"></span>
                             </div>
                         </div>
                     </div>
@@ -186,6 +206,9 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="row mt-3" style="text-align:right">
+                        <div > Balance <span id="balance" style="color: red;"> </span> </div>
+                    </div>
                     <div class="row mt-3">
                         <table class="table table-bordered  table-responsive " id="orderRoll">
                             <thead>
@@ -198,6 +221,7 @@
                                     <th>Net Weight</th>
                                     <th>roll Type</th>
                                     <th>Hardness</th>
+                                    <th>Possible Production</th>
                                     <th>Remove</th>
                                 </tr>
                             </thead>
@@ -208,8 +232,8 @@
                     </div>
                 </div>
                 <div class="col-12">
-                    <button type="button" class="btn btn-primary" onclick="showRollSuggestion()"><i class="bi bi-camera-reels"></i></button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-primary" onclick="showRollSuggestion()">Search</button>
+                    <button type="submit" class="btn btn-primary" onclick="setHintCollapse();">Submit</button>
                 </div>
             </form>
         </div>
@@ -221,6 +245,7 @@
 
 <script>
     $(document).ready(function(){
+        getBalance();
         $('.select22').select2(); 
         $("#orderHistory").hide();      
 
@@ -279,6 +304,7 @@
             $("#loopColorDiv").show();
         }else{
             $("#looColor").val("");
+            $("#g").val("");
             $("#loopColorDiv").hide();
         }
     }
@@ -315,20 +341,18 @@
                         const thead = $("<thead>").append(
                             $("<tr>").append(
                                 "<th>Sl</th>",
-                                "<th>Order</th>",
+                                "<th>Action</th>",
+                                "<th>Quality</th>",
+                                "<th>Bag Type</th>",
                                 "<th>GSM</th>",
-                                "<th>Roll Color</th>",
-                                "<th>Length</th>",
-                                "<th>Size</th>",
-                                "<th>Net Weight</th>",
-                                "<th>roll Type</th>",
-                                "<th>Hardness</th>",
-                                "<th>Bag</th>",
-                                "<th>Bag Unit</th>",
+                                "<th>Rate Per Unit</th>",
+                                "<th>Unit</th>",
+                                "<th>Qtr</th>",
                                 "<th>W</th>",
                                 "<th>L</th>",
                                 "<th>G</th>",
-                                "<th>Printing Colors</th>",
+                                "<th>Loop Color</th>",
+                                "<th>Printing Color</th>",
                             )
                         );
 
@@ -340,19 +364,17 @@
                                 $("<tr>").append(
                                     `<td>${index+1}</td>`,
                                     `<td><button data-item='${JSON.stringify(item)}' id="or${index}" onclick="setOrderValue('or${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
-                                    `<td>${item.gsm}</td>`,
-                                    `<td>${item.roll_color || "N/A"}</td>`,
-                                    `<td>${item.length || "N/A"}</td>`,
-                                    `<td>${item.size || "N/A"}</td>`,
-                                    `<td>${item.net_weight || "N/A"}</td>`,
-                                    `<td>${item.roll_type || "N/A"}</td>`,
-                                    `<td>${item.hardness || "N/A"}</td>`,
+                                    `<td>${item.bag_quality}</td>`,
                                     `<td>${item.bag_type || "N/A"}</td>`,
-                                    `<td>${item.bag_unit || "N/A"}</td>`,
-                                    `<td>${item.w || "N/A"}</td>`,
-                                    `<td>${item.l || "N/A"}</td>`,
-                                    `<td>${item.g || "N/A"}</td>`,
-                                    `<td>${JSON.parse(item.printing_color || "[]").join(", ")}</td>`,
+                                    `<td>${item.bag_gsm || "N/A"}</td>`,
+                                    `<td>${item.rate_per_unit || "N/A"}</td>`,
+                                    `<td>${item.units || "N/A"}</td>`,
+                                    `<td>${item.total_units || "N/A"}</td>`,
+                                    `<td>${item.bag_w || "N/A"}</td>`,
+                                    `<td>${item.bag_l || "N/A"}</td>`,
+                                    `<td>${item.bag_g || "N/A"}</td>`,
+                                    `<td>${item.bag_loop_color || "N/A"}</td>`,
+                                    `<td>${JSON.parse(item.bag_color || "[]").join(", ")}</td>`,
                                 )
                             );
                         });
@@ -400,16 +422,21 @@
 
         // Set individual field values
         $("#bookingBagTypeId").val(item?.bag_type_id);
-        $("#bookingBagUnits").val(item?.bag_unit);
-        $("#l").val(item?.l);
-        $("#g").val(item?.g);
-        $("#w").val(item?.w);
+        $("#bookingBagUnits").val(item?.units);
+        $("#l").val(item?.bag_l);
+        $("#g").val(item?.bag_g);
+        $("#w").val(item?.bag_w);
 
+        $("#ratePerUnit").val(item?.rate_per_unit);
+        $("#totalUnits").val(item?.total_units);
+        $("#bookingBagUnits").val(item?.units);
+        $("#bagGsm").val(item?.bag_gsm);
+        $("#bagQuality").val(item?.bag_quality);
         
         // Set the multi-select field for 'bookingPrintingColor'
         try {
             // Parse the printing_color string to an array
-            const printingColors = JSON.parse(item?.printing_color) || [];
+            const printingColors = JSON.parse(item?.bag_color) || [];
             $("#bookingPrintingColor").val(printingColors).trigger("change");; // Set the selected options
         } catch (error) {
             console.error("Error parsing printing_color:", error);
@@ -423,17 +450,22 @@
             { id: "#bookingBagTypeId", name: "Bag Type" },
             { id: "#bookingBagUnits", name: "Bag Units" },
             { id: "#totalUnits", name: "Total Units" },
+            { id : "#bagQuality" , name : "bag Quality"},
             { id: "#l", name: "Bag Length" },
             { id: "#w", name: "Bag Width" },
-            { id: "#g", name: "Bag Gusset" }
+            { id: "#g", name: "Bag Gusset" },
+            { id: "#bagGsm", name: "Bag GSM" },
         ];
         for (let input of inputs) {
             $(input.id).css("border", "1px solid #cbcaca");
             if (!$(input.id).val()) {
                 $(input.id).focus();
                 $(input.id).css("border", "2px solid red");
+                if($("#bookingBagTypeId").val()!="2" && input.id =="#g"){
+                    $(input.id).css("border", "1px solid #cbcaca");
+                }
                 if(itsOk){
-                    itsOk= false;
+                    itsOk= ($("#bookingBagTypeId").val()!="2" && input.id =="#g" ) ? itsOk : false;
                 }
                 //return;  // Exit the function after the first empty field
             }
@@ -450,7 +482,7 @@
                 $("#loadingDiv").show();
             },
             success:function(response){
-                console.log( response.data.rollTransit.length);
+                console.log(response.data.rollTransit.length);
                 $("#loadingDiv").hide();
                 $("#suggestion").show();
 
@@ -473,7 +505,8 @@
                             "<th>Net Weight</th>",
                             "<th>roll Type</th>",
                             "<th>Hardness</th>", 
-                            "<th>Total Possible Product</th>",                            
+                            "<th>Total Possible Product</th>", 
+                            "<th>Book For</th>",                            
                             "<th>Add To Book</th>",
                         )
                     );
@@ -493,7 +526,8 @@
                                 `<td>${item.net_weight || "N/A"}</td>`,
                                 `<td>${item.roll_type || "N/A"}</td>`,
                                 `<td>${item.hardness || "N/A"}</td>`,
-                                `<td>${item?.unit || "N/A"}</td>`,                                
+                                `<td>${item?.unit || "N/A"}</td>`, 
+                                `<td>${item?.client_name || ""}</td>`,                                
                                 `<td><button data-item='${JSON.stringify(item)}' id="rl${index}" onclick="addToBook('rl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
                             )
                         );
@@ -545,7 +579,8 @@
                             "<th>Net Weight</th>",
                             "<th>roll Type</th>",
                             "<th>Hardness</th>",
-                            "<th>Total Possible Product</th>",                             
+                            "<th>Total Possible Product</th>",                               
+                            "<th>Book For</th>",                          
                             "<th>Add To Book</th>",
                         )
                     );
@@ -564,8 +599,9 @@
                                 `<td>${item.size || "N/A"}</td>`,
                                 `<td>${item.net_weight || "N/A"}</td>`,
                                 `<td>${item.roll_type || "N/A"}</td>`,
-                                `<td>${item.hardness || "N/A"}</td>`,
                                 `<td>${item.hardness || "N/A"}</td>`,                                
+                                `<td>${item.unit || "N/A"}</td>`,
+                                `<td>${item?.client_name || ""}</td>`,
                                 `<td><button data-item='${JSON.stringify(item)}' id="tl${index}" onclick="addToBook('tl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
                             )
                         );
@@ -625,18 +661,20 @@
                                 `<td>${item.size || "N/A"}</td>`,
                                 `<td>${item.net_weight || "N/A"}</td>`,
                                 `<td>${item.roll_type || "N/A"}</td>`,
-                                `<td>${item.hardness || "N/A"}</td>`,                                
+                                `<td>${item.hardness || "N/A"}</td>`, 
+                                `<td>${item.result || "N/A"}</td>`,                                
                                 `<td><span onclick='removeTr(this)' class='btn btn-sm btn-warning'>X</span></td>`,
                             );
         $("#orderRoll tbody").append(tr);
-        
+        getBalance();
     }
 
     function removeTr(element) {
         $(element).closest("tr").remove();
+        getBalance();
     }
 
-    function bookForClient(){
+    function bookForClient(){        
         if ($("input[type='hidden'][name^='roll']").length === 0) {
             (showConfirmDialog('Are you sure you want to add On Pending Order?', saveOrder));
         }
@@ -662,6 +700,7 @@
                     $("#orderRoll tbody").empty();
                     modelInfo(data.messages);
                     setHintDefault();
+                    getBalance();
                 }else{
                     console.log(data);
                     modelInfo("Internal Server Error","warning");
@@ -673,6 +712,23 @@
                 modelInfo("server error","error")
             }
         })
+    }
+
+    function emptyTable(){
+        $("#orderRoll tbody").empty();
+        getBalance();
+    }
+    function getBalance() {
+        let bookedQtr = 0;
+        
+        $("#orderRoll tbody tr").each(function () {
+            let value = $(this).find('td').eq(8).text(); // Adjust the index to the correct column
+            if (!isNaN(value) && value.trim() !== '') {
+                bookedQtr += parseFloat(value);
+            }
+        });
+        $("#balance").html(($("#totalUnits").val()-bookedQtr)+" "+$("#bookingBagUnits").val());        
+        return bookedQtr;
     }
 
 
