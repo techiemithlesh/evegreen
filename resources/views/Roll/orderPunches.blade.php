@@ -19,7 +19,7 @@
     <div class="container">
         <div class="panel-body">
             <div style="text-align: center; max-height:50px" id="orderHistory">
-                <div class="example-box movable" style="right: 30px; width:500px">
+                <div class="example-box movable" style="right: 30px; width:500px;">
                     <div class="header">
                         <span>Old Orders</span>
                         <span class="icons">▼</span>
@@ -33,7 +33,7 @@
 
             <div id="suggestion" style="display: none;">
                 <div style="text-align: center;" id="suggestion1">
-                    <div class="example-box movable" style="background-color: rgb(238, 80, 96); right: 20px; width:450px">
+                    <div class="example-box movable" style="background-color: rgb(238, 80, 96); right: 20px; width:450px;">
                         <div class="header">
                             <span>Roll Stock</span>
                             <span class="icons">▼</span>
@@ -45,7 +45,7 @@
                     </div>
                 </div>
                 <div style="text-align: center;" id="suggestion2">
-                    <div class="example-box movable" style="background-color: rgb(89, 199, 208); width:400px">
+                    <div class="example-box movable" style="background-color: rgb(89, 199, 208); width:400px;">
                         <div class="header">
                             <span>Roll Transit</span>
                             <span class="icons">▼</span>
@@ -244,7 +244,7 @@
                     </div>
                 </div>
                 <div class="col-12">
-                    <button type="button" class="btn btn-primary" onclick="showRollSuggestion()">Search</button>
+                    <button type="button" class="btn btn-primary" onclick="showRollSuggestion()">Check</button>
                     <button type="submit" class="btn btn-primary" onclick="setHintCollapse();">Submit</button>
                 </div>
             </form>
@@ -447,6 +447,7 @@
         $("#bagGsm").val(item?.bag_gsm);
         $("#bagQuality").val(item?.bag_quality);
         showHidePrintingColorDiv();
+        getBalance();
         
         // Set the multi-select field for 'bookingPrintingColor'
         try {
@@ -772,8 +773,10 @@
         for (let part of parts) {
             gsm+= parseFloat(part);
         }
-        $("#bagGsm").val(gsm); 
-        console.log(gsm);
+        if(gsmJson){
+            $("#bagGsm").val(gsm);
+        }
+        console.log("gsm:",gsm);
     }
 
 

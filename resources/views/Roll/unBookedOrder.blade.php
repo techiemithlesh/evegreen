@@ -143,9 +143,6 @@
                 bookingBagTypeId: {
                     required: true,
                 },
-                bookingPrintingColor: {
-                    required: true,
-                },
                 roll_id:{
                     required:true,
                 }
@@ -176,6 +173,7 @@
                     modelInfo(data?.message);
                     setOrderValue(data?.data?.order);
                     showRollSuggestion(data);
+                    showHideLoop();
                 }else{
                     console.log(data);
                     modelInfo("Server Error","error");
@@ -209,6 +207,8 @@
         $("#looColor").val(item?.bag_loop_color);
         $("#id").val(item?.id);
         $("#booked").val(item?.booked_units);
+        $("#bagGsmJson").val(item?.bag_gsm_json);
+        showHidePrintingColorDiv();
         getBalance();
         
         // Set the multi-select field for 'bookingPrintingColor'
@@ -451,6 +451,47 @@
             }
         })
     }
+
+    function showHideLoop(){
+        var bagType = $("#bookingBagTypeId").val();
+        console.log(bagType);
+        if(["2","Box"].includes(bagType)){
+            $("#loopColorDiv").show();
+        }else{
+            $("#looColor").val("");
+            $("#g").val("");
+            $("#loopColorDiv").hide();
+        }
+    }
+
+    function showHidePrintingColorDiv(){
+        if($("#bagQuality").val()=="BOPP"){
+            $("#bookingPrintingColorDiv").hide();
+            $("#singleGsm").hide();
+            $("#multipleGsm").show();
+            $("#bagGsm").val("");
+        }else{
+            $("#bookingPrintingColorDiv").show();
+            $("#singleGsm").show();
+            $("#multipleGsm").hide();
+            $("#bagGsmJson").val("");
+        }
+        setGsm();
+    }
+
+    function setGsm(){
+        let gsmJson = $("#bagGsmJson").val();
+        let gsm = 0;
+        const parts = gsmJson.split(/\/+/);
+        for (let part of parts) {
+            gsm+= parseFloat(part);
+        }
+        if(gsmJson){
+            $("#bagGsm").val(gsm); 
+        }
+        console.log(gsm);
+    }
+
 
     function emptyTable(){
         $("#orderRoll tbody").empty();

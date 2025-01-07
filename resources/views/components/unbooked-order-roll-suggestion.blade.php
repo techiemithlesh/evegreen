@@ -51,6 +51,12 @@
                             </div>
                             <div class="col-sm-6">
                                 <div class="form-group">
+                                    <label class="form-label" for="orderDate">Order Date</label>
+                                    <input type="date" name="orderDate" id="orderDate" class="form-control" readonly />
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
                                     <label class="form-label" for="bookingEstimatedDespatchDate">Dispatch Date</label>
                                     <input type="date" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" readonly /> 
                                 </div>
@@ -95,9 +101,13 @@
                                 </div>
                             </div>
                             <div class="col-sm-6">
-                                <div class="form-group">
+                                <div class="form-group" id='singleGsm'>
                                     <label class="form-label" for="bagGsm">GSM</label>
-                                    <input name="bagGsm" id="bagGsm" class="form-control" readonly />     
+                                    <input name="bagGsm" id="bagGsm" class="form-control" readonly /> 
+                                </div>
+                                <div class="form-group" id='multipleGsm' style="display: none;">
+                                    <label class="form-label" for="bagGsmJson">GSM</label>
+                                    <input name="bagGsmJson" id="bagGsmJson" class="form-control" readonly /> 
                                 </div>
                             </div>
                         </div>

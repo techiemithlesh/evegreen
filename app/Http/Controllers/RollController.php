@@ -1443,6 +1443,9 @@ class RollController extends Controller
             if($request->bagQuality=="BOPP"){
                 $request->merge(["bagGsm"=>array_sum(explode("/",$request->bagGsmJson))]);
             }
+            if($request->bookingBagTypeId==3 && $request->totalUnits){
+                $request->merge(["totalUnits"=> $request->totalUnits + ($request->totalUnits * 0.12)]);
+            }
             $roll=$this->_M_RollDetail->select("roll_details.*",DB::raw("'stock' as stock, client_detail_masters.client_name"))
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
                     ->where("roll_details.is_cut",false)
@@ -1533,7 +1536,15 @@ class RollController extends Controller
                 "bag_g"=>$request->g,
                 "bag_loop_color"=>$request->looColor,
                 "bag_color"=>$request->bookingPrintingColor,
-            ]);            
+            ]); 
+            if($request->bagQuality!="BOPP"){
+                $request->merge(["bagGsmJson"=>null]);
+            }
+            if($request->bagQuality=="BOPP"){
+                $request->merge(["bagGsm"=>array_sum(explode("/",$request->bagGsmJson))]);
+                $request->merge(["bagGsmJson"=>(explode("/",$request->bagGsmJson))]);
+            }
+
             DB::beginTransaction();
             if($request->id){
                 $orderId = $request->id;
@@ -1541,7 +1552,6 @@ class RollController extends Controller
                 $orderId = $this->_M_OrderPunches->store($request);
             }
             $orderNew = $this->_M_OrderPunches->find($orderId);
-            // dd($orderNew);
             $type ="Pending";
             $bookOrders = 0;
             if($request->roll){
@@ -1581,6 +1591,7 @@ class RollController extends Controller
                             $order->booked_units = $order->booked_units - $result["result"]??0;
                             $orderRoll->lock_status=true;
                             $order->update();
+                            $orderRoll->update();
                         }                        
                     }
                     $roll->client_detail_id = $orderNew->client_detail_id;
@@ -1591,7 +1602,7 @@ class RollController extends Controller
                     $roll->w = $orderNew->bag_w;
                     $roll->l = $orderNew->bag_l;
                     $roll->g = $orderNew->bag_g;
-                    $roll->printing_color = $request->bag_color?json_decode($request->bag_color,true):null;
+                    $roll->printing_color = $orderNew->bag_color?json_decode($orderNew->bag_color,true):null;
                     $roll->update();
                     $newRequest = new Request($roll->toArray());
                     $newRequest->merge(["order_id"=>$orderId,"roll_id"=>$roll->id]);
@@ -1621,7 +1632,8 @@ class RollController extends Controller
                     );
                     $result = $this->calculatePossibleProduction($newRequest);
                     $bookOrders += $result["result"]??0; 
-                }                
+                } 
+                $orderNew = $this->_M_OrderPunches->find($orderId);               
                 $orderNew->booked_units = $orderNew->booked_units+$bookOrders;
             }
             $orderNew->update();
@@ -1895,7 +1907,7 @@ class RollController extends Controller
                                 "client_detail_masters.client_name",  
                                 "bag_type_masters.bag_type" ,                       
                     )
-                    ->join(
+                    ->leftJoin(
                         DB::raw("(
                             SELECT *
                             FROM(
@@ -1982,6 +1994,7 @@ class RollController extends Controller
             $request->merge([
                 "bagQuality"=>$order->bag_quality,
                 "bagGsm"=>$order->bag_gsm,
+                "bagGsmJson"=>collect(json_decode($order->bag_gsm_json,true))->implode("/"),
                 "bookingBagTypeId"=>$order->bag_type_id,
                 "totalUnits"=> $order->total_units - $order->booked_units - $order->disbursed_units,
                 "bookingBagUnits"=>$order->units,
@@ -1992,6 +2005,7 @@ class RollController extends Controller
                 
             ]);
             $result = $this->orderSuggestionClient($request)->original;
+            $order->bag_gsm_json = collect(json_decode($order->bag_gsm_json,true))->implode("/");
             $data["order"] =$order;
             $data["roll"] =[];
             $data["rollTransit"] =[];

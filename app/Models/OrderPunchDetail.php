@@ -18,6 +18,7 @@ class OrderPunchDetail extends Model
         "bag_type_id",
         "bag_quality",
         "bag_gsm",
+        "bag_gsm_json",
         "units",
         "total_units",
         "rate_per_unit",
