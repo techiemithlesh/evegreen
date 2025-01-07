@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ClientDetailMaster;
+use App\Models\Sector;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -12,9 +13,11 @@ class ClientController extends Controller
 {
 //
     private $_M_ClientDetail;
+    private $_M_Sector;
     function __construct()
     {
         $this->_M_ClientDetail = new ClientDetailMaster();
+        $this->_M_Sector = new Sector();
     }
 
     public function addClient(Request $request){
@@ -22,7 +25,10 @@ class ClientController extends Controller
             $rule = [
                 "id"=>"nullable".($request->id?("|exists:".$this->_M_ClientDetail->getTable().",id"):""),
                 "clientName"=>"required|unique:".$this->_M_ClientDetail->getTable().",client_name".($request->id?(",".$request->id.",id"):""),
-                "mobileNo"=>"required"
+                "mobileNo"=>"required",
+                "city"=>"required",
+                "state"=>"required",
+                "sectorId"=>"required|exists:".$this->_M_Sector->getTable().",id",
             ];
             $validate = Validator::make($request->all(),$rule);
             if($validate->fails()){
@@ -44,7 +50,7 @@ class ClientController extends Controller
     public function clientList(Request $request){
         try{
             if($request->ajax()){
-                $data = $this->_M_ClientDetail->where("lock_status",false);
+                $data = $this->_M_ClientDetail->getClientListOrm()->orderBy("id","ASC")->get();
                 return DataTables::of($data)
                     ->addIndexColumn()
                     ->addColumn('action', function ($val) {

@@ -33,6 +33,35 @@
                     </div>
 
                     <div class="row mt-3">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label" for="city">City<span class="text-danger">*</span></label>
+                                <input type="text" id="city" name="city" class="form-control" placeholder="Enter city" required >
+                                <span class="error-text" id="city-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label" for="state">State<span class="text-danger">*</span></label>
+                                <input type="text" id="state" name="state" class="form-control" placeholder="Enter state" required >
+                                <span class="error-text" id="state-error"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label" for="sectorId">Sector<span class="text-danger">*</span></label>
+                                <select type="text" id="sectorId" name="sectorId" class="form-select" placeholder="Enter state" required >
+                                    <option value="">Select</option>
+                                    @foreach($sector as $val)
+                                        <option value="{{$val->id}}">{{$val->sector}}</option>
+                                    @endforeach
+                                </select>
+                                <span class="error-text" id="sectorId-error"></span>
+                            </div>
+                        </div>
                         <!-- Client Mobile Number -->
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -41,7 +70,25 @@
                                 <span class="error-text" id="mobileNo-error"></span>
                             </div>
                         </div>
-                        
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label" for="secondaryMobileNo">Secondary Mobile Number</label>
+                                <input type="text" maxlength="15" id="secondaryMobileNo" name="secondaryMobileNo" class="form-control" placeholder="Enter Secondary Mobile Number" onkeypress="return isNum(event);">
+                                <span class="error-text" id="secondaryMobileNo-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label" for="temporaryMobileNo">Temporary Mobile Number<span class="text-danger">*</span></label>
+                                <input type="text" maxlength="15" id="temporaryMobileNo" name="temporaryMobileNo" class="form-control" placeholder="Enter Temporary Mobile Number" onkeypress="return isNum(event);">
+                                <span class="error-text" id="temporaryMobileNo-error"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
                         <!-- Client Address -->
                         <div class="col-sm-6">
                             <div class="form-group">

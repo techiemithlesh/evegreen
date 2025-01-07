@@ -5,20 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ClientDetailMaster extends Model
+class Sector extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'client_name',
-        'mobile_no',
-        'email',
-        'address',
-        "city",
-        "state",
-        "sector_id",
-        "secondary_mobile_no",
-        "temporary_mobile_no",
+        'sector',
         'lock_status',
     ];
 
@@ -36,7 +28,7 @@ class ClientDetailMaster extends Model
         return $return;
     }
 
-    public function getClientListOrm(){
+    public function getSectorListOrm(){
         return self::where("lock_status",false);
     }
 }

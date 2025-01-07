@@ -6,15 +6,15 @@
             <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
                 <ol class="breadcrumb fs-6">
                     <li class="breadcrumb-item fs-6"><a href="#">Master</a></li>
-                    <li class="breadcrumb-item active fs-6" aria-current="page">Clint</li>
+                    <li class="breadcrumb-item active fs-6" aria-current="page">Sector</li>
                 </ol>
             </nav>
 
         </div>
         <div class="panel-heading">
-            <h5 class="panel-title">Clint List</h5>
+            <h5 class="panel-title">Sector List</h5>
             <div class="panel-control">
-                <button type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#clientModal" onclick="resetModelForm()">
+                <button type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#sectorModal" onclick="resetModelForm()">
                     Add <ion-icon name="add-circle-outline"></ion-icon>
                 </button>
             </div>
@@ -25,10 +25,7 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Clint Name</th>
-                    <th>Mobile No</th>
-                    <th>Email</th>
-                    <th>Address</th>
+                    <th>Sector</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -39,7 +36,7 @@
     </div>
 
     <!-- Modal -->
-    <x-client-form />
+    <x-sector-form />
 </main>
 
 <script>
@@ -47,7 +44,7 @@
         $('#postsTable').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{route('client.list')}}",
+            ajax: "{{route('sector.list')}}",
             columns: [{
                     data: "DT_RowIndex",
                     name: "DT_RowIndex",
@@ -55,20 +52,8 @@
                     searchable: false
                 },
                 {
-                    data: "client_name",
-                    name: "client_name"
-                },
-                {
-                    data: "mobile_no",
-                    name: "mobile_no"
-                },
-                {
-                    data: "email",
-                    name: "email"
-                },
-                {
-                    data: "address",
-                    name: "address",
+                    data: "sector",
+                    name: "sector"
                 },
                 {
                     data: "action",
@@ -78,41 +63,28 @@
                 },
             ],
         });
-        $('button[data-bs-target="#clientModal"]').on("click",()=>{
-            $("#clientForm").get(0).reset();
-        });
 
-        $("#clientForm").validate({
+        $("#sectorForm").validate({
             rules: {
-                clientName: {
+                sector: {
                     required: true,
                     minlength: 3
-                },
-
-                clientMobileNo: {
-                    required: true,
-                    number: true,
-                    minlength:10,
-                    minlength:10
-                },
-                clientAddress: {
-                    required: true,
                 },
             },
             submitHandler: function(form) {
                 // If form is valid, prevent default form submission and submit via AJAX
-                addClint();
+                addSector();
             }
         });
     });
-    function addClint(){
+    function addSector(){
         $.ajax({
                 type: "POST",
-                'url':"{{route('client.add')}}",            
+                'url':"{{route('sector.add.edit')}}",            
                                 
                 "deferRender": true,
                 "dataType": "json",
-                'data': $("#clientForm").serialize(),
+                'data': $("#sectorForm").serialize(),
                 beforeSend: function () {
                     $("#loadingDiv").show();
                 },
@@ -120,8 +92,8 @@
                     $("#loadingDiv").hide();
                     console.log(data);
                     if(data.status){
-                        $("#clientForm").get(0).reset();
-                        $("#clientModal").modal('hide');
+                        resetModelForm();
+                        $("#sectorModal").modal('hide');
                         $('#postsTable').DataTable().draw();
                         modelInfo(data.messages);
                     }else{
@@ -136,27 +108,20 @@
     function openModelEdit(id){
         $.ajax({
             type:"get",
-            url: "{{ route('client.edit', ':id') }}".replace(':id', id),
+            url: "{{ route('sector.dtl', ':id') }}".replace(':id', id),
             dataType: "json",
             beforeSend: function() {
                 $("#loadingDiv").show();
             },
             success:function(data){
                 if(data.status==true) {
-                    clientDtl = data.data;
-                    console.log(clientDtl); 
-                    $("#id").val(clientDtl?.id);
-                    $("#clientName").val(clientDtl?.client_name);
-                    $("#email").val(clientDtl?.email);
-                    $("#mobileNo").val(clientDtl?.mobile_no);
-                    $("#address").val(clientDtl?.address);
-                    $("#secondaryMobileNo").val(clientDtl?.secondary_mobile_no);
-                    $("#temporaryMobileNo").val(clientDtl?.temporary_mobile_no);
-                    $("#city").val(clientDtl?.city);
-                    $("#state").val(clientDtl?.state);
-                    $("#sectorId").val(clientDtl?.sector_id);
-                    $("#clientModal").modal("show");
-                
+                    sector = data.data;
+                    console.log(sector); 
+                    $("#submit").html("Edit");
+                    $("#sectorModalLabel").html("Edit Sector");
+                    $("#id").val(sector?.id);
+                    $("#sector").val(sector?.sector);
+                    $("#sectorModal").modal("show");                
                 } 
                 $("#loadingDiv").hide();
             },
@@ -168,6 +133,10 @@
 
     function resetModelForm(){
         $("#id").val("");
+        $("#sectorForm").get(0).reset();
+
+        $("#submit").html("Add");
+        $("#sectorModalLabel").html("Add New Sector");
     }
 
 </script>
