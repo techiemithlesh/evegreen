@@ -1440,6 +1440,9 @@ class RollController extends Controller
 
     public function orderSuggestionClient(Request $request){
         try{
+            if($request->bagQuality=="BOPP"){
+                $request->merge(["bagGsm"=>array_sum(explode("/",$request->bagGsmJson))]);
+            }
             $roll=$this->_M_RollDetail->select("roll_details.*",DB::raw("'stock' as stock, client_detail_masters.client_name"))
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
                     ->where("roll_details.is_cut",false)
@@ -1463,7 +1466,6 @@ class RollController extends Controller
 
             $roll= $roll->get();
             $transit = $transit->get();
-
             if($request->bookingBagTypeId && $request->totalUnits && $request->bookingBagUnits){
                 $bestFind = "";
                 $bag = $this->_M_BagType->find($request->bookingBagTypeId);

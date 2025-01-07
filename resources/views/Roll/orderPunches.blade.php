@@ -82,6 +82,13 @@
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
+                                <label class="form-label" for="orderDate">Order Date</label>
+                                <input type="date" max="{{date('Y-m-d')}}" value="{{date('Y-m-d')}}" name="orderDate" id="orderDate" class="form-control" required/>                                  
+                                <span class="error-text" id="orderDate-error"></span>
+                            </div>
+                        </div>                        
+                        <div class="col-sm-6">
+                            <div class="form-group">
                                 <label class="form-label" for="bookingEstimatedDespatchDate">Dispatch Date</label>
                                 <input type="date" min="{{date('Y-m-d')}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" required/>                                  
                                 <span class="error-text" id="bookingEstimatedDespatchDate-error"></span>
@@ -93,7 +100,7 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label class="form-label" for="bagQuality">Bag Quality </label>
-                                <select name="bagQuality" id="bagQuality" class="form-select" required >
+                                <select name="bagQuality" id="bagQuality" class="form-select" required onchange="showHidePrintingColorDiv()">
                                     <option value="">Select</option>                                    
                                     <option value="NW">NW</option>
                                     <option value="BOPP">BOPP</option>
@@ -145,10 +152,15 @@
                             </div>
                         </div>
                         <div class="col-sm-6">
-                            <div class="form-group">
+                            <div class="form-group" id='singleGsm'>
                                 <label class="form-label" for="bagGsm">GSM</label>
                                 <input name="bagGsm" id="bagGsm" class="form-control" required onkeypress="return isNumDot(event);" />                                 
                                 <span class="error-text" id="bagGsm-error"></span>
+                            </div>
+                            <div class="form-group" id='multipleGsm' style="display: none;">
+                                <label class="form-label" for="bagGsmJson">GSM</label>
+                                <input name="bagGsmJson" id="bagGsmJson" class="form-control" placeholder="gsm/lamination/boop" required onkeypress="return gsmJson(event); "  onkeyup="setGsm();"/>                                 
+                                <span class="error-text" id="bagGsmJson-error"></span>
                             </div>
                         </div>
                     </div>
@@ -188,7 +200,7 @@
                     </div>
                     <div class="row mt-3">                            
                         
-                        <div class="col-sm-6">
+                        <div class="col-sm-6" id="bookingPrintingColorDiv">
                             <div class="form-group">
                                 <label class="form-label" for="bookingPrintingColor">Printing Color</label>
                                 <div class="col-md-12">
@@ -277,7 +289,9 @@
                     required: true,
                 },
                 bookingPrintingColor: {
-                    required: true,
+                    required: function(){
+                        return $("#bagQuality").val()!=="BOPP"
+                    },
                 },
                 roll_id:{
                     required:true,
@@ -453,20 +467,24 @@
             { id : "#bagQuality" , name : "bag Quality"},
             { id: "#l", name: "Bag Length" },
             { id: "#w", name: "Bag Width" },
-            { id: "#g", name: "Bag Gusset" },
             { id: "#bagGsm", name: "Bag GSM" },
         ];
+        if($("#bookingBagTypeId").val()=="2"){
+            inputs.push({ id: "#g", name: "Bag Gusset" });
+        }
+        if($("#bagQuality").val()=="BOPP"){
+            inputs.push({ id: "#bagGsmJson", name: "Bag Gusset" });
+        }
+
         for (let input of inputs) {
             $(input.id).css("border", "1px solid #cbcaca");
             if (!$(input.id).val()) {
                 $(input.id).focus();
-                $(input.id).css("border", "2px solid red");
-                if($("#bookingBagTypeId").val()!="2" && input.id =="#g"){
-                    $(input.id).css("border", "1px solid #cbcaca");
-                }
+                $(input.id).css("border", "2px solid red");                
                 if(itsOk){
-                    itsOk= ($("#bookingBagTypeId").val()!="2" && input.id =="#g" ) ? itsOk : false;
+                    itsOk= false;
                 }
+                console.log(input.id,itsOk);
                 //return;  // Exit the function after the first empty field
             }
         }
@@ -729,6 +747,31 @@
         });
         $("#balance").html(($("#totalUnits").val()-bookedQtr)+" "+$("#bookingBagUnits").val());        
         return bookedQtr;
+    }
+
+    function showHidePrintingColorDiv(){
+        if($("#bagQuality").val()=="BOPP"){
+            $("#bookingPrintingColorDiv").hide();
+            $("#singleGsm").hide();
+            $("#multipleGsm").show();
+            $("#bagGsm").val("");
+        }else{
+            $("#bookingPrintingColorDiv").show();
+            $("#singleGsm").show();
+            $("#multipleGsm").hide();
+            $("#bagGsmJson").val("");
+        }
+    }
+
+    function setGsm(){
+        let gsmJson = $("#bagGsmJson").val();
+        let gsm = 0;
+        const parts = gsmJson.split(/\/+/);
+        for (let part of parts) {
+            gsm+= parseFloat(part);
+        }
+        $("#bagGsm").val(gsm); 
+        console.log(gsm);
     }
 
 
