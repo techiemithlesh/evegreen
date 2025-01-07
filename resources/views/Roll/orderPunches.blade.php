@@ -446,6 +446,7 @@
         $("#bookingBagUnits").val(item?.units);
         $("#bagGsm").val(item?.bag_gsm);
         $("#bagQuality").val(item?.bag_quality);
+        showHidePrintingColorDiv();
         
         // Set the multi-select field for 'bookingPrintingColor'
         try {
@@ -761,6 +762,7 @@
             $("#multipleGsm").hide();
             $("#bagGsmJson").val("");
         }
+        setGsm();
     }
 
     function setGsm(){
