@@ -125,7 +125,7 @@
                             sl = sl+1;
                             applyValidationRules(rowId);
                         } else {
-                            modelInfo(data.messages || "Invalid Roll No", "warning");
+                            modelInfo(data.message || "Invalid Roll No", "warning");
                         }
                     }
                 });

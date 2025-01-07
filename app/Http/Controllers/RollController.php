@@ -228,6 +228,9 @@ class RollController extends Controller
                     ->addColumn("cutting_date",function($val){
                         return $val->cutting_date ? Carbon::parse($val->cutting_date)->format("d-m-Y") : "";                        
                     })
+                    ->addColumn("gsm_json",function($val){
+                        return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
+                    })
                     ->addColumn('action', function ($val) {                    
                         $button = "";
                         if($val->is_roll_cut){
@@ -1277,7 +1280,6 @@ class RollController extends Controller
 
     public function rollSearchCutting(Request $request){
         try{
-            DB::enableQueryLog();
             $data = $this->_M_RollDetail
                     ->select("roll_details.*",
                         "client_detail_masters.client_name",
@@ -1308,7 +1310,16 @@ class RollController extends Controller
             if($data){
                 $data->printing_color = collect(json_decode($data->printing_color,true))->implode(",");
             }
-            return responseMsgs(true,"Data Fetch",$data);
+            $message = "Data Fetch";
+            if(!$data){
+                $roll = $this->_M_RollDetail->where("roll_details.roll_no",$request->rollNo)->first();
+                if(!$roll->is_printed && sizeof(json_decode($roll->printing_color,true))>0){
+                    $message = "Roll is not Printed";
+                }elseif($roll->is_cut){
+                    $message = "Roll Already Cut";
+                }
+            }
+            return responseMsgs(true,$message,$data);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
         }
