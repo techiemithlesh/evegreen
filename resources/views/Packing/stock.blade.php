@@ -16,7 +16,7 @@
             <h5 class="panel-title">List</h5>            
         </div>
         <div class="panel-body">            
-            <table class="table table-bordered  table-responsive " id="postsTable">
+            <table class="table table-bordered  table-responsive table-fixed" id="postsTable">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -28,9 +28,7 @@
                         <th>Bag Color</th>                      
                         <th>Bag Weight</th>
                         <th>Bag Piece</th>
-                        <th>Bag L</th>
-                        <th>Bag W</th>
-                        <th>Bag G</th>
+                        <th>Bag Size </th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -73,13 +71,11 @@
                 { data: "packing_no", name: "packing_no" },
                 { data: "client_name", name: "client_name" },
                 { data: "bag_type", name: "bag_type" },
-                { data: "bag_unit", name: "bag_unit" },
+                { data: "units", name: "units" },
                 { data: "bag_color", name: "bag_color" },
                 { data: "packing_weight", name: "packing_weight" },
                 { data: "packing_bag_pieces", name: "packing_bag_pieces" },
-                { data: "l", name: "l" },
-                { data: "w", name: "w" },
-                { data: "g", name: "g" },
+                { data: "bag_size", name: "bag_size"},                
                 { data: "action", name: "action", orderable: false, searchable: false },
 
                 

@@ -64,4 +64,11 @@ class User extends Authenticatable
         });
         return self::where("id",$id)->update($inputs->all());
     }
+
+    public function getHelperList(){
+        return self::where("user_type_id",5)->where("lock_status",false)->orderBy("id","ASC")->get();
+    }
+    public function getOperateList(){
+        return self::where("user_type_id",6)->where("lock_status",false)->orderBy("id","ASC")->get();
+    }
 }

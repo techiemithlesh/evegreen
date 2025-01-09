@@ -15,7 +15,7 @@ class BagPacking extends Model
         "packing_bag_pieces",
         "packing_date",
         'packing_status',
-        'roll_id',
+        'order_id',
         'user_id',
         'lock_status',
     ];

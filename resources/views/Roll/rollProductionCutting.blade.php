@@ -28,49 +28,84 @@
             <form id="cuttingRoll">
                 @csrf
                 <!-- Hidden field for Client ID -->
-                <input type="hidden" id="id" name="id" value="">
+                <input type="hidden" id="id" name="id" value="{{$machine->id}}">
 
-                <div class="row mt-3">
-                    <div class="col-sm-4">
+                <div class="row panel-body">
+                    <div class="row mt-3">                    
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="form-label" for="rollNo">Roll No</label>
+                                <input type="text" id="rollNo" name="rollNo" class="form-control">
+                                <span class="error-text" id="rollNo-error"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-sm-4 d-flex align-items-end">
+                            <button type="button" id="search" class="btn btn-primary w-100">Search</button>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row panel-body">
+                    <div class="col-sm-3">
                         <div class="form-group">
                             <label class="form-label" for="cuttingUpdate">Date <span class="text-danger">*</span></label>
                             <input type="date" name="cuttingUpdate" id="cuttingUpdate" class="form-control" max="{{date('Y-m-d')}}" required />
                             <span class="error-text" id="cuttingUpdate-error"></span>
                         </div>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         <div class="form-group">
-                            <label class="form-label" for="rollNo">Roll No</label>
-                            <input type="text" id="rollNo" name="rollNo" class="form-control">
-                            <span class="error-text" id="rollNo-error"></span>
+                            <label class="form-label" for="shift">Shift <span class="text-danger">*</span></label>
+                            <select type="shift" name="shift" id="shift" class="form-select" required>
+                                <option value="">select</option>
+                                <option value="Day">Day</option>
+                                <option value="Night">Night</option>
+                            </select>
+                            <span class="error-text" id="shift-error"></span>
                         </div>
                     </div>
-                    
-                    <div class="col-sm-4 d-flex align-items-end">
-                        <button type="button" id="search" class="btn btn-primary w-100">Search</button>
-                    </div>
-                    <!-- <div class="col-sm-4">
+                    <div class="col-sm-3">
                         <div class="form-group">
-                            <label class="form-label" for=""></label>
-                            <input type="button" id="search" name="search" class="form-control btn btn-primary" value="Search" />
+                            <label class="form-label" for="operatorId">Operator <span class="text-danger">*</span></label>
+                            <select name="operatorId" id="operatorId" class="form-select" required>
+                                <option value="">Select</option>
+                                @foreach($operator as $val)
+                                    <option value="{{$val->id}}">{{$val->name}}</option>
+                                @endforeach
+                            </select>
+                            <span class="error-text" id="operatorId-error"></span>
                         </div>
-                    </div> -->
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label class="form-label" for="helperId">Helper <span class="text-danger">*</span></label>
+                            <select type="date" name="helperId" id="helperId" class="form-select"  required >
+                                <option value="">Select</option>
+                                    @foreach($helper as $val)
+                                        <option value="{{$val->id}}">{{$val->name}}</option>
+                                    @endforeach
+                            </select>
+                            <span class="error-text" id="helperId-error"></span>
+                        </div>
+                    </div>
                 </div>
-                <hr>
-                <table class="table table-striped table-bordered table-responsive">
-                    <thead>
-                        <th>Roll No</th>
-                        <th>Punches Date</th>
-                        <th>Roll Size</th>
-                        <th>Roll Color</th>
-                        <th>Client Name</th>
-                        <th>Printing Color</th>
-                        <th>Weight After Cutting</th>
-                        <th>Remove</th>
-                    </thead>
-                    <tbody id="rollTableBody">
-                    </tbody>
-                </table>
+                <div class="row panel-body">
+                    <table class="table table-striped table-bordered table-responsive table-fixed">
+                        <thead>
+                            <th>Roll No</th>
+                            <th>Punches Date</th>
+                            <th>Roll Size</th>
+                            <th>Roll Color</th>
+                            <th>Client Name</th>
+                            <th>Printing Color</th>
+                            <th>Garbage In Kg</th>                        
+                            <th>Remove</th>
+                        </thead>
+                        <tbody id="rollTableBody">
+                        </tbody>
+                    </table>
+                </div>
 
                 <!-- Submit Button -->
                 <div class="row mt-4">
@@ -117,7 +152,7 @@
                                     <td>${roll.client_name}</td>
                                     <td>${roll.printing_color}</td>
                                     <td>
-                                        <input type='text' name='roll[${sl}][cuttingWeight]' id='cuttingWeight${rowId}' class='form-control dynamic-field' onkeypress="return isNumDot(event);" required />
+                                        <input type='text' name='roll[${sl}][totalQtr]' id='totalQtr${rowId}' class='form-control dynamic-field' onkeypress="return isNumDot(event);" required />
                                     </td>
                                     <td><span onclick='removeTr(this)' class='btn btn-sm btn-warning'>X</span></td>
                                 </tr>`;
@@ -137,10 +172,15 @@
             ignore: [],
             rules: {
                 id: { required: true },
-                cuttingUpdate: { required: true },
+                "roll[][id]": { required: true },
+                "roll[][totalQtr]": { required: true },
             },
             submitHandler: function (form) {
                 // If form is valid, submit it
+                if ($("input[type='hidden'][name^='roll']").length === 0) {
+                    alert("Please add at least one roll before submitting.");
+                    return false;
+                }
                 updateRollCutting();
             }
         });

@@ -5,6 +5,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OtherRegister;
 use App\Http\Controllers\PackingController;
 use App\Http\Controllers\RollController;
 use App\Http\Controllers\SectorController;
@@ -121,6 +122,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::controller(PackingController::class)->group(function(){
         Route::get("packing/entry","packingEnter")->name("packing.entry");
+        Route::get("packing/wip","WIPVerification")->name("packing.wip");
+        Route::post("packing/entry-wip/add","packingEnterWipAdd")->name("packing.entry.wip.add");
         Route::post("packing/entry/search","searchRoll")->name("packing.entry.search");
         Route::post("packing/entry/add","packingEnterAdd")->name("packing.entry.add");
         Route::match(["get","post"],"packing/stock","bagStock")->name("packing.stock");
@@ -131,6 +134,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::match(["get","post"],"packing/godown/reiving","reivingGodown")->name("packing.godown.reiving");
         Route::post("packing/godown/transport","reivingTransport")->name("packing.godown.transport");
         Route::post("packing/godown/add","addInGodown")->name("packing.godown.add");
+    });
+
+    Route::controller(OtherRegister::class)->group(function(){
+        Route::get("register/accept-garbage","acceptGarbage")->name("register.accept.garbage");
     });
 
 });

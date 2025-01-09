@@ -10,6 +10,8 @@ use App\Models\ClientDetail;
 use App\Models\ClientDetailMaster;
 use App\Models\ColorMaster;
 use App\Models\CuttingScheduleDetail;
+use App\Models\GarbageAcceptRegister;
+use App\Models\GarbageNotAcceptRegister;
 use App\Models\MachineMater;
 use App\Models\OrderPunchDetail;
 use App\Models\OrderRollBagType;
@@ -20,6 +22,7 @@ use App\Models\RollColorMaster;
 use App\Models\RollDetail;
 use App\Models\RollPrintColor;
 use App\Models\RollTransit;
+use App\Models\User;
 use App\Models\VendorDetail;
 use App\Models\VendorDetailMaster;
 use App\Traits\Formula;
@@ -54,9 +57,12 @@ class RollController extends Controller
     private $_M_OrderPunches;
     private $_M_OrderRollBagType;
     private $_M_PendingOrderBagType;
+    protected $_M_User;
+    protected $_M_GarbageAcceptRegister;
+    protected $_M_GarbageNotAcceptRegister;
     function __construct()
     {
-        
+        $this->_M_User = new User();
         $this->_M_RollTransit = new RollTransit();
         $this->_M_RollColor = new RollColorMaster();
         $this->_M_VendorDetail= new VendorDetailMaster();
@@ -70,6 +76,8 @@ class RollController extends Controller
         $this->_M_OrderPunches = new OrderPunchDetail();
         $this->_M_OrderRollBagType = new OrderRollBagType();
         $this->_M_PendingOrderBagType = new PendingOrderBagType();
+        $this->_M_GarbageAcceptRegister = new GarbageAcceptRegister();
+        $this->_M_GarbageNotAcceptRegister = new GarbageNotAcceptRegister();
     }
 
     #================ Roll Transit =====================
@@ -325,6 +333,7 @@ class RollController extends Controller
     }
 
     #=========== end Roll Transit ======================
+    /*
     public function addRoll(Request $request){
         try{
             if($request->getMethod()=="POST"){
@@ -360,6 +369,7 @@ class RollController extends Controller
             return responseMsgs(false,$e->getMessage(),"");
         }
     }
+    */
 
     public function importRoll(Request $request){
         try{
@@ -1249,6 +1259,8 @@ class RollController extends Controller
         }
         $data=[];
         $data["machine"] = $this->_M_Machine->find($machineId);
+        $data["operator"] = $this->_M_User->getOperateList();
+        $data["helper"] = $this->_M_User->getHelperList();
         return view("Roll/rollProductionCutting",$data);
     }
 
@@ -1294,8 +1306,8 @@ class RollController extends Controller
                     ->where("roll_details.roll_no",$request->rollNo)
                     ->where(function ($query) {
                         $query->where(function($subQuery){
-                                    $subQuery->where('roll_details.is_printed', false)
-                                    ->whereNull(DB::raw('json_array_length(roll_details.printing_color)'));
+                                    $subQuery->whereNull(DB::raw('json_array_length(roll_details.printing_color)'));
+                                    // ->where('roll_details.is_printed', false)
                                 }                            
                             )
                             ->orWhere(function ($subQuery) {
@@ -1309,6 +1321,8 @@ class RollController extends Controller
                     ->first();
             if($data){
                 $data->printing_color = collect(json_decode($data->printing_color,true))->implode(",");
+                $data->operator = $this->_M_User->getOperateList();
+                $data->helper = $this->_M_User->getHelperList();
             }
             $message = "Data Fetch";
             if(!$data){
@@ -1362,8 +1376,12 @@ class RollController extends Controller
             $rule = [
                 "id" => "required|exists:" . $this->_M_Machine->getTable() . ",id,is_cutting,true",
                 "cuttingUpdate" => "required|date|date_format:Y-m-d|before_or_equal:" . Carbon::now()->format("Y-m-d"),
+                "shift" => "required|in:Day,Night",
+                "operatorId" => "required|exists:".$this->_M_User->getTable().",id",
+                "helperId" => "required|exists:".$this->_M_User->getTable().",id",
                 "roll" => "required|array",
                 "roll.*.id"=>"required|exists:".$this->_M_RollDetail->getTable().",id,lock_status,false,is_cut,false",
+                "roll.*.totalQtr"=>"required",
             ];
             $validate = Validator::make($request->all(),$rule);
             if($validate->fails()){
@@ -1374,9 +1392,15 @@ class RollController extends Controller
                 $roll = $this->_M_RollDetail->find($val['id']);
                 $roll->is_cut = true;
                 $roll->cutting_date = $request->cuttingUpdate;
-                $roll->weight_after_cutting = $val["cuttingWeight"];
+                $roll->weight_after_cutting = $roll->net_weight - $val["totalQtr"]??0;
                 $roll->cutting_machine_id = $request->id;
                 $roll->update();
+                $newRequest = new Request($request->all());
+                $newRequest->merge([
+                    "roll_id"=>$roll->id,
+                    "total_qtr"=>$val["totalQtr"]??0,
+                ]);
+                $id = $this->_M_GarbageAcceptRegister->store($newRequest);
             }
             DB::commit();
             return responseMsgs(true,"Roll No ".$roll->roll_no." Printed","");
@@ -1911,20 +1935,22 @@ class RollController extends Controller
                         DB::raw("(
                             SELECT *
                             FROM(
-                                    (
-                                        SELECT order_roll_bag_types.order_id, STRING_AGG(roll_details.roll_no,' , ') as roll_no 
-                                        FROM order_roll_bag_types
-                                        JOIN roll_details on roll_details.id = order_roll_bag_types.roll_id
-                                        WHERE order_roll_bag_types.lock_status = false
-                                        GROUP BY order_roll_bag_types.order_id
-                                    )
-                                    UNION ALL(
-                                        SELECT order_roll_bag_types.order_id, STRING_AGG(roll_transits.roll_no,' , ') as roll_no 
-                                        FROM order_roll_bag_types
-                                        JOIN roll_transits on roll_transits.id = order_roll_bag_types.roll_id
-                                        WHERE order_roll_bag_types.lock_status = false
-                                        GROUP BY order_roll_bag_types.order_id
-                                    )
+                                    SELECT order_id, STRING_AGG(roll_no,' , ') as roll_no 
+                                    FROM(
+                                        (
+                                            SELECT order_roll_bag_types.order_id, roll_details.roll_no 
+                                            FROM order_roll_bag_types
+                                            JOIN roll_details on roll_details.id = order_roll_bag_types.roll_id
+                                            WHERE order_roll_bag_types.lock_status = false
+                                        )
+                                        UNION ALL(
+                                            SELECT order_roll_bag_types.order_id, roll_transits.roll_no
+                                            FROM order_roll_bag_types
+                                            JOIN roll_transits on roll_transits.id = order_roll_bag_types.roll_id
+                                            WHERE order_roll_bag_types.lock_status = false
+                                        )
+                                    )orders
+                                    GROUP BY order_id 
                             )
                         ) AS order_roll_bag_types"),
                         "order_roll_bag_types.order_id","order_punch_details.id"
