@@ -9,6 +9,7 @@ use App\Http\Controllers\OtherRegister;
 use App\Http\Controllers\PackingController;
 use App\Http\Controllers\RollController;
 use App\Http\Controllers\SectorController;
+use App\Http\Controllers\TransporterController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Route;
@@ -78,6 +79,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("color/list","colorList")->name("color.list");
         Route::post("color/add","addColor")->name("color.add");
         Route::get("color/edit/{id}","colorDtl")->name("color.edit");
+    });
+
+    Route::controller(TransporterController::class)->group(function(){
+        Route::get("transporter/auto/list","autoList")->name("transporter.auto.list");
+        Route::post("transporter/auto/add","addAuto")->name("transporter.auto.add");
+        Route::get("transporter/auto/dtl/{id}","autoDtl")->name("transporter.auto.dtl");
+
+        Route::get("transporter/transporter/list","transporterList")->name("transporter.transporter.list");
+        Route::post("transporter/transporter/add","addTransporter")->name("transporter.transporter.add");
+        Route::get("transporter/transporter/dtl/{id}","transporterDtl")->name("transporter.transporter.dtl");
     });
 
     Route::controller(RollController::class)->group(function(){
