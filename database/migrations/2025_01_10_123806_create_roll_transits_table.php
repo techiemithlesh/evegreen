@@ -37,6 +37,7 @@ return new class extends Migration
             $table->decimal('l', 18, 1)->nullable();
             $table->decimal('g', 18, 1)->nullable();
             $table->json('printing_color')->nullable();
+            $table->string('loop_color', 100)->nullable();
             $table->boolean('is_printed')->default(false);
             $table->date('printing_date')->nullable();
             $table->decimal('weight_after_print', 18)->nullable();
@@ -49,7 +50,6 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable()->default(DB::raw("now()"));
             $table->timestamp('updated_at')->nullable();
             $table->softDeletes();
-            $table->string('loop_color', 100)->nullable();
         });
     }
 

@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('payment_mode_masters', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('payment_mode', 200)->unique('payment_mode_masters_payment_mode_key');
-            $table->boolean('lock_staus')->default(false);
+            $table->boolean('lock_status')->default(false);
             $table->timestamp('created_at')->nullable()->default(DB::raw("now()"));
             $table->timestamp('updated_at')->nullable();
             $table->softDeletes();

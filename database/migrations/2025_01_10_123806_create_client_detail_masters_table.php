@@ -15,18 +15,18 @@ return new class extends Migration
         Schema::create('client_detail_masters', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('client_name')->unique('client_detail_masters_client_name_key');
+            $table->smallInteger('sector_id')->nullable();
             $table->string('mobile_no', 100)->nullable();
             $table->string('email', 100)->nullable();
             $table->text('address')->nullable();
+            $table->string('city', 100)->nullable();
+            $table->string('state', 100)->nullable();
+            $table->string('secondary_mobile_no', 100)->nullable();
+            $table->string('temporary_mobile_no', 100)->nullable();
             $table->boolean('lock_status')->default(false);
             $table->timestamp('created_at')->nullable()->default(DB::raw("now()"));
             $table->timestamp('updated_at')->nullable();
             $table->softDeletes();
-            $table->string('city', 100)->nullable();
-            $table->string('state', 100)->nullable();
-            $table->smallInteger('sector_id')->nullable();
-            $table->string('secondary_mobile_no', 100)->nullable();
-            $table->string('temporary_mobile_no', 100)->nullable();
         });
     }
 
