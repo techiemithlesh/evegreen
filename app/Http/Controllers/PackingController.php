@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AutoDetail;
 use App\Models\BagPacking;
 use App\Models\BagPackingTransport;
 use App\Models\BagPackingTransportDetail;
@@ -9,6 +10,7 @@ use App\Models\BagTypeMaster;
 use App\Models\ClientDetailMaster;
 use App\Models\OrderPunchDetail;
 use App\Models\RollDetail;
+use App\Models\TransporterDetail;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -29,6 +31,8 @@ class PackingController extends Controller
     private $_M_PackTransport;
     private $_M_TransportDetail;
     protected $_M_OrderPunchDetail;
+    protected $_M_Auto;
+    protected $_M_Transporter;
 
     function __construct()
     {
@@ -39,6 +43,8 @@ class PackingController extends Controller
         $this->_M_PackTransport  = new BagPackingTransport();
         $this->_M_TransportDetail = new BagPackingTransportDetail();
         $this->_M_OrderPunchDetail = new OrderPunchDetail();
+        $this->_M_Auto  =  new AutoDetail();
+        $this->_M_Transporter = new TransporterDetail();
     }
 
     public function packingEnter(Request $request){
@@ -385,6 +391,28 @@ class PackingController extends Controller
         }
     }
 
+    public function bagTransport(Request $request){
+        $flag = $request->flag;
+        if($request->ajax()){
+            return $this->bagGodown($request);
+        }
+        $data["autoList"] =$this->_M_Auto->where("lock_status",false)->orderBy("id","ASC")->get();
+        $data["transporterList"] = $this->_M_Transporter->where("lock_status",false)->orderBy("id","ASC")->get();
+        $data["flag"] = $flag;
+        return view("Packing/transport",$data);
+    }
+
+    public function bagStockToGodown(Request $request){
+        $flag = $request->flag;
+        if($request->ajax()){
+            return $this->bagStock($request);
+        }
+        $data["autoList"] =$this->_M_Auto->where("lock_status",false)->orderBy("id","ASC")->get();
+        $data["transporterList"] = $this->_M_Transporter->where("lock_status",false)->orderBy("id","ASC")->get();
+        $data["flag"] = $flag;
+        return view("Packing/transportStoke",$data);
+    }
+
     public function addBagInTransport(Request $request){        
         return view("Packing/inTransport");
     }
@@ -429,8 +457,8 @@ class PackingController extends Controller
                 "dispatchedDate" => "required|date", // Ensures dispatchedDate is a valid date
                 "invoiceNo" => "required", // Invoice number is mandatory
                 "billNo" => "required_if:transPortType,For Delivery", // Bill number is required only if transport type is 'For Delivery'
-                "packing" => "required|array", // Packing must be a non-empty array
-                "packing.*.id" => [
+                "bag" => "required|array", // Packing must be a non-empty array
+                "bag.*.id" => [
                         "required",
                         Rule::exists($this->_M_BagPacking->getTable(), "id")
                             ->whereIn("packing_status", [1, 2]),
@@ -444,7 +472,7 @@ class PackingController extends Controller
             $request->merge(["userId"=>$user->id,"transportStatus"=>$transportStatus]);
             DB::beginTransaction();
             $tranId = $this->_M_PackTransport->store($request);
-            foreach($request->packing as $val){
+            foreach($request->bag as $val){
                 $packing = $this->_M_BagPacking->find($val["id"]);
                 $newRequest = new Request($val);
                 $newRequest->merge([

@@ -16,7 +16,7 @@
             <h5 class="panel-title">List</h5>   
             <div class="panel-control">
                 <a href="{{route('packing.godown.reiving')}}" class="btn btn-primary btn-sm">Add Bag</a>
-                <a href="{{route('packing.inTransport')}}" class="btn btn-warning btn-sm">Transport Bag</a>
+                <a href="{{route('packing.transport.for','For Delivery')}}" class="btn btn-warning btn-sm">Transport Bag</a>
             </div>         
         </div>
         <div class="panel-body">            

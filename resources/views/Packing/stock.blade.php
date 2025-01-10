@@ -13,7 +13,10 @@
     </div>
     <div class="container">
         <div class="panel-heading">
-            <h5 class="panel-title">List</h5>            
+            <h5 class="panel-title">List</h5> 
+            <div class="panel-control">
+                <a href="{{route('packing.transport.stock')}}" class="btn btn-warning btn-sm">Transport Bag</a>
+            </div>           
         </div>
         <div class="panel-body">            
             <table class="table table-bordered  table-responsive table-fixed" id="postsTable">
