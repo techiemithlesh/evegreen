@@ -78,6 +78,7 @@
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
+            searching:false,
             ajax: {
                 url: "{{route('order.unbook')}}", // The route where you're getting data from
                 data: function(d) {
@@ -124,9 +125,9 @@
                 text: 'Export to Excel', // Button label
                 className: 'btn btn-success', // Custom button class
             }],                        
-            // initComplete: function () {
-            //     addFilter('postsTable',[0]);
-            // },
+            initComplete: function () {
+                addFilter('postsTable',[0,($('#postsTable thead tr:nth-child(1) th').length - 1)]);
+            },
         });
 
         $("#myForm").validate({

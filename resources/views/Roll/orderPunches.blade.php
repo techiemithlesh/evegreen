@@ -354,19 +354,11 @@
                         const table = $("<table>").addClass("history-table");
                         const thead = $("<thead>").append(
                             $("<tr>").append(
-                                "<th>Sl</th>",
-                                "<th>Action</th>",
-                                "<th>Quality</th>",
-                                "<th>Bag Type</th>",
+                                "<th>Bag Size</th>",
+                                "<th>Bag Color</th>",
                                 "<th>GSM</th>",
-                                "<th>Rate Per Unit</th>",
-                                "<th>Unit</th>",
-                                "<th>Qtr</th>",
-                                "<th>W</th>",
-                                "<th>L</th>",
-                                "<th>G</th>",
-                                "<th>Loop Color</th>",
-                                "<th>Printing Color</th>",
+                                "<th>Bag Type</th>",
+                                "<th>Action</th>",
                             )
                         );
 
@@ -376,19 +368,12 @@
                         response.data.forEach((item,index) => {
                             tbody.append(                               
                                 $("<tr>").append(
-                                    `<td>${index+1}</td>`,
-                                    `<td><button data-item='${JSON.stringify(item)}' id="or${index}" onclick="setOrderValue('or${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
-                                    `<td>${item.bag_quality}</td>`,
-                                    `<td>${item.bag_type || "N/A"}</td>`,
-                                    `<td>${item.bag_gsm || "N/A"}</td>`,
-                                    `<td>${item.rate_per_unit || "N/A"}</td>`,
-                                    `<td>${item.units || "N/A"}</td>`,
-                                    `<td>${item.total_units || "N/A"}</td>`,
-                                    `<td>${item.bag_w || "N/A"}</td>`,
-                                    `<td>${item.bag_l || "N/A"}</td>`,
-                                    `<td>${item.bag_g || "N/A"}</td>`,
-                                    `<td>${item.bag_loop_color || "N/A"}</td>`,
+                                    `<td>${parseFloat(item.bag_w) + parseFloat(item.bag_g ? item.bag_g : 0) } X ${ parseFloat(item.bag_l)}</td>`,
                                     `<td>${JSON.parse(item.bag_color || "[]").join(", ")}</td>`,
+                                    `<td>${item.bag_gsm || "N/A"}</td>`,
+                                    `<td>${item.bag_type || "N/A"}</td>`,
+                                    `<td><button data-item='${JSON.stringify(item)}' id="or${index}" onclick="setOrderValue('or${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
+                                    
                                 )
                             );
                         });

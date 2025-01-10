@@ -189,26 +189,26 @@
 
             columns: [
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                { data: "purchase_date", name: "purchase_date" },
-                { data: "vendor_name", name: "vendor_name" },
-                { data: "hardness", name: "hardness" },
-                { data: "roll_type", name: "roll_type" },
-                { data: "size", name: "size" },
-                { data: "gsm", name: "gsm" },
-                { data: "roll_color", name: "roll_color" },
-                { data: "length", name: "length" },
-                { data: "roll_no", name: "roll_no" },
-                { data: "gross_weight", name: "gross_weight" },
-                { data: "net_weight", name: "net_weight" },
-                { data: "gsm_variation", name: "gsm_variation" },
-                { data : "w", name: "w" },
-                { data : "l", name: "l" },
-                { data : "g", name: "g" },
-                { data : "bag_type", name: "bag_type" },
-                { data : "bag_unit", name: "bag_unit" },
-                { data : "client_name", name: "client_name" },
-                { data : "print_color", name: "print_color" },
-                { data : "loop_color", name: "loop_color" },
+                { data: "purchase_date", name: "purchase_date",render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")} },
+                { data: "vendor_name", name: "vendor_name" ,render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")}},
+                { data: "hardness", name: "hardness" ,render:function(row,type,data){return (data.hardness ? data.hardness :"N/A")}},
+                { data: "roll_type", name: "roll_type",render:function(row,type,data){return (data.roll_type ? data.roll_type :"N/A")} },
+                { data: "size", name: "size",render:function(row,type,data){return (data.size ? data.size :"N/A")} },
+                { data: "gsm", name: "gsm" ,render:function(row,type,data){return (data.gsm ? data.gsm :"N/A")}},
+                { data: "roll_color", name: "roll_color" ,render:function(row,type,data){return (data.roll_color ? data.roll_color :"N/A")}},
+                { data: "length", name: "length" ,render:function(row,type,data){return (data.length ? data.length :"N/A")}},
+                { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no :"N/A")}},
+                { data: "gross_weight", name: "gross_weight",render:function(row,type,data){return (data.gross_weight ? data.gross_weight :"N/A")} },
+                { data: "net_weight", name: "net_weight",render:function(row,type,data){return (data.net_weight ? data.net_weight :"N/A")} },
+                { data: "gsm_variation", name: "gsm_variation",render:function(row,type,data){return (data.gsm_variation ? data.gsm_variation :"N/A")} },
+                { data : "w", name: "w" ,render:function(row,type,data){return (data.w ? data.w :"N/A")}},
+                { data : "l", name: "l" ,render:function(row,type,data){return (data.l ? data.l :"N/A")}},
+                { data : "g", name: "g" ,render:function(row,type,data){return (data.g ? data.g :"N/A")}},
+                { data : "bag_type", name: "bag_type" ,render:function(row,type,data){return (data.bag_type ? data.bag_type :"N/A")}},
+                { data : "bag_unit", name: "bag_unit" ,render:function(row,type,data){return (data.bag_unit ? data.bag_unit :"N/A")}},
+                { data : "client_name", name: "client_name" ,render:function(row,type,data){return (data.client_name ? data.client_name :"N/A")}},
+                { data : "print_color", name: "print_color" ,render:function(row,type,data){return (data.print_color ? data.print_color :"N/A")}},
+                { data : "loop_color", name: "loop_color" ,render:function(row,type,data){return (data.loop_color ? data.loop_color :"N/A")}},
                 { data: "action", name: "action", orderable: false, searchable: false },
             ],
             dom: 'lBfrtip', // This enables the buttons
@@ -263,6 +263,8 @@
 
             }],
             createdRow: function(row, data, dataIndex) {
+                let td = $('td', row).eq(6); 
+                td.attr("title", data?.gsm_json);
                 // Apply the custom class to the row
                 if (data.row_color) {
                     $(row).addClass(data.row_color);

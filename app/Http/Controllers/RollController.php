@@ -641,6 +641,9 @@ class RollController extends Controller
                 ->addColumn('gsm_variation', function ($val) {                        
                     return roundFigure($val->gsm_variation)."%";
                 })
+                ->addColumn("gsm_json",function($val){
+                    return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
+                })
                 ->addColumn('print_color', function ($val) {                    
                     return collect(json_decode($val->printing_color,true))->implode(",");
                 })
@@ -810,6 +813,9 @@ class RollController extends Controller
                 ->addColumn("loop_color",function($val){
                     return"";
                 })
+                ->addColumn("gsm_json",function($val){
+                    return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
+                })
                 ->rawColumns(['row_color', 'action'])
                 ->make(true);
                 // dd(DB::getQueryLog());
@@ -880,6 +886,9 @@ class RollController extends Controller
                 })
                 ->addColumn("loop_color",function($val){
                     return"";
+                })
+                ->addColumn("gsm_json",function($val){
+                    return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
                 })
                 ->rawColumns(['row_color', 'action'])
                 ->make(true);
@@ -952,6 +961,9 @@ class RollController extends Controller
                 })
                 ->addColumn("loop_color",function($val){
                     return"";
+                })
+                ->addColumn("gsm_json",function($val){
+                    return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
                 })
                 ->rawColumns(['row_color', 'action'])
                 ->make(true);
@@ -1068,6 +1080,9 @@ class RollController extends Controller
                     ->addColumn("loop_color",function($val){
                         return"";
                     })
+                    ->addColumn("gsm_json",function($val){
+                        return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
+                    })
                     ->rawColumns(['row_color', 'action'])
                     ->make(true);
                     // dd(DB::getQueryLog());
@@ -1180,6 +1195,9 @@ class RollController extends Controller
                 ->addColumn("loop_color",function($val){
                     return"";
                 })
+                ->addColumn("gsm_json",function($val){
+                    return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
+                })
                 ->addColumn('action', function ($val){                    
                     $button = "";
                     if(!$val->is_cut){
@@ -1244,6 +1262,9 @@ class RollController extends Controller
                 })
                 ->addColumn("loop_color",function($val){
                     return"";
+                })
+                ->addColumn("gsm_json",function($val){
+                    return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
                 })
                 ->addColumn('action', function ($val){                    
                     $button = "";
@@ -1327,7 +1348,10 @@ class RollController extends Controller
             $message = "Data Fetch";
             if(!$data){
                 $roll = $this->_M_RollDetail->where("roll_details.roll_no",$request->rollNo)->first();
-                if(!$roll->is_printed && sizeof(json_decode($roll->printing_color,true))>0){
+                if(!$roll){
+                    $message = "Roll is not Fined";
+                }
+                elseif(!$roll->is_printed && sizeof(json_decode($roll->printing_color,true))>0){
                     $message = "Roll is not Printed";
                 }elseif($roll->is_cut){
                     $message = "Roll Already Cut";
@@ -1781,20 +1805,24 @@ class RollController extends Controller
                         DB::raw("(
                             SELECT *
                             FROM(
-                                    (
-                                        SELECT order_roll_bag_types.order_id, STRING_AGG(roll_details.roll_no,' , ') as roll_no 
-                                        FROM order_roll_bag_types
-                                        JOIN roll_details on roll_details.id = order_roll_bag_types.roll_id
-                                        WHERE order_roll_bag_types.lock_status = false
-                                        GROUP BY order_roll_bag_types.order_id
-                                    )
-                                    UNION ALL(
-                                        SELECT order_roll_bag_types.order_id, STRING_AGG(roll_transits.roll_no,' , ') as roll_no 
-                                        FROM order_roll_bag_types
-                                        JOIN roll_transits on roll_transits.id = order_roll_bag_types.roll_id
-                                        WHERE order_roll_bag_types.lock_status = false
-                                        GROUP BY order_roll_bag_types.order_id
-                                    )
+                                    SELECT order_id, STRING_AGG(roll_no,' , ') as roll_no 
+                                    FROM(
+                                        (
+                                            SELECT order_roll_bag_types.order_id, STRING_AGG(roll_details.roll_no,' , ') as roll_no 
+                                            FROM order_roll_bag_types
+                                            JOIN roll_details on roll_details.id = order_roll_bag_types.roll_id
+                                            WHERE order_roll_bag_types.lock_status = false
+                                            GROUP BY order_roll_bag_types.order_id
+                                        )
+                                        UNION ALL(
+                                            SELECT order_roll_bag_types.order_id, STRING_AGG(roll_transits.roll_no,' , ') as roll_no 
+                                            FROM order_roll_bag_types
+                                            JOIN roll_transits on roll_transits.id = order_roll_bag_types.roll_id
+                                            WHERE order_roll_bag_types.lock_status = false
+                                            GROUP BY order_roll_bag_types.order_id
+                                        )
+                                    ) AS orders
+                                    GROUP BY order_id 
                             )
                         ) AS order_roll_bag_types"),
                         "order_roll_bag_types.order_id","order_punch_details.id"

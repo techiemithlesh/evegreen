@@ -54,7 +54,7 @@
                         <th>Hardness</th>
                         <th>Roll Type</th>
                         <th>Roll Size</th>
-                        <th>GSM <span class="fs-6 fw-light">(gsm/laminate/bopp)</span></th>
+                        <th>GSM</th>
                         <th>Roll Color</th>
                         <th>Length</th>
                         <th>Roll No</th>
@@ -151,7 +151,11 @@
                     extend: 'excel',
                     text: 'Export to Excel',
                     className: 'btn btn-success',
-            }],            
+            }], 
+            createdRow: function(row, data, dataIndex) {
+                let td = $('td', row).eq(6); 
+                td.attr("title", data?.gsm_json);
+            },           
             initComplete: function () {
                 addFilter('postsTable',[0]);
             },

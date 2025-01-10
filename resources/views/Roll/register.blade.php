@@ -57,7 +57,7 @@
                         <th>Hardness</th>
                         <th>Roll Type</th>
                         <th>Roll Size</th>
-                        <th>GSM <span class="fs-6 fw-light">(gsm/laminate/bopp)</span></th>
+                        <th>GSM </th>
                         <th>Roll Color</th>
                         <th>Length</th>
                         <th>Roll No</th>
@@ -207,6 +207,8 @@
             }],
             createdRow: function(row, data, dataIndex) {
                 // Apply the custom class to the row
+                let td = $('td', row).eq(7); 
+                td.attr("title", data?.gsm_json);
                 if (data.row_color) {
                     $(row).addClass(data.row_color);
                     if(data.row_color=="tr-client"){

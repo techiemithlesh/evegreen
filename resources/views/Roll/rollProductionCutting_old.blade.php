@@ -32,7 +32,7 @@
                         <th>Hardness</th>
                         <th>Roll Type</th>
                         <th>Roll Size</th>
-                        <th>GSM <span class="fs-6 fw-light">(gsm/laminate/bopp)</span></th>
+                        <th>GSM</th>
                         <th>Roll Color</th>
                         <th>Length</th>
                         <th>Roll No</th>
@@ -128,6 +128,8 @@
                     className: 'btn btn-success',
             }],
             createdRow: function(row, data, dataIndex) {
+                let td = $('td', row).eq(7); 
+                td.attr("title", data?.gsm_json);
                 // Apply the custom class to the row
                 if (data.row_color) {
                     $(row).addClass(data.row_color);

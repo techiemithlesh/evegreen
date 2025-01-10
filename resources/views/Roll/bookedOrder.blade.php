@@ -86,6 +86,7 @@
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
+            searching:false,
             ajax: {
                 url: "{{route('order.book')}}", // The route where you're getting data from
                 data: function(d) {
@@ -130,7 +131,10 @@
                 extend: 'csv',
                 text: 'Export to Excel',
                 className: 'btn btn-success',
-            }],     
+            }],
+            initComplete: function () {
+                addFilter('postsTable',[0]);
+            },     
         });
 
     });
