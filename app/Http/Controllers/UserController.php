@@ -101,6 +101,7 @@ class UserController extends Controller
             }
             
         }catch(Exception $e){
+            dd($e);
             flashToast("message","Internal Server Error");
             return redirect()->back();
         }
