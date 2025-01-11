@@ -78,7 +78,7 @@ class UserController extends Controller
 
                     
                     if (Auth::attempt($credentials)) {
-                        $menuList =Redis::get("menu_list_".$user["user_type_id"]);                        
+                        $menuList ="";Redis::get("menu_list_".$user["user_type_id"]);                        
                         if (!$menuList) {
                             $pemitedMenu = $user->getMenuList()->get();
                             
