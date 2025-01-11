@@ -40,7 +40,7 @@ tr.selected {
             </div>           
         </div>
         <div class="panel-body">
-            <table id="postsTable" class="table table-striped table-bordered move">
+            <table id="postsTable" class="table table-striped table-bordered move table-fixed">
                 <thead>
                     <tr>
                         <th onclick="selectAllCheck()">#</th>
