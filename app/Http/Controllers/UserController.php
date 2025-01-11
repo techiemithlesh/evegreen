@@ -89,7 +89,7 @@ class UserController extends Controller
                             $tree = (new MenuController())->generateMenuTree($menus); 
                             Redis::set("menu_list_".$user["user_type_id"],$tree);
                         }
-                        flashToast("message","success");
+                        flashToast("message","Login");
                         return redirect()->to('/home');
                     }
                 }else{
