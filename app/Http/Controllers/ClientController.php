@@ -48,7 +48,7 @@ class ClientController extends Controller
     }
 
     public function clientList(Request $request){
-        try{
+        try{ 
             if($request->ajax()){
                 $data = $this->_M_ClientDetail->getClientListOrm()->orderBy("id","ASC")->get();
                 return DataTables::of($data)
