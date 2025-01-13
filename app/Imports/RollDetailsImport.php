@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\RollDetail;
 use App\Models\VendorDetailMaster;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,13 +24,14 @@ class RollDetailsImport implements ToCollection,WithHeadingRow
     {
         $_M_RollDetail = new RollDetail();
         $_M_VendorDetail = new VendorDetailMaster();
-        foreach ($rows as  $row) { 
+        foreach ($rows as $row) {
             $row["vender_id"] = $_M_VendorDetail->where("vendor_name",$row["vendor_name"])->first()->id;
             $row["size"] = $row["roll_size"];
             $row["gsm"] = $row["roll_gsm"];
             $row["gsm_json"] = $row["bopp"] ? explode("/",$row["bopp"]):null;
             $row["length"] = $row["roll_length"];
             $row['roll_type'] = $row['roll_type']? $row['roll_type']: "NW";
+            $row["purchase_date"] = $row["purchase_date"]?Carbon::parse($row["purchase_date"])->format("Y-m-d"):null;
             $request = new Request($row->toArray());
             $_M_RollDetail->store($request);
         }

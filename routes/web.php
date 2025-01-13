@@ -4,6 +4,7 @@ use App\Http\Controllers\BagController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\Dashboard;
+use App\Http\Controllers\MasterController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OtherRegister;
 use App\Http\Controllers\PackingController;
@@ -24,6 +25,26 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(Dashboard::class)->group(function(){
         Route::get('/home',"home")->name("home");
     });
+    Route::controller(MasterController::class)->group(function(){
+        Route::get("master/fare/list","fareList")->name("master.fare.list");
+        Route::post("master/fare/add","addFare")->name("master.fare.add");
+        Route::get("master/fare/dtl/{id?}","fareDtl")->name("master.fare.dtl");
+
+        Route::get("master/stereo/list","stereoList")->name("master.stereo.list");
+        Route::post("master/stereo/add","addStereo")->name("master.stereo.add");
+        Route::get("master/stereo/dtl/{id?}","stereoDtl")->name("master.stereo.dtl");
+
+        Route::get("master/grade/list","gradeList")->name("master.grade.list");
+        Route::post("master/grade/add","addGrade")->name("master.grade.add");
+        Route::get("master/grade/dtl/{id?}","gradeDtl")->name("master.grade.dtl");
+
+        Route::get("master/grade/list","gradeList")->name("master.grade.list");
+        Route::post("master/grade/add","addGrade")->name("master.grade.add");
+        Route::get("master/grade/dtl/{id?}","gradeDtl")->name("master.grade.dtl");
+
+        
+    });
+
     Route::controller(MenuController::class)->group(function(){
         Route::get("/menu-list","getMenuList")->name("menu-list");
         Route::get("/menu/update/user-list","updateMenuUserTypeList")->name("menu.update.user.list");
