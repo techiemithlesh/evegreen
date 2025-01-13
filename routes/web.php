@@ -38,9 +38,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post("master/grade/add","addGrade")->name("master.grade.add");
         Route::get("master/grade/dtl/{id?}","gradeDtl")->name("master.grade.dtl");
 
-        Route::get("master/grade/list","gradeList")->name("master.grade.list");
-        Route::post("master/grade/add","addGrade")->name("master.grade.add");
-        Route::get("master/grade/dtl/{id?}","gradeDtl")->name("master.grade.dtl");
+        Route::get("master/roll-quality/list","rollQualityList")->name("master.roll.quality.list");
+        Route::post("master/roll-quality/add","addRollQuality")->name("master.roll.quality.add");
+        Route::get("master/roll-quality/dtl/{id?}","rollQualityDtl")->name("master.roll.quality.dtl");
+
+        Route::get("master/grade-map/list","gradeListMap")->name("master.grade.map.list");
 
         
     });

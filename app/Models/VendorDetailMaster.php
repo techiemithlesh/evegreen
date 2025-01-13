@@ -35,4 +35,8 @@ class VendorDetailMaster extends Model
     public function getVenderListOrm(){
         return self::where("lock_status",false);
     }
+
+    public function rollQualityList(){
+        return $this->hasMany(RollQualityMaster::class,"vendor_id","id")->where("lock_status",false)->orderBy("id","ASC");
+    }
 }

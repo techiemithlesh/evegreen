@@ -17,6 +17,12 @@ class RollQualityGradeMap extends Model
 
     public function store($request){        
         $inputs = snakeCase($request);
+        $test= self::where("roll_quality_id",$inputs["roll_quality_id"])->first();
+        if($test){
+            $request->merge(["id"=>$test->id,"lock_status"=>false]);
+            $this->edit($request);
+            return $test->id;
+        }
         $id= self::create($inputs->all())->id;
         return $id;
     }
