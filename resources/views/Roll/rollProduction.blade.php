@@ -69,7 +69,7 @@
                 <!-- Submit Button -->
                 <div class="row mt-4">
                     <div class="col-sm-12 text-end">
-                        <button type="submit" class="btn btn-success">Add</button>
+                        <button type="submit" class="btn btn-success">Submit</button>
                     </div>
                 </div>
             </form>

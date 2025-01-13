@@ -62,7 +62,7 @@
                 @csrf
                 <div class="row">                    
                     <div class="row mt-3">
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingForClientId">Book For Client 
                                     <span onclick="openRollBookingClineModel()"  style="font-weight: bolder; font-size:small; text-decoration: underline;"> 
@@ -80,14 +80,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="orderDate">Order Date</label>
                                 <input type="date" max="{{date('Y-m-d')}}" value="{{date('Y-m-d')}}" name="orderDate" id="orderDate" class="form-control" required/>                                  
                                 <span class="error-text" id="orderDate-error"></span>
                             </div>
                         </div>                        
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingEstimatedDespatchDate">Dispatch Date</label>
                                 <input type="date" min="{{date('Y-m-d')}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" required/>                                  
@@ -97,7 +97,7 @@
                     </div>
 
                     <div class="row mt-3"> 
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bagQuality">Bag Quality </label>
                                 <select name="bagQuality" id="bagQuality" class="form-select" required onchange="showHidePrintingColorDiv()">
@@ -108,7 +108,7 @@
                                 <span class="error-text" id="bagQuality-error"></span>
                             </div>
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="ratePerUnit">Rate Per Unit</label>
                                 <input type="text" name="ratePerUnit" id="ratePerUnit" class="form-control" required onkeypress="return isNumDot(event);" />                                                     
@@ -116,8 +116,45 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row mt-3"> 
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="form-label" for="rateTypeId">Rate Type </label>
+                                <select name="rateTypeId" id="rateTypeId" class="form-select" required>
+                                    <option value="">Select</option>
+                                    <option value="1">Virgin</option>
+                                    <option value="2">Semi</option>
+                                    <option value="3">Seconds</option>                                    
+                                </select>                                                                       
+                                <span class="error-text" id="rateTypeId-error"></span>
+                            </div>
+                        </div> 
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="form-label" for="fareTypeId">Fare</label>
+                                <select name="fareTypeId" id="fareTypeId" class="form-select" required>
+                                    <option value="">Select</option>
+                                    <option value="1">Yes</option>
+                                    <option value="2">No</option>
+                                    <option value="3">50:50</option>                                    
+                                </select>                                                                       
+                                <span class="error-text" id="fareTypeId-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="form-label" for="stereoTypeId">Stereo</label>
+                                <select name="stereoTypeId" id="stereoTypeId" class="form-select" required>
+                                    <option value="">Select</option>
+                                    <option value="1">Yes</option>
+                                    <option value="2">No</option>                                  
+                                </select>                                                                       
+                                <span class="error-text" id="stereoTypeId-error"></span>
+                            </div>
+                        </div>       
+                    </div>
                     <div class="row mt-3">                            
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagTypeId">Bag Type </label>
                                 <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop()">
@@ -129,8 +166,22 @@
                                 <span class="error-text" id="bookingBagTypeId-error"></span>
                             </div>
                         </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="form-label" for="bookingBagColor">Bag Color </label>
+                                <div class="col-md-12">
+                                    <select name="bookingBagColor" id="bookingBagColor" class="form-select" required> 
+                                        <option value="">Select</option>                                     
+                                        @foreach($rollColor as $val)
+                                        <option data-color="{{$val->color}}" value="{{$val->color}}">{{$val->color}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>                                                                       
+                                <span class="error-text" id="bookingBagColor-error"></span>
+                            </div>
+                        </div>
                         
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagUnits">Bag Unit</label>
                                 <select name="bookingBagUnits" id="bookingBagUnits" class="form-select" onchange="emptyTable()">
@@ -141,17 +192,17 @@
                                 <span class="error-text" id="bookingBagUnits-error"></span>
                             </div>
                         </div>                        
-                    </div>
-
-                    <div class="row mt-3"> 
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <div class="form-group">
-                                <label class="form-label" for="totalUnits">QTR</label>
+                                <label class="form-label" for="totalUnits">QTY</label>
                                 <input name="totalUnits" id="totalUnits" class="form-control" required onkeypress="return isNumDot(event);" onchange="getBalance()"/>                                 
                                 <span class="error-text" id="bookingBagUnits-error"></span>
                             </div>
                         </div>
-                        <div class="col-sm-6">
+                    </div>
+
+                    <div class="row mt-3"> 
+                        <div class="col-sm-4">
                             <div class="form-group" id='singleGsm'>
                                 <label class="form-label" for="bagGsm">GSM</label>
                                 <input name="bagGsm" id="bagGsm" class="form-control" required onkeypress="return isNumDot(event);" />                                 
@@ -163,17 +214,15 @@
                                 <span class="error-text" id="bagGsmJson-error"></span>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="row mt-3">    
-                        <div class="col-sm-6">
+                       
+                        <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="w">W</label>
                                 <input name="w" id="w" class="form-control" onkeypress="return isNumDot(event);" required />                                
                                 <span class="error-text" id="w-error"></span>
                             </div>
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="l">L </label>
                                 <input name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required />                                                                    
@@ -183,14 +232,14 @@
                     </div>
 
                     <div class="row mt-3" id="loopColorDiv"> 
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="looColor">Loop Color</label>
                                 <input name="looColor" id="looColor" class="form-control" required />                               
                                 <span class="error-text" id="looColor-error"></span>
                             </div>
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-4" id="gussetDiv">
                             <div class="form-group">
                                 <label class="form-label" for="g">G </label>
                                 <input name="g" id="g" class="form-control" onkeypress="return isNumDot(event);" required />                                                                    
@@ -198,9 +247,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row mt-3">                            
-                        
-                        <div class="col-sm-6" id="bookingPrintingColorDiv">
+                    <div class="row mt-3">  
+                        <div class="col-sm-4" id="bookingPrintingColorDiv">
                             <div class="form-group">
                                 <label class="form-label" for="bookingPrintingColor">Printing Color</label>
                                 <div class="col-md-12">
@@ -314,12 +362,17 @@
     function showHideLoop(){
         var bagType = $("#bookingBagTypeId").val();
         console.log(bagType);
-        if(["2"].includes(bagType)){
+        if(["2","4"].includes(bagType)){
             $("#loopColorDiv").show();
+            $("#gussetDiv").show();
+            if(bagType=="4"){
+                $("#gussetDiv").hide();
+            }
         }else{
             $("#looColor").val("");
             $("#g").val("");
             $("#loopColorDiv").hide();
+            $("#gussetDiv").hide();
         }
     }
 
@@ -455,6 +508,7 @@
             { id: "#l", name: "Bag Length" },
             { id: "#w", name: "Bag Width" },
             { id: "#bagGsm", name: "Bag GSM" },
+            { id: "#bookingBagColor", name:"Bag Color"},
         ];
         if($("#bookingBagTypeId").val()=="2"){
             inputs.push({ id: "#g", name: "Bag Gusset" });

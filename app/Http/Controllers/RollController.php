@@ -1440,6 +1440,7 @@ class RollController extends Controller
         $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->orderBy("id")->get();
         $data["bagType"] = $this->_M_BagType->getBagListOrm()->orderBy("id")->get();
         $data["color"] = $this->_M_Color->getColorListOrm()->orderBy("id")->get();
+        $data["rollColor"]=$this->_M_RollColor->getRollColorListOrm()->orderBy("id")->get();
         return view("Roll/orderPunches",$data);
     }
 
@@ -1513,6 +1514,10 @@ class RollController extends Controller
             if($request->bagGsm){
                 $roll->where("roll_details.gsm",(int)$request->bagGsm);
                 $transit->where("roll_transits.gsm",(int)$request->bagGsm);
+            }
+            if($request->bookingBagColor){
+                $roll->where("roll_details.roll_color",$request->bookingBagColor);
+                $transit->where("roll_transits.roll_color",$request->bookingBagColor);
             }
 
             $roll= $roll->get();

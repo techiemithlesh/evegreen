@@ -19,7 +19,7 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label class="control-label" for="venderId">Vender Name <span class="text-danger">*</span></label>
-                                <select name="venderId" id="venderId" class="form-control" required>
+                                <select name="venderId" id="venderId" class="form-control" required onchange="getRollQuality()">
                                     <option value="">Select</option>
                                     @foreach ($vendorList as $val)
                                         <option value="{{ $val->id }}">{{ $val->vendor_name }}</option>
@@ -39,7 +39,17 @@
                                 <span class="error-text" id="purchaseDate-error"></span>
                             </div>
                         </div>
-                        
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label" for="qualityId">Roll Quality<span class="text-danger">*</span></label>
+                                <select id="qualityId" name="qualityId" class="form-select"required >
+                                    <option value="">select</option>
+                                    <option value="">Semi</option>
+                                    <option value="">Plain</option>
+                                </select>
+                                <span class="error-text" id="size-error"></span>
+                            </div>
+                        </div>
                         <!-- Vendor Mobile Number -->
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -308,5 +318,9 @@
         }
         var color = $(option.element).data('color');
         return $('<span style="background-color: ' + color + '; padding: 3px 10px; color: white; border-radius: 3px;">' + option.text + '</span>');
+    }
+
+    function getRollQuality(){
+        // withe the code for qalty fetch by vender id;
     }
 </script>
