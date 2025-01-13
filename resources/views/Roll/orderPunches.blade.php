@@ -110,6 +110,18 @@
                         </div>
                         <div class="col-sm-4">
                             <div class="form-group">
+                                <label class="form-label" for="gradeId">Roll Grade</label>
+                                <select name="gradeId" id="gradeId" class="form-select" required >
+                                    <option value="">Select</option>
+                                    @foreach($grade as $val)
+                                    <option value="{{$val->id}}">{{$val->grade}}</option>
+                                    @endforeach
+                                </select>                                                                       
+                                <span class="error-text" id="bagQuality-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
                                 <label class="form-label" for="ratePerUnit">Rate Per Unit</label>
                                 <input type="text" name="ratePerUnit" id="ratePerUnit" class="form-control" required onkeypress="return isNumDot(event);" />                                                     
                                 <span class="error-text" id="ratePerUnit-error"></span>
@@ -122,9 +134,9 @@
                                 <label class="form-label" for="rateTypeId">Rate Type </label>
                                 <select name="rateTypeId" id="rateTypeId" class="form-select" required>
                                     <option value="">Select</option>
-                                    <option value="1">Virgin</option>
-                                    <option value="2">Semi</option>
-                                    <option value="3">Seconds</option>                                    
+                                    @foreach($rateType as $val)
+                                    <option value="{{$val->id}}">{{$val->rate_type}}</option>
+                                    @endforeach                                    
                                 </select>                                                                       
                                 <span class="error-text" id="rateTypeId-error"></span>
                             </div>
@@ -134,9 +146,9 @@
                                 <label class="form-label" for="fareTypeId">Fare</label>
                                 <select name="fareTypeId" id="fareTypeId" class="form-select" required>
                                     <option value="">Select</option>
-                                    <option value="1">Yes</option>
-                                    <option value="2">No</option>
-                                    <option value="3">50:50</option>                                    
+                                    @foreach($fare as $val)
+                                    <option value="{{$val->id}}">{{$val->fare_type}}</option>
+                                    @endforeach                                    
                                 </select>                                                                       
                                 <span class="error-text" id="fareTypeId-error"></span>
                             </div>
@@ -146,8 +158,9 @@
                                 <label class="form-label" for="stereoTypeId">Stereo</label>
                                 <select name="stereoTypeId" id="stereoTypeId" class="form-select" required>
                                     <option value="">Select</option>
-                                    <option value="1">Yes</option>
-                                    <option value="2">No</option>                                  
+                                    @foreach($stereo as $val)
+                                    <option value="{{$val->id}}">{{$val->stereo_type}}</option>
+                                    @endforeach                                  
                                 </select>                                                                       
                                 <span class="error-text" id="stereoTypeId-error"></span>
                             </div>
@@ -484,6 +497,11 @@
         $("#bookingBagUnits").val(item?.units);
         $("#bagGsm").val(item?.bag_gsm);
         $("#bagQuality").val(item?.bag_quality);
+
+        $("#gradeId").val(item?.grade_id);
+        $("#rateTypeId").val(item?.rate_type_id);
+        $("#fareTypeId").val(item?.fare_type_id);
+        $("#stereoTypeId").val(item?.stereo_type_id);
         showHidePrintingColorDiv();
         getBalance();
         

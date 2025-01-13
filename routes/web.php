@@ -44,6 +44,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::get("master/grade-map/list","gradeListMap")->name("master.grade.map.list");
 
+        Route::get("master/rate-type/list","rateTypeList")->name("master.rate.type.list");
+        Route::post("master/rate-type/add","addRateType")->name("master.rate.type.add");
+        Route::get("master/rate-type/dtl/{id?}","rateTypeDtl")->name("master.rate.type.dtl");
+
         
     });
 

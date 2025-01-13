@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\FareDetail;
 use App\Models\GradeMaster;
+use App\Models\RateTypeMaster;
 use App\Models\RollQualityGradeMap;
 use App\Models\RollQualityMaster;
 use App\Models\StereoDetail;
@@ -22,6 +23,7 @@ class MasterController extends Controller
     protected $_M_RollQualityMaster;
     protected $_M_RollQualityGradeMap;
     protected $_M_VendorDetail;
+    protected $_M_RateType;
 
     function __construct()
     {
@@ -31,6 +33,7 @@ class MasterController extends Controller
         $this->_M_RollQualityMaster = new RollQualityMaster();
         $this->_M_RollQualityGradeMap = new RollQualityGradeMap();
         $this->_M_VendorDetail = new VendorDetailMaster();
+        $this->_M_RateType = new RateTypeMaster();
     }
 
 
@@ -213,6 +216,49 @@ class MasterController extends Controller
     public function gradeListMap(Request $request){
         try{
             $data = $this->_M_GradeMaster->where("lock_status",false)->orderBy("grade","ASC")->get();         
+            return responseMsgs(true,"Data Fetched",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    /**
+     * rate type
+     */
+
+    public function rateTypeList(Request $request){
+        if($request->ajax()){
+            $data = $this->_M_RateType->where("lock_status",false)->orderBy("id","ASC");
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($val) {
+                    return '<button class="btn btn-sm btn-primary" onClick="openModelEdit('.$val->id.')" >Edit</button>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view("Master/rate_type_list");
+    }
+
+    public function addRateType(Request $request){
+        try{
+           
+            $message = "New Rate Type"; 
+            if($request->id){
+                $message = "Rate Type Update"; 
+                $this->_M_RateType->edit($request);
+            }else{
+                $this->_M_RateType->store($request);
+            }       
+            return responseMsgs(true,$message,"");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function rateTypeDtl($id){
+        try{
+            $data = $this->_M_RateType->find($id);
             return responseMsgs(true,"Data Fetched",$data);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");

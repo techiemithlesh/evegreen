@@ -10,18 +10,22 @@ use App\Models\ClientDetail;
 use App\Models\ClientDetailMaster;
 use App\Models\ColorMaster;
 use App\Models\CuttingScheduleDetail;
+use App\Models\FareDetail;
 use App\Models\GarbageAcceptRegister;
 use App\Models\GarbageNotAcceptRegister;
+use App\Models\GradeMaster;
 use App\Models\MachineMater;
 use App\Models\OrderPunchDetail;
 use App\Models\OrderRollBagType;
 use App\Models\PendingOrderBagType;
 use App\Models\PrintingMachine;
 use App\Models\PrintingScheduleDetail;
+use App\Models\RateTypeMaster;
 use App\Models\RollColorMaster;
 use App\Models\RollDetail;
 use App\Models\RollPrintColor;
 use App\Models\RollTransit;
+use App\Models\StereoDetail;
 use App\Models\User;
 use App\Models\VendorDetail;
 use App\Models\VendorDetailMaster;
@@ -60,6 +64,12 @@ class RollController extends Controller
     protected $_M_User;
     protected $_M_GarbageAcceptRegister;
     protected $_M_GarbageNotAcceptRegister;
+
+    protected $_M_GradeMaster;
+    protected $_M_FareDetail;
+    protected $_M_StereoDetail;
+    protected $_M_RateTypeMaster;
+
     function __construct()
     {
         $this->_M_User = new User();
@@ -78,6 +88,10 @@ class RollController extends Controller
         $this->_M_PendingOrderBagType = new PendingOrderBagType();
         $this->_M_GarbageAcceptRegister = new GarbageAcceptRegister();
         $this->_M_GarbageNotAcceptRegister = new GarbageNotAcceptRegister();
+        $this->_M_GradeMaster = new GradeMaster();
+        $this->_M_FareDetail = new FareDetail();
+        $this->_M_StereoDetail = new StereoDetail();
+        $this->_M_RateTypeMaster = new RateTypeMaster();
     }
 
     #================ Roll Transit =====================
@@ -1441,6 +1455,10 @@ class RollController extends Controller
         $data["bagType"] = $this->_M_BagType->getBagListOrm()->orderBy("id")->get();
         $data["color"] = $this->_M_Color->getColorListOrm()->orderBy("id")->get();
         $data["rollColor"]=$this->_M_RollColor->getRollColorListOrm()->orderBy("id")->get();
+        $data["grade"]=$this->_M_GradeMaster->getGradeListOrm()->orderBy("id")->get();
+        $data["fare"]=$this->_M_FareDetail->getFareListOrm()->orderBy("id")->get();
+        $data["stereo"]=$this->_M_StereoDetail->getStereoListOrm()->orderBy("id")->get();
+        $data["rateType"] = $this->_M_RateTypeMaster->getRateTypeListOrm()->orderBy("id")->get();
         return view("Roll/orderPunches",$data);
     }
 
@@ -1460,6 +1478,10 @@ class RollController extends Controller
                                     order_punch_details.bag_loop_color,
                                     order_punch_details.bag_color::text,
                                     order_punch_details.created_at,
+                                    order_punch_details.grade_id,
+                                    order_punch_details.rate_type_id,
+                                    order_punch_details.fare_type_id,
+                                    order_punch_details.stereo_type_id,
                                     bag_type_masters.bag_type
                                       ")
                     )
@@ -1474,7 +1496,8 @@ class RollController extends Controller
                 return implode('|', [
                     $item->bag_type_id, $item->bag_quality, $item->bag_gsm, $item->units, 
                     $item->total_units, $item->rate_per_unit, $item->bag_w, $item->bag_l, 
-                    $item->bag_g, $item->bag_loop_color, $item->bag_color, $item->bag_type
+                    $item->bag_g, $item->bag_loop_color, $item->bag_color, $item->bag_type,
+                    $item->grade_id,$item->rate_type_id,$item->fare_type_id,$item->stereo_type_id,
                 ]);
             });
 

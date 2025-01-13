@@ -27,4 +27,8 @@ class GradeMaster extends Model
         $return= self::where("id",$request->id)->update($inputs->all());
         return $return;
     }
+
+    public function getGradeListOrm(){
+        return self::where("lock_status",false);
+    }
 }

@@ -27,4 +27,8 @@ class StereoDetail extends Model
         $return= self::where("id",$request->id)->update($inputs->all());
         return $return;
     }
+
+    public function getStereoListOrm(){
+        return self::where("lock_status",false);
+    }
 }
