@@ -139,7 +139,7 @@ function addFilter(tableName,indexNo=[]){
       } else {
           var filterCell = $(`
               <th>
-                  <select class="filter-select" data-column="${index}" style="width: 100%" multiple="multiple">
+                  <select class="filter-select" data-column="${index}" style="width: 100%" multiple="multiple" style="font-size:xx-small;">
                       <option value="">All</option>
                   </select>
               </th>

@@ -222,6 +222,15 @@ class MasterController extends Controller
         }
     }
 
+    public function rollVenderListMap($venderId){
+        try{
+            $data = $this->_M_RollQualityMaster->where("vendor_id",$venderId)->where("lock_status",false)->orderBy("quality","ASC")->get();         
+            return responseMsgs(true,"Data Fetched",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
     /**
      * rate type
      */

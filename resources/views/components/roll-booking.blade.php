@@ -24,13 +24,15 @@
                                             <i class="bi bi-person-add"></i> Add Client
                                         </span> 
                                     </label>
-                                    <select name="bookingForClientId" id="bookingForClientId" class="form-select select-option">
-                                        <option value="">Select</option>
-                                        @foreach ($clientList as $val)
-                                            <option value="{{ $val->id }}">{{ $val->client_name }}</option>
-                                        @endforeach
-                                    </select>
-                                    <span class="error-text" id="bookingForClientId-error"></span>
+                                    <div class="col-md-12">
+                                        <select name="bookingForClientId" id="bookingForClientId" class="form-select select-option">
+                                            <option value="">Select</option>
+                                            @foreach ($clientList as $val)
+                                                <option value="{{ $val->id }}">{{ $val->client_name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="error-text" id="bookingForClientId-error"></span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -149,8 +151,15 @@
             $('#rollBookingModal').css("z-index","");
         });
         showHideLoop();
+        $('#bookingForClientId').select2({
+            placeholder: "Select tags",
+            allowClear: true,
+            dropdownParent: $('#rollBookingModal'),
+            // templateResult: formatOption,
+            // templateSelection: formatOption 
+        });  
 
-        addSearch("bookingForClientId");
+        // addSearch("bookingForClientId");
 
     });
     function openRollBookingClineModel(){

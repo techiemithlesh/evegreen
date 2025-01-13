@@ -433,6 +433,7 @@ a.sidebar-link:hover {
     padding: 8px; /* Optional: Add padding for better readability */
     border: 1px solid #ddd; /* Optional: Add a border for clarity */
     text-align: left;
+    /* min-width: 50% */
 }
 
 

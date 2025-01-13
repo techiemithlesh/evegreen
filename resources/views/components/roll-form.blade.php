@@ -44,8 +44,6 @@
                                 <label class="control-label" for="qualityId">Roll Quality<span class="text-danger">*</span></label>
                                 <select id="qualityId" name="qualityId" class="form-select"required >
                                     <option value="">select</option>
-                                    <option value="">Semi</option>
-                                    <option value="">Plain</option>
                                 </select>
                                 <span class="error-text" id="size-error"></span>
                             </div>
@@ -109,7 +107,7 @@
                                 <span class="error-text" id="grossWeight-error"></span>
                             </div>
                         </div>
-                        <div class="col-sm-6">
+                        <!-- <div class="col-sm-6">
                             <div class="form-group">
                                 <label class="control-label" for="clientDetailId">
                                     Book For Client 
@@ -125,9 +123,9 @@
                                 </select>
                                 <span class="error-text" id="clientDetailId-error"></span>
                             </div>
-                        </div>                        
+                        </div>                         -->
                     </div>
-                    <div  client="client">
+                    <div  client="client" style="display: none;">
                         <div class="row mt-3">
                             <!-- Vendor Address -->
                             <div class="col-sm-6">
@@ -304,7 +302,7 @@
 
     function openCloseClientMode(){
         forClientId = $("#clientDetailId").val();
-        if(forClientId!=""){
+        if(forClientId!="" && forClientId!=undefined){
             $("div[client='client']").show();
         }
         else{
@@ -321,6 +319,30 @@
     }
 
     function getRollQuality(){
-        // withe the code for qalty fetch by vender id;
+        let venderId = $("#venderId").val();
+        $.ajax({
+            url:"{{route('master.quality.vender.map.list',':vendorId')}}".replace(':vendorId', venderId),
+            type:"get",
+            dataType:"json",
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(data){
+                $("#loadingDiv").hide();
+                if(data?.status){
+                    $("#qualityId").empty();  
+                    let option="<option value=''>select</option>";
+                    data?.data.forEach((item)=>{
+                        option+=`<option value="${item?.id}">${item?.quality}</option>`;
+                    });
+                    $("#qualityId").append(option);
+                }
+            },
+            error: function (error) {
+                $("#loadingDiv").hide();
+                console.log(error);
+            }
+
+        });
     }
 </script>
