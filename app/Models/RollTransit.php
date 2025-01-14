@@ -42,6 +42,8 @@ class RollTransit extends Model
         "weight_after_cutting",
         "cutting_machine_id",
         "lock_status",
+        "loop_color",
+        "quality_id"
     ];
 
     public function store($request){        
