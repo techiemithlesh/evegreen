@@ -8,6 +8,7 @@ use App\Models\RateTypeMaster;
 use App\Models\RollQualityGradeMap;
 use App\Models\RollQualityMaster;
 use App\Models\StereoDetail;
+use App\Models\UserTypeMaster;
 use App\Models\VendorDetailMaster;
 use Exception;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ class MasterController extends Controller
     protected $_M_RollQualityGradeMap;
     protected $_M_VendorDetail;
     protected $_M_RateType;
+    protected $_M_UserTypeMaster;
 
     function __construct()
     {
@@ -34,6 +36,7 @@ class MasterController extends Controller
         $this->_M_RollQualityGradeMap = new RollQualityGradeMap();
         $this->_M_VendorDetail = new VendorDetailMaster();
         $this->_M_RateType = new RateTypeMaster();
+        $this->_M_UserTypeMaster = new UserTypeMaster();
     }
 
 
@@ -268,6 +271,47 @@ class MasterController extends Controller
     public function rateTypeDtl($id){
         try{
             $data = $this->_M_RateType->find($id);
+            return responseMsgs(true,"Data Fetched",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    /**
+     * Grade
+     */
+    public function userTypeList(Request $request){
+        if($request->ajax()){
+            $data = $this->_M_UserTypeMaster->where("lock_status",false)->orderBy("id","ASC");
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($val) {
+                    return '<button class="btn btn-sm btn-primary" onClick="openModelEdit('.$val->id.')" >Edit</button>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view("Master/user_type_list");
+    }
+
+    public function addUserType(Request $request){
+        try{
+            $message = "New User Type Add";
+            if($request->id){
+                $this->_M_UserTypeMaster->edit($request);
+                $message = "User Type Update";
+            }else{
+                $this->_M_UserTypeMaster->store($request);
+            }
+            return responseMsgs(true,$message,"");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function userTypeDtl($id){
+        try{
+            $data = $this->_M_UserTypeMaster->find($id);
             return responseMsgs(true,"Data Fetched",$data);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
