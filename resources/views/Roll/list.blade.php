@@ -219,49 +219,24 @@
                 [10, 25, 50, 100, -1], // The internal values
                 ["10 Row", "25 Row", "50 Row", "100 Row", "All"] // The display values, replace -1 with "All"
             ],
-            buttons: [{
-                eextend: 'csv',
-                text: 'Export to Excel',
-                className: 'btn btn-success',
-                action: function(e, dt, button, config) {
-                    $.ajax({
-                        url: "{{ route('roll.list', ':flag') }}".replace(':flag', flag) + "?export=true",
-                        xhrFields: {
-                            responseType: 'blob' // Important for handling binary data
-                        },
-                        success: function(data, status, xhr) {
-                            // Extract the filename from the response header
-                            const filename = xhr.getResponseHeader('Content-Disposition')
-                                ?.match(/filename="(.+)"/)?.[1] || 'export.xlsx';
+            buttons: [
+                {
+                    extend: 'excel',
+                    text: '<i class="bi bi-file-earmark-excel-fill text-success"></i> ',
+                    className: 'btn btn-success',
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf-fill text-danger"></i>',
+                    title: 'Data Export',
+                    orientation: 'portrait',
+                    pageSize: 'A4',
+                    exportOptions: {
+                        columns: [0, 1,2, 3,4,5,6,7,8,9,10]  // Export only Name, Position, and Age columns
+                    }
 
-                            // Create a new Blob object for the data
-                            const blob = new Blob([data], {
-                                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                            });
-
-                            // Create a download link
-                            const link = document.createElement('a');
-                            link.href = window.URL.createObjectURL(blob);
-                            link.download = filename;
-                            document.body.appendChild(link);
-
-                            // Trigger the download
-                            link.click();
-
-                            // Cleanup
-                            document.body.removeChild(link);
-                            window.URL.revokeObjectURL(link.href);
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Error downloading file:', error);
-                            alert('Error downloading file. Please try again.');
-                        }
-                    });
-
-                }
-
-
-            }],
+                },
+            ],
             createdRow: function(row, data, dataIndex) {
                 let td = $('td', row).eq(6); 
                 td.attr("title", data?.gsm_json);

@@ -200,11 +200,24 @@
                 [10, 25, 50, 100, -1], // The internal values
                 ["10 Row", "25 Row", "50 Row", "100 Row", "All"] // The display values, replace -1 with "All"
             ],
-            buttons: [{
+            buttons: [
+                {
                     extend: 'excel',
-                    text: 'Export to Excel',
+                    text: '<i class="bi bi-file-earmark-excel-fill text-success"></i> ',
                     className: 'btn btn-success',
-            }],
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf-fill text-danger"></i>',
+                    title: 'Data Export',
+                    orientation: 'portrait',
+                    pageSize: 'A4',
+                    exportOptions: {
+                        columns: [0, 1,2, 3,4,5,6,7,8,9,10]  // Export only Name, Position, and Age columns
+                    }
+
+                },
+            ],
             createdRow: function(row, data, dataIndex) {
                 // Apply the custom class to the row
                 let td = $('td', row).eq(7); 

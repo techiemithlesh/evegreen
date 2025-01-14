@@ -177,8 +177,19 @@ tr.selected {
             buttons: [
                 {
                     extend: 'excel',
-                    text: 'Export to Excel',
+                    text: '<i class="bi bi-file-earmark-excel-fill text-success"></i> ',
                     className: 'btn btn-success',
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf-fill text-danger"></i>',
+                    title: 'Data Export',
+                    orientation: 'portrait',
+                    pageSize: 'A4',
+                    exportOptions: {
+                        columns: [0, 1,2, 3,4,5,6,7,8,9,10]  // Export only Name, Position, and Age columns
+                    }
+
                 },
             ],
             
