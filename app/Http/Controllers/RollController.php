@@ -24,6 +24,7 @@ use App\Models\RateTypeMaster;
 use App\Models\RollColorMaster;
 use App\Models\RollDetail;
 use App\Models\RollPrintColor;
+use App\Models\RollQualityMaster;
 use App\Models\RollTransit;
 use App\Models\StereoDetail;
 use App\Models\User;
@@ -69,6 +70,7 @@ class RollController extends Controller
     protected $_M_FareDetail;
     protected $_M_StereoDetail;
     protected $_M_RateTypeMaster;
+    protected $_M_RollQualityMaster;
 
     function __construct()
     {
@@ -92,6 +94,7 @@ class RollController extends Controller
         $this->_M_FareDetail = new FareDetail();
         $this->_M_StereoDetail = new StereoDetail();
         $this->_M_RateTypeMaster = new RateTypeMaster();
+        $this->_M_RollQualityMaster = new RollQualityMaster();
     }
 
     #================ Roll Transit =====================
@@ -393,7 +396,7 @@ class RollController extends Controller
             }
             $file = $request->file('csvFile');
             $headings = (new HeadingRowImport())->toArray($file)[0][0];
-            $expectedHeadings = ['vendor_name', 'purchase_date', 'roll_size',"roll_type","hardness","roll_gsm","bopp","roll_color","roll_length","net_weight","gross_weight"];
+            $expectedHeadings = ['vendor_name', 'purchase_date',"quality", 'roll_size',"roll_type","hardness","roll_gsm","bopp","roll_color","roll_length","net_weight","gross_weight"];
             if (array_diff($expectedHeadings, $headings)) {
                 return responseMsgs(false,"data in invalid Formate","");;
             }
@@ -409,6 +412,19 @@ class RollController extends Controller
                 $rowData = array_combine($headings, $row);
                 $validator = Validator::make($rowData, [
                     'vendor_name' => 'required|exists:'.$this->_M_VendorDetail->getTable().",vendor_name",
+                    "quality"=>[
+                        "required",
+                        function ($attribute, $value, $fail)use ($rowData)
+                        {
+                            $vendor = $this->_M_VendorDetail->where("vendor_name",$rowData["vendor_name"])->first();
+                            $quality = $this->_M_RollQualityMaster->where("vendor_id",$vendor->id??0)->where("quality",$value)->first();
+                            if($vendor && !$quality)
+                            {
+                                $fail('The '.$attribute.' is invalid.');
+                            }
+
+                        },
+                    ],
                     'purchase_date' => 'required|date',
                     'roll_size' => 'required',
                     'roll_type' => 'nullable|in:NW,BOPP',

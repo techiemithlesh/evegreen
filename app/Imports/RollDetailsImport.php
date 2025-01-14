@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\RollDetail;
+use App\Models\RollQualityMaster;
 use App\Models\VendorDetailMaster;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -24,8 +25,12 @@ class RollDetailsImport implements ToCollection,WithHeadingRow
     {
         $_M_RollDetail = new RollDetail();
         $_M_VendorDetail = new VendorDetailMaster();
+        $_M_RollQualityMaster = new RollQualityMaster();
         foreach ($rows as $row) {
-            $row["vender_id"] = $_M_VendorDetail->where("vendor_name",$row["vendor_name"])->first()->id;
+            $vendor = $_M_VendorDetail->where("vendor_name",$row["vendor_name"])->first();
+            $quality = $_M_RollQualityMaster->where("vendor_id",$vendor->id)->where("quality",$row["quality"])->first();
+            $row["vender_id"] = $vendor->id;
+            $row["quality_id"] = $quality->id;
             $row["size"] = $row["roll_size"];
             $row["gsm"] = $row["roll_gsm"];
             $row["gsm_json"] = $row["bopp"] ? explode("/",$row["bopp"]):null;
