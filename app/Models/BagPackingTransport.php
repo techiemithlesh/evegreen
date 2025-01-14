@@ -12,6 +12,8 @@ class BagPackingTransport  extends Model
     protected $fillable = [
         'vehicle_no',
         "transporter_name",
+        "transporter_id",
+        "auto_id",
         "transport_date",
         'bill_no',
         'invoice_no',

@@ -490,4 +490,39 @@ class PackingController extends Controller
             return responseMsgs(false,$e->getMessage(),"");
         }
     }
+
+    public function transportRegister(Request $request){
+        if($request->ajax()){
+            if($request->ajax()){
+                $data = $this->_M_PackTransport->select("bag_packing_transports.*","auto_details.auto_name",
+                            "transporter_details.transporter_name"
+                        )
+                        ->leftJoin("auto_details","auto_details.id","bag_packing_transports.auto_id")
+                        ->leftJoin("auto_details","auto_details.id","bag_packing_transports.auto_id")
+                        ->leftJoin("transporter_details","transporter_details.id","bag_packing_transports.transporter_id")
+                        ->where("bag_packing_transports.lock_status",false);
+                $list = DataTables::of($data)
+                    ->addIndexColumn()
+                    ->addColumn('transport_date', function ($val) { 
+                        return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
+                    })
+                    ->addColumn('bag_color', function ($val) { 
+                        return collect(json_decode($val->bag_color,true))->implode(",") ;
+                    })
+                    ->addColumn('bag_size', function ($val) { 
+                        return $val->bag_w +($val->bag_g ? $val->bag_g :0) ." X ". $val->bag_l;
+                    })
+                    ->addColumn('action', function ($val) {                    
+                        $button = "";                    
+                        // $button='<button class="btn btn-sm btn-info" onClick="openCuttingModel('.$val->id.')" >Update Cutting</button>';
+                        return $button;
+                    })
+                    ->rawColumns(['row_color', 'action'])
+                    ->make(true);
+                return $list;
+    
+            }
+        }
+        return view("Packing/transportStoke");
+    }
 }

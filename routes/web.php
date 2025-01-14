@@ -179,6 +179,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::match(["get","post"],"packing/godown/reiving","reivingGodown")->name("packing.godown.reiving");
         Route::post("packing/godown/transport","reivingTransport")->name("packing.godown.transport");
         Route::post("packing/godown/add","addInGodown")->name("packing.godown.add");
+        Route::get("packing/transport/register","transportRegister")->name("packing.transport.register");
     });
 
     Route::controller(OtherRegister::class)->group(function(){
