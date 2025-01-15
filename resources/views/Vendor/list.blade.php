@@ -92,42 +92,17 @@
             rules: {
                 vendorName: {
                     required: true,
-                    minlength: 3
+                    minlength: 2
                 },
-                vendorMobileNo: {
-                    required: true,
-                    number: true,
-                    minlength:10,
-                    minlength:10
-                },
-                vendorAddress: {
-                    required: true,
-                },
-            },
-            messages: {
-                menu_name: {
-                    required: "Please enter a menu name",
-                    minlength: "Menu name must be at least 3 characters long"
-                },
-                order_no: {
-                    required: "Please enter an order number",
-                    number: "Please enter a valid number for the order"
-                },
-                parent_menu_mstr_id: {
-                    required: "Please select a parent menu"
-                },
-                parent_sub_menu_mstr_id: {
-                    required: "Please select a parent sub-menu"
-                },
-                url_path: {
-                    required: "Please enter the menu path"
-                },
-                menu_icon: {
-                    required: "Please select a menu icon"
-                },
-                "user_type_mstr_id[]": {
-                    required: "Please select at least one user type"
-                }
+                // vendorMobileNo: {
+                //     // required: true,
+                //     number: true,
+                //     minlength:10,
+                //     minlength:10
+                // },
+                // vendorAddress: {
+                //     // required: true,
+                // },
             },
             submitHandler: function(form) {
                 // If form is valid, prevent default form submission and submit via AJAX

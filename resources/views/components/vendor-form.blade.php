@@ -42,8 +42,8 @@
                         <!-- Vendor Mobile Number -->
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label class="control-label" for="mobileNo">Mobile Number<span class="text-danger">*</span></label>
-                                <input type="text" maxlength="15" id="mobileNo" name="mobileNo" class="form-control" placeholder="Enter Mobile Number" required onkeypress="return isNum(event);">
+                                <label class="control-label" for="mobileNo">Mobile Number</label>
+                                <input type="text" maxlength="15" id="mobileNo" name="mobileNo" class="form-control" placeholder="Enter Mobile Number"  onkeypress="return isNum(event);">
                             </div>
                         </div>
                     </div>
