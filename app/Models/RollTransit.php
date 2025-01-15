@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -48,6 +49,9 @@ class RollTransit extends Model
 
     public function store($request){        
         $inputs = snakeCase($request);
+        if(!isset($inputs["purchase_date"])){
+            $inputs["purchase_date"]=Carbon::now()->format("Y-m-d");
+        }
         $rollTransit = new RollTransit($inputs->all());
         $rollTransit->save();
         return $rollTransit->id;

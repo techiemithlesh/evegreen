@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\VendorDetailMaster;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 
 class VendorController extends Controller
@@ -44,6 +45,9 @@ class VendorController extends Controller
             return view("vendor/list");
         }catch(Exception $e){
             flashToast("message","Internal Server Error");
+            Log::error('Error occurred: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
             return redirect()->back();
         }
     }
