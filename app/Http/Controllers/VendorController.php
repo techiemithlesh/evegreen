@@ -48,7 +48,6 @@ class VendorController extends Controller
             Log::error('Error occurred: ' . $e->getMessage(), [
                 'exception' => $e
             ]);
-            dd($e);
             return redirect()->back();
         }
     }
