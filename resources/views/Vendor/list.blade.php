@@ -94,15 +94,15 @@
                     required: true,
                     minlength: 2
                 },
-                // vendorMobileNo: {
-                //     // required: true,
-                //     number: true,
-                //     minlength:10,
-                //     minlength:10
-                // },
-                // vendorAddress: {
-                //     // required: true,
-                // },
+                vendorMobileNo: {
+                    // required: true,
+                    number: true,
+                    minlength:10,
+                    minlength:10
+                },
+                vendorAddress: {
+                    // required: true,
+                },
             },
             submitHandler: function(form) {
                 // If form is valid, prevent default form submission and submit via AJAX

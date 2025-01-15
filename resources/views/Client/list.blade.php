@@ -40,6 +40,7 @@
 
     <!-- Modal -->
     <x-client-form />
+    <x-confirmation />
 </main>
 
 <script>
@@ -168,6 +169,10 @@
 
     function resetModelForm(){
         $("#id").val("");
+    }
+
+    function deactivate(id){
+        
     }
 
 </script>

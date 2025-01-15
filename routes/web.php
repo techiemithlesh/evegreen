@@ -89,6 +89,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("client/list","clientList")->name("client.list");
         Route::post("client/add","addClient")->name("client.add");
         Route::get("client/edit/{id}","getClientDtl")->name("client.edit");
+        Route::get("client/delete/{id}","deactivate")->name("client.delete");
     });
 
     Route::controller(SectorController::class)->group(function(){

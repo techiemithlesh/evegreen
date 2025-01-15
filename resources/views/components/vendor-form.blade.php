@@ -52,7 +52,7 @@
                         <!-- Vendor Address -->
                         <div class="col-sm-12">
                             <div class="form-group">
-                                <label class="control-label" for="address">Address<span class="text-danger">*</span></label>
+                                <label class="control-label" for="address">Address</label>
                                 <textarea id="address" name="address" class="form-control" placeholder="Enter Vendor Address" rows="3"></textarea>
                             </div>
                         </div>

@@ -82,7 +82,7 @@
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label class="control-label" for="temporaryMobileNo">Temporary Mobile Number<span class="text-danger">*</span></label>
+                                <label class="control-label" for="temporaryMobileNo">Temporary Mobile Number</label>
                                 <input type="text" maxlength="15" id="temporaryMobileNo" name="temporaryMobileNo" class="form-control" placeholder="Enter Temporary Mobile Number" onkeypress="return isNum(event);">
                                 <span class="error-text" id="temporaryMobileNo-error"></span>
                             </div>

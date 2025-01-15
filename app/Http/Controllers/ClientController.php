@@ -54,7 +54,9 @@ class ClientController extends Controller
                 return DataTables::of($data)
                     ->addIndexColumn()
                     ->addColumn('action', function ($val) {
-                        return '<button class="btn btn-sm btn-primary" onClick="openModelEdit('.$val->id.')" >Edit</button>';
+                        $button = '<i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('.$val->id.')" ></i>';
+                        $button.='<i class="bi bi-trash3-fill btn btn-sm" style ="color:rgb(229, 37, 37)" onClick="deactivate('.$val->id.')"></i>';
+                        return $button;
                     })->rawColumns(['action'])
                     ->make(true);
             }
@@ -73,5 +75,11 @@ class ClientController extends Controller
             return responseMsgs(false,$e->getMessage(),"");
         }
     }
+
+    // public function deactivate($id){
+    //     try{
+
+    //     }
+    // }
 
 }
