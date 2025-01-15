@@ -492,37 +492,54 @@ class PackingController extends Controller
     }
 
     public function transportRegister(Request $request){
-        if($request->ajax()){
-            if($request->ajax()){
-                $data = $this->_M_PackTransport->select("bag_packing_transports.*","auto_details.auto_name",
-                            "transporter_details.transporter_name"
-                        )
-                        ->leftJoin("auto_details","auto_details.id","bag_packing_transports.auto_id")
-                        ->leftJoin("auto_details","auto_details.id","bag_packing_transports.auto_id")
-                        ->leftJoin("transporter_details","transporter_details.id","bag_packing_transports.transporter_id")
-                        ->where("bag_packing_transports.lock_status",false);
-                $list = DataTables::of($data)
-                    ->addIndexColumn()
-                    ->addColumn('transport_date', function ($val) { 
-                        return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
-                    })
-                    ->addColumn('bag_color', function ($val) { 
-                        return collect(json_decode($val->bag_color,true))->implode(",") ;
-                    })
-                    ->addColumn('bag_size', function ($val) { 
-                        return $val->bag_w +($val->bag_g ? $val->bag_g :0) ." X ". $val->bag_l;
-                    })
-                    ->addColumn('action', function ($val) {                    
-                        $button = "";                    
-                        // $button='<button class="btn btn-sm btn-info" onClick="openCuttingModel('.$val->id.')" >Update Cutting</button>';
-                        return $button;
-                    })
-                    ->rawColumns(['row_color', 'action'])
-                    ->make(true);
-                return $list;
-    
-            }
+        
+        if($request->ajax())
+        {
+            $data = $this->_M_PackTransport->select("bag_packing_transports.*","auto_details.auto_name",
+                        "transporter_details.transporter_name"
+                    )
+                    ->leftJoin("auto_details","auto_details.id","bag_packing_transports.auto_id")
+                    ->leftJoin("transporter_details","transporter_details.id","bag_packing_transports.transporter_id")
+                    ->where("bag_packing_transports.lock_status",false)
+                    ->orderBy("bag_packing_transports.id","DESC");
+            $list = DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn("transition_type",function($val){
+                    $transition_type = "";
+                    if($val->transport_status==3){
+                        $transition_type="factory to godown";
+                    }
+                    if($val->transport_status==4){
+                        $transition_type="dispatched for delivery";
+                    }
+                    return $transition_type;
+                })
+                ->addColumn('transport_date', function ($val) { 
+                    return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
+                })
+                ->addColumn('bag_no', function ($val) { 
+                    return collect($val->getBag()->get())->pluck("packing_no")->implode(",") ;
+                })
+                ->addColumn('client_name', function ($val) { 
+                    $bag = $val->getBag()->get();
+                    $orderId =$bag->unique("order_id")->pluck("order_id");
+                    $order = $this->_M_OrderPunchDetail->whereIn("id",$orderId)->get();
+                    $clineId = $order->unique("client_detail_id")->pluck("client_detail_id");
+                    $client = $this->_M_ClientDetails->whereIn("id",$clineId)->get();
+                    return collect($client)->pluck("client_name")->implode(",") ;
+                })
+                ->addColumn('action', function ($val) {                    
+                    $button = "";                    
+                    // $button='<button class="btn btn-sm btn-info" onClick="openCuttingModel('.$val->id.')" >Update Cutting</button>';
+                    return $button;
+                })
+                ->rawColumns(['row_color', 'action'])
+                ->make(true);
+            return $list;
+
         }
-        return view("Packing/transportStoke");
+        $data["autoList"] = $this->_M_Auto->getAutoListOrm()->orderBy("id","ASC")->get();
+        $data["transporterList"] = $this->_M_Transporter->getAutoListOrm()->orderBy("id","ASC")->get();
+        return view("Packing/bag_transport",$data);
     }
 }

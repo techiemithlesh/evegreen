@@ -46,7 +46,7 @@
                         </div>
                     </div>
                     <div class="row mt-3">
-                        <div class="col-sm-4" id="billDiv">
+                        <div class="col-sm-4 billDiv">
                             <div class="form-group">
                                 <label class="form-label" for="billNo">Bill No.<span class="text-danger">*</span></label>
                                 <input type="text" name="billNo" id="billNo" class="form-control"  />
@@ -65,7 +65,7 @@
                                 <span class="error-text" id="autoId-error"></span>
                             </div>
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-4 billDiv">
                             <div class="form-group">
                                 <label class="form-label" for="transporterId">Transporter<span class="text-danger">*</span></label>
                                 <select name="transporterId" id="transporterId" class="form-select"  required >
@@ -189,10 +189,10 @@
         $("#status").val(deliveryType);
         $("#transPortType").val(deliveryType);
         if(deliveryType=="For Delivery"){
-            $("#billDiv").show();
+            $(".billDiv").show();
         }
         else{
-            $("#billDiv").hide();
+            $(".billDiv").hide();
             $("#invoiceNo").val("");
         }
     }

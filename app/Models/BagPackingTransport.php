@@ -28,4 +28,8 @@ class BagPackingTransport  extends Model
         $id= self::create($inputs->all())->id;
         return $id;
     }
+
+    public function getBag(){
+        return $this->hasManyThrough(BagPacking::class,BagPackingTransportDetail::class,"pack_transport_id","id","id","bag_packing_id","id");
+    }
 }
