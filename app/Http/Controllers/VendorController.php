@@ -42,7 +42,7 @@ class VendorController extends Controller
                     })->rawColumns(['menu_icon', 'action'])
                     ->make(true);
             }
-            return view("vendor/list");
+            return view("Vendor/list");
         }catch(Exception $e){
             flashToast("message","Internal Server Error");
             Log::error('Error occurred: ' . $e->getMessage(), [
