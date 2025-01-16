@@ -17,14 +17,21 @@
 </div>
 
 <script>
-    function showConfirmDialog(message, callback) {
+    function showConfirmDialog(message, callback = "") {
         // Set the confirmation message
         document.getElementById('confirmMessage').textContent = message;
 
         // Set the action to be executed when the "Confirm" button is clicked
         const confirmButton = document.getElementById('confirmAction');
         confirmButton.onclick = function () {
-            callback(); // Call the callback function
+          if (callback !== "") {
+            callback(); // Call the provided callback function if it's not an empty string
+          } else {
+            // If callback is an empty string, return true (successful confirmation)
+            console.log('Confirmation accepted, no action taken.');
+            return true;
+          }
+
             const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
             confirmModal.hide(); // Hide the modal after confirming
         };

@@ -40,7 +40,6 @@
 
     <!-- Modal -->
     <x-client-form />
-    <x-confirmation />
 </main>
 
 <script>

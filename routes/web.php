@@ -29,14 +29,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("master/fare/list","fareList")->name("master.fare.list");
         Route::post("master/fare/add","addFare")->name("master.fare.add");
         Route::get("master/fare/dtl/{id?}","fareDtl")->name("master.fare.dtl");
+        Route::post("master/fare/deactivate/{id}","deactivateFare")->name("master.fare.deactivate");
 
         Route::get("master/stereo/list","stereoList")->name("master.stereo.list");
         Route::post("master/stereo/add","addStereo")->name("master.stereo.add");
         Route::get("master/stereo/dtl/{id?}","stereoDtl")->name("master.stereo.dtl");
+        Route::post("master/stereo/deactivate/{id}","deactivateStereo")->name("master.stereo.deactivate");
 
         Route::get("master/grade/list","gradeList")->name("master.grade.list");
         Route::post("master/grade/add","addGrade")->name("master.grade.add");
         Route::get("master/grade/dtl/{id?}","gradeDtl")->name("master.grade.dtl");
+        Route::post("master/grade/deactivate/{id}","deactivateGrade")->name("master.grade.deactivate");
 
         Route::get("master/roll-quality/list","rollQualityList")->name("master.roll.quality.list");
         Route::post("master/roll-quality/add","addRollQuality")->name("master.roll.quality.add");
@@ -48,6 +51,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("master/rate-type/list","rateTypeList")->name("master.rate.type.list");
         Route::post("master/rate-type/add","addRateType")->name("master.rate.type.add");
         Route::get("master/rate-type/dtl/{id?}","rateTypeDtl")->name("master.rate.type.dtl");
+        Route::post("master/rate-type/deactivate/{id}","deactivateRateType")->name("master.rate.type.deactivate");
 
         Route::get("master/user-type/list","userTypeList")->name("master.user.type.list");
         Route::post("master/user-type/add","addUserType")->name("master.user.type.add");

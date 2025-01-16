@@ -179,8 +179,8 @@ class MenuController extends Controller
                         return collect($val->getUserTypeList()->get())->implode("user_type",",");
                     })
                     ->addColumn('action', function ($val) {
-                        return '<button class="btn btn-sm btn-primary" onClick="openModelEdit('.$val->id.')" >Edit</button>
-                               <button class="btn btn-sm btn-info" onClick="deactivateMenu('.$val->id.')" >Delete</button>';
+                        return '<i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('.$val->id.')" ></i>
+                               <i class="bi bi-trash3-fill btn btn-sm" style ="color:rgb(229, 37, 37)" onClick="deactivateMenu('.$val->id.')" ></i>';
                     })->rawColumns(['menu_icon', 'action'])
                     ->make(true);
             }

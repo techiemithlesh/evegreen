@@ -83,7 +83,7 @@
     <script src="{{asset('js/common.js')}}"></script>
  
 </head>
-
+<x-confirmation />
 <body>
     <div id="loadingDiv" style="background: url('{{ asset('assets/loaders/d.gif') }}') no-repeat center center; position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 9999999;"></div>
 

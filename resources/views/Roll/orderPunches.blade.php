@@ -312,7 +312,6 @@
         </div>
     </div>
     <x-client-form/>
-    <x-confirmation />
 </main>
 
 

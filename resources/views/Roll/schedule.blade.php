@@ -103,7 +103,6 @@ tr.selected {
     <x-printing-update-form />
     <x-cutting-schedule-form />
     <x-cutting-update-form />
-    <x-confirmation />
 </main>
 <script>
 
