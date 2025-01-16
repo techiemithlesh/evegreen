@@ -166,6 +166,7 @@
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
+            responsive: true,
             ajax: {
                 url: "{{route('roll.list',':flag')}}".replace(':flag', flag), // The route where you're getting data from
                 data: function(d) {
@@ -375,21 +376,21 @@
                 bookForClient();
             }
         });
-        addEventListenersToForm();
+        // addEventListenersToForm();
 
     });
 
-    function addEventListenersToForm() {
-        const form = document.getElementById("rollForm");
-        // Loop through all elements in the form
-        Array.from(form.elements).forEach((element) => {
-            // Add event listeners based on input type
-            if (element.tagName === "INPUT" || element.tagName === "SELECT" || element.tagName === "TEXTAREA") {
-                element.addEventListener("input", hideErrorMessage);
-                element.addEventListener("change", hideErrorMessage);
-            }
-        });
-    }
+    // function addEventListenersToForm() {
+    //     const form = document.getElementById("rollForm");
+    //     // Loop through all elements in the form
+    //     Array.from(form.elements).forEach((element) => {
+    //         // Add event listeners based on input type
+    //         if (element.tagName === "INPUT" || element.tagName === "SELECT" || element.tagName === "TEXTAREA") {
+    //             element.addEventListener("input", hideErrorMessage);
+    //             element.addEventListener("change", hideErrorMessage);
+    //         }
+    //     });
+    // }
 
     function hideErrorMessage(event) {
         const element = event.target;

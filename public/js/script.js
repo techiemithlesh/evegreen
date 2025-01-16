@@ -138,8 +138,8 @@ function addFilter(tableName,indexNo=[]){
           filterRow.append('<th></th>'); // Empty header for non-filterable columns
       } else {
           var filterCell = $(`
-              <th>
-                  <select class="filter-select" data-column="${index}" style="width: 100%" multiple="multiple" style="font-size:xx-small;">
+              <th class="filter-header">
+                  <select class="filter-select" data-column="${index}" style="width: 100%" multiple="multiple" style="font-size:xx-small; min-width: 100px;">
                       <option value="">All</option>
                   </select>
               </th>
@@ -172,9 +172,26 @@ function addFilter(tableName,indexNo=[]){
           placeholder: 'Select one or more values',
           allowClear: true,
           width: '100%'
-      });
+      }).on('select2:open', function () {
+            // Apply min-width styling dynamically when dropdown opens
+            $('.select2-container--open .select2-dropdown').css('min-width', '100px');
+            $('.select2-container--open .select2-selection').css('min-width', '100px');
+        }).on('select2:close', function () {
+            // Apply min-width styling dynamically when dropdown opens
+            $('.select2-container .select2-dropdown').css('min-width', '0px');
+            $('.select2-container .select2-selection').css('min-width', '0px');
+        });
   });
 
+  dataTable.on('responsive-resize', function (e, datatable, columns) {
+        datatable.columns().every(function (index) {
+            if (columns[index]) {
+                $('.filter-header').eq(index).show();  // Show filter if column is visible
+            } else {
+                $('.filter-header').eq(index).hide();  // Hide filter if column is collapsed
+            }
+        });
+    });
   // Add filtering functionality for multi-select
   $('.filter-select').on('change', function () {
       var columnIndex = $(this).data('column'); // Get column index
