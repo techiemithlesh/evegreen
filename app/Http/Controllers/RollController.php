@@ -24,6 +24,7 @@ use App\Models\RateTypeMaster;
 use App\Models\RollColorMaster;
 use App\Models\RollDetail;
 use App\Models\RollPrintColor;
+use App\Models\RollQualityGradeMap;
 use App\Models\RollQualityMaster;
 use App\Models\RollTransit;
 use App\Models\StereoDetail;
@@ -71,6 +72,7 @@ class RollController extends Controller
     protected $_M_StereoDetail;
     protected $_M_RateTypeMaster;
     protected $_M_RollQualityMaster;
+    protected $_M_RollQualityGradeMap;
 
     function __construct()
     {
@@ -95,6 +97,7 @@ class RollController extends Controller
         $this->_M_StereoDetail = new StereoDetail();
         $this->_M_RateTypeMaster = new RateTypeMaster();
         $this->_M_RollQualityMaster = new RollQualityMaster();
+        $this->_M_RollQualityGradeMap = new RollQualityGradeMap();
     }
 
     #================ Roll Transit =====================
@@ -144,10 +147,7 @@ class RollController extends Controller
         }
     }
 
-    public function transitList(Request $request){
-        // $sl = 1;
-        // $padded = str_pad((string)$sl, 4, "0", STR_PAD_LEFT);
-        // dd($padded);
+    public function transitList(Request $request){        
         $flag= $request->flag;
         $user_type = Auth()->user()->user_type_id??"";
         $data["flag"]=$flag;
@@ -414,10 +414,10 @@ class RollController extends Controller
                     'vendor_name' => 'required|exists:'.$this->_M_VendorDetail->getTable().",vendor_name",
                     "quality"=>[
                         "required",
-                        function ($attribute, $value, $fail)use ($rowData)
+                        function ($attribute, $value, $fail)use ($rowData,$index )
                         {
-                            $vendor = $this->_M_VendorDetail->where("vendor_name",$rowData["vendor_name"])->first();
-                            $quality = $this->_M_RollQualityMaster->where("vendor_id",$vendor->id??0)->where("quality",$value)->first();
+                            $vendor = $this->_M_VendorDetail->where(DB::raw("upper(vendor_name)"),trim(strtoupper($rowData["vendor_name"])))->first();
+                            $quality = $this->_M_RollQualityMaster->where("vendor_id",$vendor->id??0)->where(DB::raw("upper(quality)"),trim(strtoupper($value)))->first();
                             if($vendor && !$quality)
                             {
                                 $fail('The '.$attribute.' is invalid.');
@@ -443,7 +443,7 @@ class RollController extends Controller
             }
 
             if (!empty($validationErrors)) {
-                return responseMsgs(false,"data is invalid",$validationErrors);
+                return responseMsgs(false,"Validation Error",$validationErrors);
             }
 
             // Import the CSV file using the RollDetailsImport class
@@ -1534,6 +1534,7 @@ class RollController extends Controller
             if($request->bookingBagTypeId==3 && $request->totalUnits){
                 $request->merge(["totalUnits"=> $request->totalUnits + ($request->totalUnits * 0.12)]);
             }
+            $bag = $this->_M_BagType->find($request->bookingBagTypeId);
             $roll=$this->_M_RollDetail->select("roll_details.*",DB::raw("'stock' as stock, client_detail_masters.client_name"))
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
                     ->where("roll_details.is_cut",false)
@@ -1558,14 +1559,32 @@ class RollController extends Controller
                 $roll->where("roll_details.roll_color",$request->bookingBagColor);
                 $transit->where("roll_transits.roll_color",$request->bookingBagColor);
             }
+            if($request->gradeId){
+                $quality = $this->_M_RollQualityGradeMap->where("grade_id",$request->gradeId)->get()->pluck("roll_quality_id");
+                $roll->whereIn("roll_details.quality_id",$quality);
+                $transit->whereIn("roll_transits.quality_id",$quality);
+            }
+            if($bag){
+                $newRequest = new Request();
+                $newRequest->merge([
+                    "formula"=>$bag->roll_size_find,
+                    "bookingBagUnits"=>"M",                    
+                    "gsm" => $request->bagGsm,
+                    "bagL"=> $request->l,
+                    "bagW"=> $request->w,
+                    "bagG"=> $request->g,
+                ]);
+                $result = $this->calculatePossibleProduction($newRequest);
+                $roll->where("roll_details.size","<=",(int)$result["result"]??0);
+                $transit->where("roll_transits.size","<=",(int)$result["result"]??0);
+            }
 
             $roll= $roll->get();
             $transit = $transit->get();
             if($request->bookingBagTypeId && $request->totalUnits && $request->bookingBagUnits){
                 $bestFind = "";
-                $bag = $this->_M_BagType->find($request->bookingBagTypeId);
                 if($request->bookingBagUnits=="Kg"){
-                    $bestFind = $bag->roll_find_as_weight;
+                    $bestFind = "RW";
                 }elseif($request->bookingBagUnits=="Piece"){
                     $bestFind = $bag->roll_find;
                 }
@@ -1660,7 +1679,7 @@ class RollController extends Controller
                             $bag = $this->_M_BagType->find($order->bag_type_id);
                             $bestFind = "";
                             if($order->units=="Kg"){
-                                $bestFind = $bag->roll_find_as_weight;
+                                $bestFind = "RW";
                             }elseif($order->units=="Piece"){
                                 $bestFind = $bag->roll_find;
                             }
@@ -1703,7 +1722,7 @@ class RollController extends Controller
                     $bag = $this->_M_BagType->find($orderNew->bag_type_id);
                     $formula = "";
                     if($request->bookingBagUnits=="Kg"){
-                        $formula = $bag->roll_find_as_weight;
+                        $formula = "RW";
                     }elseif($request->bookingBagUnits=="Piece"){
                         $formula = $bag->roll_find;
                     }

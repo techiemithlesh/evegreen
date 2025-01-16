@@ -28,6 +28,8 @@ trait Formula{
         return collect([
             "result" => $result,
             "unit" => $result ." ".$request->bookingBagUnits,
+            "variables"=>$variables,
+            "formula"=>$request->formula,
         ]);
     }
 }

@@ -27,6 +27,11 @@
                         </div>
                     </div>
                 </form>
+                <div class="row">
+                    <div class="col-md-12" id="errorExcelLog" style="display: none;">
+
+                    </div>
+                </div>
             </div>
         </div>
     </div>

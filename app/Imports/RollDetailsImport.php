@@ -27,8 +27,8 @@ class RollDetailsImport implements ToCollection,WithHeadingRow
         $_M_VendorDetail = new VendorDetailMaster();
         $_M_RollQualityMaster = new RollQualityMaster();
         foreach ($rows as $row) {
-            $vendor = $_M_VendorDetail->where("vendor_name",$row["vendor_name"])->first();
-            $quality = $_M_RollQualityMaster->where("vendor_id",$vendor->id)->where("quality",$row["quality"])->first();
+            $vendor = $_M_VendorDetail->where(DB::raw("upper(vendor_name)"),trim(strtoupper($row["vendor_name"])))->first();
+            $quality = $_M_RollQualityMaster->where("vendor_id",$vendor->id)->where(DB::raw("upper(quality)"),trim(strtoupper($row["quality"])))->first();
             $row["vender_id"] = $vendor->id;
             $row["quality_id"] = $quality->id;
             $row["size"] = $row["roll_size"];

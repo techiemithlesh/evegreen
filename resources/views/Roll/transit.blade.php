@@ -168,6 +168,8 @@
 
                 'data': formData,
                 beforeSend: function() {
+                    $("#errorExcelLog").html("");
+                    $("#errorExcelLog").hide();
                     $("#loadingDiv").show();
                 },
                 success: function(data) {
@@ -177,16 +179,45 @@
                         $("#fileImportModal").modal('hide');
                         modelInfo(data.messages);
                         window.location.reload();
-                    } else if (data?.errors) {
-                        let errors = data?.errors;
-                        console.log(data?.errors?.rollNo[0]);
-                        modelInfo(data.messages);
-                        for (field in errors) {
-                            console.log(field);
-                            $(`#${field}-error`).text(errors[field][0]);
+                    } else if (!data.status && data?.data) {
+                        let errors = data?.data;
+                        // console.log(data?.data?.rollNo[0]);
+                        modelInfo(data.message,"error");                        
+                        if (errors && typeof errors === 'object') {
+                            let table=`<table class="table table-bordered responsive" style="font-size:xx-small; text-align:center; color:red;">
+                                        <thead>
+                                            <tr>
+                                                <th>Row No</th>
+                                                <th>Error</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>                                            
+                            `;
+                            for (const [field, messages] of Object.entries(errors)) {
+                                table+=`
+                                    <tr>
+                                        <td> ${field}</td>
+                                        <td> ${messages[0]}</td>
+                                    </tr>
+                                `;
+                                console.log(`Row No. ${field}:`, messages[0]);
+                                $(`#${field}-error`).text(messages[0]);
+                            }
+                            table+=`
+                                    </tbody>
+                                </table>
+                            `;
+                            $("#errorExcelLog").html(table);
+                            $("#errorExcelLog").show();
+                        }else{
+                            for (field in errors) {
+                                console.log(field);
+                                $(`#${field}-error`).text(errors[field][0]);
+                            }
+
                         }
                     } else {
-                        modelInfo("Something Went Wrong!!");
+                        modelInfo("Something Went Wrong!!","error");
                     }
                 },
                 error: function(error) {
