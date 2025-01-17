@@ -112,10 +112,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("roll/color/list","rollColorList")->name("roll.color.list");
         Route::post("roll/color/add","addRollColor")->name("roll.color.add");
         Route::get("roll/color/edit/{id}","rollColorDtl")->name("roll.color.edit");
+        Route::get("roll/color/delete/{id}","deactivateRollColor")->name("client.color.delete");
 
         Route::get("color/list","colorList")->name("color.list");
         Route::post("color/add","addColor")->name("color.add");
         Route::get("color/edit/{id}","colorDtl")->name("color.edit");
+        Route::get("color/delete/{id}","deactivateColor")->name("color.delete");
+
     });
 
     Route::controller(TransporterController::class)->group(function(){

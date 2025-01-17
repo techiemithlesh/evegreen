@@ -26,7 +26,12 @@ class RollDetailsImport implements ToCollection,WithHeadingRow
         $_M_RollDetail = new RollDetail();
         $_M_VendorDetail = new VendorDetailMaster();
         $_M_RollQualityMaster = new RollQualityMaster();
+        $file = request()->file('csvFile'); // Assuming the file input name is 'file'
         foreach ($rows as $row) {
+            if(strtolower($file->getClientOriginalExtension())=="xlsx")
+            {
+                $row["purchase_date"] = getDateColumnAttribute($row['purchase_date']);
+            }
             $vendor = $_M_VendorDetail->where(DB::raw("upper(vendor_name)"),trim(strtoupper($row["vendor_name"])))->first();
             $quality = $_M_RollQualityMaster->where("vendor_id",$vendor->id)->where(DB::raw("upper(quality)"),trim(strtoupper($row["quality"])))->first();
             $row["vender_id"] = $vendor->id;
@@ -38,7 +43,13 @@ class RollDetailsImport implements ToCollection,WithHeadingRow
             $row['roll_type'] = $row['roll_type']? $row['roll_type']: "NW";
             $row["purchase_date"] = $row["purchase_date"]?Carbon::parse($row["purchase_date"])->format("Y-m-d"):null;
             $request = new Request($row->toArray());
-            $_M_RollDetail->store($request);
+            // if($row["roll_size"]<=2){
+
+            // }
+            // else
+            {
+                $_M_RollDetail->store($request);
+            }
         }
     }
 

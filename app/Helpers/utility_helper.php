@@ -101,7 +101,13 @@ if (!function_exists("snakeCase")) {
         return $collection;
     }
 }
+if(!function_exists("getDateColumnAttribute")){
+    function getDateColumnAttribute($value)
+    {
+        return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d');
+    }
 
+}
 if (!function_exists("camelCase")) {
     function camelCase($data)
     {

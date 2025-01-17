@@ -43,6 +43,8 @@ use Maatwebsite\Excel\Excel as ExcelExcel;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\HeadingRowImport;
 use PhpOffice\PhpSpreadsheet\Calculation\TextData\Replace;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
+
 use Yajra\DataTables\Facades\DataTables;
 
 class RollController extends Controller
@@ -410,6 +412,11 @@ class RollController extends Controller
                 if ($index == 0) continue;
                 // Validate each row
                 $rowData = array_combine($headings, $row);
+                if(strtolower($file->getClientOriginalExtension())=="xlsx")
+                {
+                    $rowData["purchase_date"] = getDateColumnAttribute($rowData['purchase_date']);
+
+                }
                 $validator = Validator::make($rowData, [
                     'vendor_name' => 'required|exists:'.$this->_M_VendorDetail->getTable().",vendor_name",
                     "quality"=>[
@@ -453,7 +460,6 @@ class RollController extends Controller
             return responseMsgs(true,"data import","");
 
         }catch(Exception $e){
-            dd($e);
             DB::rollBack();
             return responseMsgs(false,$e->getMessage(),"");
         }

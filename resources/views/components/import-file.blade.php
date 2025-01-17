@@ -16,7 +16,7 @@
                         <div class="row mb-3">
                             <label for="csvFile" class="col-sm-4 col-form-label">CSV File.<span class="text-danger">*</span></label>
                             <div class="col-sm-8">
-                            <input type="file" id="csvFile" name="csvFile" class="form-control" required accept=".csv">
+                            <input type="file" id="csvFile" name="csvFile" class="form-control" required accept=".csv,.xlsx">
                             </div>
                         </div>
                     </div>

@@ -176,7 +176,7 @@
 
     function deactivate(id){
         $.ajax({
-            type:"post",
+            type:"get",
             url: "{{ route('client.delete', ':id') }}".replace(':id', id),
             dataType: "json",
             data:{lock_status:true},

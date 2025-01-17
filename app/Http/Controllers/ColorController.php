@@ -26,7 +26,10 @@ class ColorController extends Controller
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
-                    return '<button class="btn btn-sm btn-primary" onClick="openModelEdit('.$val->id.')" >Edit</button>';
+                    return <<<EOD
+                            <i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('$val->id')" ></i>
+                            <i class="bi bi-trash3-fill btn btn-sm" style ="color:rgb(229, 37, 37)" onclick="showConfirmDialog('Are you sure you want to deactivate this item?', function() { deactivate('$val->id'); })" ></i>
+                          EOD;
                 })
                 ->addColumn('html', function ($val) {
                     return '<div class="btn btn-sm color-box" style="background-color:'.$val->color.'"></div>';
@@ -59,13 +62,26 @@ class ColorController extends Controller
         }
     }
 
+    public function deactivateRollColor($id,Request $request){
+        try{
+            $request->merge(["id",$id]);
+            $this->_M_RollColor->edit($request);
+            return responseMsgs(true,"Roll Color Deactivated","");
+        }catch(Exception $e){
+            return responseMsgs(true,$e->getMessage(),"");
+        }
+    }
+
     public function colorList(Request $request){
         if($request->ajax()){
             $data = $this->_M_Color->where("lock_status",false);
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
-                    return '<button class="btn btn-sm btn-primary" onClick="openModelEdit('.$val->id.')" >Edit</button>';
+                    return <<<EOD
+                            <i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('$val->id')" ></i>
+                            <i class="bi bi-trash3-fill btn btn-sm" style ="color:rgb(229, 37, 37)" onclick="showConfirmDialog('Are you sure you want to deactivate this item?', function() { deactivate('$val->id'); })" ></i>
+                          EOD;
                 })
                 ->addColumn('html', function ($val) {
                     return '<div class="btn btn-sm color-box" style="background-color:'.$val->color.'"></div>';
@@ -95,6 +111,16 @@ class ColorController extends Controller
             return responseMsgs(true,"New Color Add",$data);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function deactivateColor($id,Request $request){
+        try{
+            $request->merge(["id",$id]);
+            $this->_M_Color->edit($request);
+            return responseMsgs(true,"Color Deactivated","");
+        }catch(Exception $e){
+            return responseMsgs(true,$e->getMessage(),"");
         }
     }
 }

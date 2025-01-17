@@ -78,10 +78,14 @@ class ClientController extends Controller
         }
     }
 
-    // public function deactivate($id){
-    //     try{
-
-    //     }
-    // }
+    public function deactivate($id,Request $request){
+        try{
+            $request->merge(["id",$id]);
+            $this->_M_ClientDetail->edit($request);
+            return responseMsgs(true,"Client Deactivated","");
+        }catch(Exception $e){
+            return responseMsgs(true,$e->getMessage(),"");
+        }
+    }
 
 }
