@@ -29,6 +29,7 @@ class OrderPunchDetail extends Model
         "bag_g",
         "bag_loop_color",
         "bag_color",
+        "bag_printing_color",
         "booked_units",
         "disbursed_units",
         "lock_status",

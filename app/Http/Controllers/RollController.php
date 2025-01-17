@@ -1605,7 +1605,10 @@ class RollController extends Controller
                     $val->result = $result["result"]??"";
                     $val->unit = $result["unit"]??"";
                     return $val;
-                })->where("result","<=",$request->totalUnits)->sortBy('result');
+                })->where("result","<=",$request->totalUnits)
+                ->sortByDesc(function ($item) {
+                    return [$item['result'], $item['size']];
+                });
 
                 $transit = $transit->map(function($val)use($request,$bestFind){
                     $newRequest = new Request($val->toArray());
@@ -1624,7 +1627,10 @@ class RollController extends Controller
                     $val->result = $result["result"]??"";
                     $val->unit = $result["unit"]??"";
                     return $val;
-                })->where("result","<=",$request->totalUnits)->sortBy('result');
+                })->where("result","<=",$request->totalUnits)
+                ->sortByDesc(function ($item) {
+                    return [$item['result'], $item['size']];
+                });
             }
                         
             $data["roll"]= collect($roll->values());
@@ -1646,7 +1652,8 @@ class RollController extends Controller
                 "bag_l"=>$request->l,
                 "bag_g"=>$request->g,
                 "bag_loop_color"=>$request->looColor,
-                "bag_color"=>$request->bookingPrintingColor,
+                "bag_color"=>$request->bookingBagColor,
+                "bag_printing_color"=>$request->bookingPrintingColor,
             ]); 
             if($request->bagQuality!="BOPP"){
                 $request->merge(["bagGsmJson"=>null]);
