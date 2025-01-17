@@ -2110,6 +2110,12 @@ class RollController extends Controller
             $order->client_name = $client->client_name??"";
             $request->merge([
                 "bagQuality"=>$order->bag_quality,
+                "gradeId"=>$order->grade_id,
+                "ratePerUnit"=>$order->rate_per_unit,
+                "rateTypeId"=>$order->rate_type_id,
+                "fareTypeId"=>$order->fare_type_id,
+                "stereoTypeId"=>$order->stereo_type_id,
+                "bookingBagColor"=>$order->bag_color,
                 "bagGsm"=>$order->bag_gsm,
                 "bagGsmJson"=>collect(json_decode($order->bag_gsm_json,true))->implode("/"),
                 "bookingBagTypeId"=>$order->bag_type_id,
