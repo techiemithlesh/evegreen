@@ -1560,7 +1560,7 @@ class RollController extends Controller
                 $transit->where("roll_transits.roll_color",$request->bookingBagColor);
             }
             if($request->gradeId){
-                $quality = $this->_M_RollQualityGradeMap->where("grade_id",$request->gradeId)->get()->pluck("roll_quality_id");
+                $quality = $this->_M_RollQualityMaster->where("grade_id",$request->gradeId)->get()->pluck("id");
                 $roll->whereIn("roll_details.quality_id",$quality);
                 $transit->whereIn("roll_transits.quality_id",$quality);
             }
