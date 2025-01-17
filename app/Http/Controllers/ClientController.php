@@ -54,9 +54,11 @@ class ClientController extends Controller
                 return DataTables::of($data)
                     ->addIndexColumn()
                     ->addColumn('action', function ($val) {
-                        $button = '<i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('.$val->id.')" ></i>';
-                        $button.='<i class="bi bi-trash3-fill btn btn-sm" style ="color:rgb(229, 37, 37)" onClick="deactivate('.$val->id.')"></i>';
-                        return $button;
+                        return <<<EOD
+                            <i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('$val->id')" ></i>
+                            <i class="bi bi-trash3-fill btn btn-sm" style ="color:rgb(229, 37, 37)" onclick="showConfirmDialog('Are you sure you want to deactivate this item?', function() { deactivate('$val->id'); })" ></i>
+                          EOD;
+                        
                     })->rawColumns(['action'])
                     ->make(true);
             }
