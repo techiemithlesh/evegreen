@@ -434,7 +434,7 @@
                             tbody.append(                               
                                 $("<tr>").append(
                                     `<td>${parseFloat(item.bag_w) + parseFloat(item.bag_g ? item.bag_g : 0) } X ${ parseFloat(item.bag_l)}</td>`,
-                                    `<td>${JSON.parse(item.bag_color || "[]").join(", ")}</td>`,
+                                    `<td>${JSON.parse(item.bag_printing_color || "[]").join(", ")}</td>`,
                                     `<td>${item.bag_gsm || "N/A"}</td>`,
                                     `<td>${item.bag_type || "N/A"}</td>`,
                                     `<td><button data-item='${JSON.stringify(item)}' id="or${index}" onclick="setOrderValue('or${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
@@ -507,7 +507,7 @@
         // Set the multi-select field for 'bookingPrintingColor'
         try {
             // Parse the printing_color string to an array
-            const printingColors = JSON.parse(item?.bag_color) || [];
+            const printingColors = JSON.parse(item?.bag_printing_color) || [];
             $("#bookingPrintingColor").val(printingColors).trigger("change");; // Set the selected options
         } catch (error) {
             console.error("Error parsing printing_color:", error);
