@@ -87,12 +87,13 @@
         // Handle Search Button Click
         $("#search").on("click", function () {
             let rollNo = $("#rollNo").val();
+            let machineId = $("#id").val();
             if (rollNo != "") {
                 $.ajax({
                     url: "{{ route('roll.search.printing') }}",
                     type: "POST",
                     dataType: "json",
-                    data: { "rollNo": rollNo },
+                    data: { "rollNo": rollNo,"machineId":machineId },
                     beforeSend: function () {
                         $("#loadingDiv").show();
                     },
@@ -126,7 +127,10 @@
                             $("#rollTableBody").append(row);
                             sl = sl+1;
                             applyValidationRules(rowId);
-                        } else {
+                        } else if(data.status){
+                            modelInfo(data.message || "Invalid Roll No", "warning");
+                        }
+                        else {
                             modelInfo(data.messages || "Invalid Roll No", "warning");
                         }
                     }

@@ -8,7 +8,7 @@
             <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
                 <ol class="breadcrumb fs-6">
                     <li class="breadcrumb-item fs-6"><a href="#">Order</a></li>
-                    <li class="breadcrumb-item active fs-6" aria-current="page">Book Order</li>
+                    <li class="breadcrumb-item active fs-6" aria-current="page">Un-Book Order</li>
                 </ol>
             </nav>
 
@@ -18,45 +18,24 @@
         <div class="panel-heading">
             <h5 class="panel-title">List</h5>            
         </div>
-        <div class="panel-body">
-            <form id="searchForm">
-                <div class="row g-3">
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label class="form-label" for="fromDate">From Date</label>
-                            <input type="date" name="fromDate" id="fromDate" class="form-control" value="{{date('Y-m-d')}}" max="{{date('Y-m-d')}}" />
-                        </div>
-                    </div>
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label class="form-label" for="uptoDate">Upto Date</label>
-                            <input type="date" name="uptoDate" id="uptoDate" class="form-control" value="{{date('Y-m-d')}}" max="{{date('Y-m-d')}}" />
-                        </div>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-sm-3">
-                        <input type="button" id="btn_search" class="btn btn-primary w-100" onclick="searchData()" value="Search"/>
-                    </div>
-                </div>
-            </form>
-
-        </div>
+        
         <div class="panel-body">
             <table id="postsTable" class="table table-striped table-bordered text-center table-fixed">
                 <thead>
                     <tr>
                         <th >#</th>
-                        <!-- <th>Order No</th> -->
                         <th>Booking Date</th>
                         <th>Client Name</th>
                         <th>Estimate Delivery Date</th>
                         <th>Bag Type</th>
                         <th>Bag Unit</th>
-                        <th>Qtr</th>
+                        <th>Bag Size <br> <i style="font-size: xx-small; font-weight:lighter;">(WXLXG)</i></th>
+                        <th>Qty</th>
+                        <th>Booked Qty</th>
+                        <th>Disbursed Qty</th>
                         <th>Bag Color</th>
                         <th>Roll No</th>
-                        <th>Is Delivered</th>
+                        <th>Disbursed By</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,9 +44,6 @@
             </table>
         </div>
     </div>
-
-    <!-- Modal -->
-    <x-roll-booking />
 </main>
 <script>
     
@@ -77,7 +53,7 @@
             serverSide: false,
             searching:false,
             ajax: {
-                url: "{{route('order.book')}}", // The route where you're getting data from
+                url: "{{route('order.disabused.register')}}", // The route where you're getting data from
                 data: function(d) {
                     var formData = $("#searchForm").serializeArray();
                     $.each(formData, function(i, field) {
@@ -102,10 +78,13 @@
                 { data: "estimate_delivery_date", name: "estimate_delivery_date" },
                 { data: "bag_type", name: "bag_type" },
                 { data: "units", name: "units" },
+                { data: "bag_size", name: "bag_size" },
                 { data: "total_units", name: "total_units" },
+                { data: "booked_units", name: "booked_units" },
+                { data: "disbursed_units", name: "disbursed_units" },
                 { data: "bag_color", name: "bag_color" },
                 { data: "roll_no", name: "roll_no" },
-                { data: "is_delivered", name: "is_delivered" },
+                { data: "name", name: "name" },
                 
             ],
             dom: 'lBfrtip', // This enables the buttons
@@ -129,21 +108,21 @@
                     orientation: 'portrait',
                     pageSize: 'A4',
                     exportOptions: {
-                        columns: [0, 1,2, 3,4,5,6,7,8,9]  // Export only Name, Position, and Age columns
+                        columns: [0, 1,2, 3,4,5,6,7,8,9,10]  // Export only Name, Position, and Age columns
                     }
 
                 },
-            ],
+            ],                        
             initComplete: function () {
-                addFilter('postsTable',[0]);
-            },     
+                addFilter('postsTable',[0,($('#postsTable thead tr:nth-child(1) th').length - 1)]);
+            },
         });
 
     });
     function searchData(){
         $('#postsTable').DataTable().ajax.reload();
     }
-    
+  
 
 </script>
 @include("layout.footer")
