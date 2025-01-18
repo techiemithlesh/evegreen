@@ -17,7 +17,7 @@ trait Formula{
             "-"=>"-",
             "L"=>$request->bagL,
             "W"=>$request->bagW,
-            "G"=>$request->bagG
+            "G"=>$request->bagG??0,
         ];  
 
         $formula = $request->formula;

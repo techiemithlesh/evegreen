@@ -11,6 +11,7 @@ use App\Models\ClientDetailMaster;
 use App\Models\OrderPunchDetail;
 use App\Models\RollDetail;
 use App\Models\TransporterDetail;
+use App\Traits\Formula;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ use Yajra\DataTables\Facades\DataTables;
 
 class PackingController extends Controller
 {
+    use Formula;
     private $_M_RollDetail;
     private $_M_ClientDetails;
     private $_M_BagType;
@@ -97,6 +99,8 @@ class PackingController extends Controller
                     group by order_id
                 ) As packing
             "),"packing.order_id","order_punch_details.id")
+            ->where("order_punch_details.is_delivered",false)
+            ->where(DB::raw("COALESCE(roll.roll_weight,0) - COALESCE(packing.packing_weight,0) - COALESCE(garbage.total_garbage,0)"),">",0)
             ->orderBy("order_punch_details.id");
             
             $list = DataTables::of($data)
@@ -104,8 +108,11 @@ class PackingController extends Controller
                 ->addColumn('packing_date', function ($val) { 
                     return $val->packing_date ? Carbon::parse($val->packing_date)->format("d-m-Y") : "";
                 })
-                ->addColumn('bag_color', function ($val) { 
-                    return collect(json_decode($val->printing_color,true))->implode(",") ;
+                ->addColumn('bag_printing_color', function ($val) { 
+                    return collect(json_decode($val->bag_printing_color,true))->implode(",") ;
+                })
+                ->addColumn('bag_size', function ($val) { 
+                    return $val->bag_w." X ".$val->bag_l." X ".($val->bag_g ? $val->bag_g:"0.00") ;
                 })
                 ->addColumn('action', function ($val) {                    
                     $button = "";                    
@@ -471,9 +478,12 @@ class PackingController extends Controller
             $transportStatus = Config::get("customConfig.transportType.".$request->transPortType);
             $request->merge(["userId"=>$user->id,"transportStatus"=>$transportStatus]);
             DB::beginTransaction();
+
             $tranId = $this->_M_PackTransport->store($request);
+            $orderId=collect();
             foreach($request->bag as $val){
                 $packing = $this->_M_BagPacking->find($val["id"]);
+                $orderId->push($packing->order_id);
                 $newRequest = new Request($val);
                 $newRequest->merge([
                     "packTransportId"=>$tranId,
@@ -482,6 +492,73 @@ class PackingController extends Controller
                 $this->_M_TransportDetail->store($newRequest);
                 $packing->packing_status = $transportStatus ;
                 $packing->update();
+            }
+            if(Config::get("customConfig.transportType.For Delivery")==$transportStatus){
+                $orderId= $orderId->unique();
+                foreach($orderId as $val){
+                    $order = $this->_M_OrderPunchDetail->find($val);
+                    $totalDelivered = $this->_M_BagPacking
+                                    ->where("order_id",$val)
+                                    ->where("packing_status",Config::get("customConfig.transportType.For Delivery"))
+                                    ->get();
+                    $totalUnit = $totalDelivered->sum("packing_weight");
+                    if($order->units!="Kg"){
+                        $totalUnit = $totalDelivered->sum("packing_bag_pieces");
+                    }                    
+                    $bookedRoll = $order->getRollDetail()->get();
+                    $totalGarbage = 0;
+                    $garbagePossibleBagPiece =0;
+                    $rollWeight = 0;
+                    $bag = $order->getBagType();
+                    $bagPiecesFormula = $bag->roll_find;
+                    foreach($bookedRoll as $roll){
+                        $acceptedGarbage = $roll->getAcceptedGarbage()->sum("total_qtr");
+                        $notAcceptedGarbage = $roll->getNotAcceptedGarbage()->sum("total_qtr");
+                        $totalGarbage +=($acceptedGarbage+$notAcceptedGarbage);
+                        
+                        $newPiecesRequest = new Request($roll->toArray());
+                        $newPiecesRequest->merge([
+                            "formula"=>$bagPiecesFormula,
+                            "bookingBagUnits"=>"Pieces",
+                            "length" => $roll->length,
+                            "netWeight" => $roll->net_weight,
+                            "size" => $roll->size,
+                            "gsm" => $roll->gsm,
+                            "bagL"=> $order->bag_l,
+                            "bagW"=> $order->bag_w,
+                            "bagG"=> $order->bag_g,
+                        ]);
+                        $result = $this->calculatePossibleProduction($newPiecesRequest);
+                        $garbagePec = (($acceptedGarbage+$notAcceptedGarbage)/$roll->net_weight);
+                        // $garbagePossibleBagPiece =0;
+                        if($garbagePec){
+                            $garbagePossibleBagPiece += $result["result"] * $garbagePec;
+                        }
+
+                        // dd($result,$garbagePossibleBagPiece,$roll->net_weight,$acceptedGarbage+$notAcceptedGarbage,$garbagePec);
+
+                        // $formula = "(W X RS X GSM)/1550";
+                        // $bag = $
+                        // $request->merge(
+                        //     [
+                        //         "length"=>$roll->length,
+                        //         "netWeight"=>$roll->net_weight,
+                        //         "size"=>$roll->size,
+                        //         "gsm"=>$roll->gsm,
+                        //         "bagL"=>$order->bag_l,
+                        //         "bagW"=>$order->bag_w,
+                        //         "bagG"=>$order->bag_g,
+                        //         "formula"=>$formula
+                        //     ]
+                        // );
+                        // $result = $this->calculatePossibleProduction($request);
+                        // dd($result,$roll,$acceptedGarbage,$notAcceptedGarbage);
+                    }
+                    if(($order->total_units - $order->disbursed_units)<=round($totalUnit + ($order->units=="Kg" ? $totalGarbage : $garbagePossibleBagPiece))){
+                        $order->is_delivered = true;
+                    }
+                    $order->update();
+                }
             }
             DB::commit();
             return responseMsgs(true,"Dag is Dispatched","");

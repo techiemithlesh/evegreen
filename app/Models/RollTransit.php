@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RollTransit extends Model
 {
@@ -77,5 +78,13 @@ class RollTransit extends Model
     }
     public function getPrintingSchedule(){
         return $this->hasOne(PrintingScheduleDetail::class,"roll_id","id")->where("lock_status",false);
+    }
+
+    public function getAcceptedGarbage(){
+        return $this->hasMany(GarbageAcceptRegister::class,"roll_id","id")->where("lock_status",false);
+    }
+
+    public function getNotAcceptedGarbage(){
+        return $this->hasMany(GarbageNotAcceptRegister::class,"roll_id","id")->where("lock_status",false);
     }
 }

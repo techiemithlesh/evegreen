@@ -50,7 +50,7 @@
 <script>
     $(document).ready(function(){
         $('#orderRoll').DataTable({
-            responsive: true,
+            responsive: false,
             processing: false,
             ordering: false,
             ajax: {
@@ -76,7 +76,7 @@
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
                 { data: "client_name", name: "client_name" },
                 { data: "bag_type", name: "bag_type" },
-                { data: "bag_size", name: "bag_size",render:function(row,type,data){ return `${parseFloat (data.bag_w) + parseFloat(data.bag_g ? data.bag_g :0.00)} X ${data.bag_l}`} },
+                { data: "bag_size", name: "bag_size" },
                 { data: "units", name: "units" },
                 { data: "total_units", name: "total_units" },
                 { data: "roll_weight", name: "roll_weight" },
@@ -86,7 +86,7 @@
                     data: null,
                     name: "balance",
                     render: function(row, type, data) {
-                        return data.roll_weight - data.packing_weight - data.total_garbage;
+                        return parseFloat(data.roll_weight - data.packing_weight - data.total_garbage).toFixed(2);
                     }
                 },
                 { 
@@ -144,7 +144,8 @@
     function addTr(id) {
         sl++;
         let table = $("#table_" + id);
-        let buttonElement = document.getElementById("button_" + id);
+        let buttonElement = document.getElementById("button_" + id); 
+        console.log(buttonElement.getAttribute('data-item'));
         let item = JSON.parse(buttonElement.getAttribute('data-item'));
         if (table.find("tbody").length === 0) {
             table.append("<tbody></tbody>");

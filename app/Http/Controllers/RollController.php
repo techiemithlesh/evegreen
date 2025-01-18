@@ -1533,7 +1533,7 @@ class RollController extends Controller
                     $item->grade_id,$item->rate_type_id,$item->fare_type_id,$item->stereo_type_id,
                     $item->bag_printing_color,
                 ]);
-            });
+            })->values();
 
                     // dd(DB::getQueryLog());
             return responseMsgs(true,"old history",$roll);
