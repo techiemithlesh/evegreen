@@ -18,32 +18,7 @@
         <div class="panel-heading">
             <h5 class="panel-title">List</h5>            
         </div>
-        <!-- <div class="panel-body">
-            <form id="searchForm">
-                <div class="row g-3">
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label class="form-label" for="fromDate">From Date</label>
-                            <input type="date" name="fromDate" id="fromDate" class="form-control" value="{{date('Y-m-d')}}" max="{{date('Y-m-d')}}" />
-                        </div>
-                    </div>
-
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label class="form-label" for="uptoDate">Upto Date</label>
-                            <input type="date" name="uptoDate" id="uptoDate" class="form-control" value="{{date('Y-m-d')}}" max="{{date('Y-m-d')}}" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mt-3">
-                    <div class="col-sm-3">
-                        <input type="button" id="btn_search" class="btn btn-primary w-100" onclick="searchData()" value="Search"/>
-                    </div>
-                </div>
-            </form>
-
-        </div> -->
+        
         <div class="panel-body">
             <table id="postsTable" class="table table-striped table-bordered text-center table-fixed">
                 <thead>
@@ -54,8 +29,10 @@
                         <th>Estimate Delivery Date</th>
                         <th>Bag Type</th>
                         <th>Bag Unit</th>
-                        <th>Qtr</th>
-                        <th>Book Qtr</th>
+                        <th>Bag Size <br> <i style="font-size: xx-small; font-weight:lighter;">(WXLXG)</i></th>
+                        <th>Qty</th>
+                        <th>Booked Qty</th>
+                        <th>Balance Qty</th>
                         <th>Bag Color</th>
                         <th>Roll No</th>
                         <th>Action</th>
@@ -105,8 +82,10 @@
                 { data: "estimate_delivery_date", name: "estimate_delivery_date" },
                 { data: "bag_type", name: "bag_type" },
                 { data: "units", name: "units" },
+                { data: "bag_size", name: "bag_size" },
                 { data: "total_units", name: "total_units" },
                 { data: "booked_units", name: "booked_units" },
+                { data: "balance_units", name: "balance_units" },
                 { data: "bag_color", name: "bag_color" },
                 { data: "roll_no", name: "roll_no" },
                 { data: "action", name: "action" },
@@ -205,6 +184,7 @@
 
         // Set individual field values
         $("#bookingBagTypeId").val(item?.bag_type);
+        $("#orderDate").val(item?.order_date);
         $("#bookingEstimatedDespatchDate").val(item?.estimate_delivery_date);
         $("#clientName").val(item?.client_name);
         $("#bookingBagTypeId").val(item?.bag_type);
@@ -212,6 +192,7 @@
         $("#l").val(item?.bag_l);
         $("#g").val(item?.bag_g);
         $("#w").val(item?.bag_w);
+        $("#bookingBagColor").val(item?.bag_color);
 
         $("#ratePerUnit").val(item?.rate_per_unit);
         $("#totalUnits").val(item?.total_units);
@@ -222,13 +203,18 @@
         $("#id").val(item?.id);
         $("#booked").val(item?.booked_units);
         $("#bagGsmJson").val(item?.bag_gsm_json);
+
+        $("#grade").val(item?.grade);
+        $("#rateType").val(item?.rate_type);
+        $("#fareType").val(item?.fare_type);
+        $("#stereoType").val(item?.stereo_type);
         showHidePrintingColorDiv();
         getBalance();
         
         // Set the multi-select field for 'bookingPrintingColor'
         try {
             // Parse the printing_color string to an array
-            const printingColors = JSON.parse(item?.bag_color) || [];
+            const printingColors = JSON.parse(item?.bag_printing_color) || [];
             $("#bookingPrintingColor").val(printingColors).trigger("change");; // Set the selected options
         } catch (error) {
             console.error("Error parsing printing_color:", error);

@@ -57,6 +57,20 @@ class RollTransit extends Model
         return $rollTransit->id;
     }
 
+    public function resizeRollFromClient($id){
+        return self::where("id",$id)->update([
+           "client_detail_id" => null,
+           "estimate_delivery_date" => null,
+           "bag_type_id" => null,
+           "bag_unit" => null,
+           "w" => null,
+           "l" => null,
+           "g" => null,
+           "printing_color" => null,
+           "loop_color" => null,
+        ]);
+    }
+
 
     public function getCuttingSchedule(){
         return $this->hasOne(CuttingScheduleDetail::class,"roll_id","id")->where("lock_status",false);

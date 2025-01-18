@@ -1498,13 +1498,14 @@ class RollController extends Controller
                                     order_punch_details.bag_l,
                                     order_punch_details.bag_g,
                                     order_punch_details.bag_loop_color,
-                                    order_punch_details.bag_color::text,
+                                    order_punch_details.bag_color,
                                     order_punch_details.created_at,
                                     order_punch_details.grade_id,
                                     order_punch_details.rate_type_id,
                                     order_punch_details.fare_type_id,
                                     order_punch_details.stereo_type_id,
-                                    bag_type_masters.bag_type
+                                    bag_type_masters.bag_type,
+                                    order_punch_details.bag_printing_color::text
                                       ")
                     )
                     ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")
@@ -1520,6 +1521,7 @@ class RollController extends Controller
                     $item->total_units, $item->rate_per_unit, $item->bag_w, $item->bag_l, 
                     $item->bag_g, $item->bag_loop_color, $item->bag_color, $item->bag_type,
                     $item->grade_id,$item->rate_type_id,$item->fare_type_id,$item->stereo_type_id,
+                    $item->bag_printing_color,
                 ]);
             });
 
@@ -2086,11 +2088,17 @@ class RollController extends Controller
                 ->addColumn('is_delivered', function ($val) {                    
                     return $val->is_delivered ? "YES" : "NO";
                 })
-                ->addColumn("bag_color",function($val){
-                    return $val->bag_color ? collect(json_decode($val->bag_color,true))->implode(",") : "";
+                ->addColumn("bag_size",function($val){
+                    return $val->bag_w."x".$val->bag_l."x".($val->bag_g ? $val->bag_g : "0.00") ;
                 })
                 ->addColumn("total_units",function($val){
                     return $val->total_units ? $val->total_units." ".$val->units : "";
+                })
+                ->addColumn("booked_units",function($val){
+                    return $val->booked_units." ".$val->units ;
+                })
+                ->addColumn("balance_units",function($val){
+                    return roundFigure($val->total_units -( $val->booked_units + $val->disbursed_units))." ".$val->units ;
                 })
                 ->addColumn('created_at', function ($val) {                    
                     return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    
@@ -2119,8 +2127,17 @@ class RollController extends Controller
             $order = $this->_M_OrderPunches->find($request->id);
             $bag = $order->getBagType();
             $client = $order->getClient();
+            $grade = $order->getGrade();
+            $rateType = $order->getRateType();
+            $fare = $order->getFare();
+            $stereo = $order->getStereo();
             $order->bag_type = $bag->bag_type??"";
             $order->client_name = $client->client_name??"";
+            $order->grade = $grade->grade??"";
+            $order->rate_type = $rateType->rate_type??"";
+            $order->fare_type = $fare->fare_type??"";
+            $order->stereo_type = $stereo->stereo_type??"";
+            
             $request->merge([
                 "bagQuality"=>$order->bag_quality,
                 "gradeId"=>$order->grade_id,
@@ -2187,8 +2204,27 @@ class RollController extends Controller
                 return validationError($validate);
             }
             $order = $this->_M_OrderPunches->find($request->id);
+            
+            $rollTransit = $order->getRollTransit()->get(); 
+            $roll = $order->getRollDetail()->get();             
             $order->lock_status = true;
+            $test1=$rollTransit->filter(function ($item) {
+                return $item->is_printed || $item->is_cut;
+            })->count();
+            $test2=$roll->filter(function ($item) {
+                return $item->is_printed || $item->is_cut;
+            })->count();
+            if($test1 || $test2){
+                throw new Exception("Some Roll are printed or cut");
+            }
+
             DB::beginTransaction();
+            foreach($rollTransit as $val){
+                $val->resizeRollFromClient($val->id);
+            }
+            foreach($roll as $val){
+                $val->resizeRollFromClient($val->id);
+            }
             $order->update();
             DB::commit();
             return responseMsgs(true,"Order Is Deactivated","");

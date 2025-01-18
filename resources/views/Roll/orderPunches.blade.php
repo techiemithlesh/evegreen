@@ -31,27 +31,27 @@
                 </div>
             </div>
 
-            <div id="suggestion" style="display: none;">
-                <div style="text-align: center;" id="suggestion1">
-                    <div class="example-box movable" style="background-color: rgb(238, 80, 96); right: 20px; width:450px;">
-                        <div class="header">
-                            <span>Roll Stock</span>
-                            <span class="icons">▼</span>
-                        </div>
-                        <div class="content">
-                            <div id="suggestionRoll"> a
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div id="suggestion" style="display: none;">                
                 <div style="text-align: center;" id="suggestion2">
-                    <div class="example-box movable" style="background-color: rgb(89, 199, 208); width:400px;">
+                    <div class="example-box movable" style="background-color: rgb(181, 217, 220); width:450px;">
                         <div class="header">
                             <span>Roll Transit</span>
                             <span class="icons">▼</span>
                         </div>
                         <div class="content">
                             <div id="suggestionRollTransit">b
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: center;" id="suggestion1">
+                    <div class="example-box movable" style="background-color: rgb(119, 163, 202); right: 20px; width:400px;">
+                        <div class="header">
+                            <span>Roll Stock</span>
+                            <span class="icons">▼</span>
+                        </div>
+                        <div class="content">
+                            <div id="suggestionRoll"> a
                             </div>
                         </div>
                     </div>
@@ -324,6 +324,8 @@
         $('#bookingPrintingColor').select2({
             placeholder: "Select tags",
             allowClear: true,
+            maximumSelectionLength: 4,
+            dropdownCssClass: 'form-control',
             // dropdownParent: $('#rollBookingModal'),
             templateResult: formatOption,
             templateSelection: formatOption 
@@ -434,7 +436,7 @@
                             tbody.append(                               
                                 $("<tr>").append(
                                     `<td>${parseFloat(item.bag_w) + parseFloat(item.bag_g ? item.bag_g : 0) } X ${ parseFloat(item.bag_l)}</td>`,
-                                    `<td>${JSON.parse(item.bag_printing_color || "[]").join(", ")}</td>`,
+                                    `<td>${item.bag_color}</td>`,
                                     `<td>${item.bag_gsm || "N/A"}</td>`,
                                     `<td>${item.bag_type || "N/A"}</td>`,
                                     `<td><button data-item='${JSON.stringify(item)}' id="or${index}" onclick="setOrderValue('or${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
@@ -483,6 +485,7 @@
 
     function setOrderValue(id) {        
         const item = JSON.parse($(event.target).attr("data-item"));
+        console.log(item);
 
         // Set individual field values
         $("#bookingBagTypeId").val(item?.bag_type_id);
@@ -490,6 +493,7 @@
         $("#l").val(item?.bag_l);
         $("#g").val(item?.bag_g);
         $("#w").val(item?.bag_w);
+        $("#bookingBagColor").val(item?.bag_color);
 
         $("#ratePerUnit").val(item?.rate_per_unit);
         $("#totalUnits").val(item?.total_units);
@@ -587,7 +591,7 @@
                         )
                     );
 
-                    const tbody = $("<tbody>");
+                    const tbody = $("<tbody style='color:#ffff;'>");
                     
                     // Populate the rows
                     response.data.roll.forEach((item,index) => {
@@ -777,6 +781,7 @@
                     modelInfo(data.messages);
                     setHintDefault();
                     getBalance();
+                    resetForm("myForm");
                 }else{
                     console.log(data);
                     modelInfo("Internal Server Error","warning");
@@ -833,6 +838,15 @@
             $("#bagGsm").val(gsm);
         }
         console.log("gsm:",gsm);
+    }
+
+    function resetForm(id){
+        $("#"+id).get(0).reset();
+        $('#'+id+' select').each(function() {
+            if ($(this).data('select2')) {
+                $(this).val(null).trigger('change');
+            }
+        });
     }
 
 

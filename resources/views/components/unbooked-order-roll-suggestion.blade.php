@@ -42,20 +42,20 @@
                     <input type="hidden" name="booked" id="booked" />
                     <div class="row">                    
                         <div class="row mt-3">
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="form-label" for="clientName">Book For Client</label>
                                     <input name="clientName" id="clientName" class="form-control"  readonly />
                                     
                                 </div>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="form-label" for="orderDate">Order Date</label>
                                     <input type="date" name="orderDate" id="orderDate" class="form-control" readonly />
                                 </div>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="form-label" for="bookingEstimatedDespatchDate">Dispatch Date</label>
                                     <input type="date" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" readonly /> 
@@ -64,28 +64,61 @@
                         </div>
 
                         <div class="row mt-3"> 
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="form-label" for="bagQuality">Bag Quality </label>
                                     <input name="bagQuality" id="bagQuality" class="form-control" readonly />                                        
                                 </div>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="grade">Roll Grade</label>
+                                    <input name="grade" id="grade" class="form-control" readonly />  
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="form-label" for="ratePerUnit">Rate Per Unit</label>
                                     <input type="text" name="ratePerUnit" id="ratePerUnit" class="form-control" readonly />
                                 </div>
                             </div>
                         </div>
-                        <div class="row mt-3">                            
-                            <div class="col-sm-6">
+
+                        <div class="row mt-3"> 
+                            <div class="col-sm-4">
                                 <div class="form-group">
-                                    <label class="form-label" for="bookingBagTypeId">Bag Type </label>
-                                    <input name="bookingBagTypeId" id="bookingBagTypeId" class="form-control" readonly />
+                                    <label class="form-label" for="rateType">Rate Type </label>
+                                    <input type="text" name="rateType" id="rateType" class="form-control" readonly />
+                                </div>
+                            </div> 
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="fareType">Fare</label>
+                                    <input type="text" name="fareType" id="fareType" class="form-control" readonly />
                                 </div>
                             </div>
-                            
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="stereoType">Stereo</label>
+                                    <input type="text" name="stereoType" id="stereoType" class="form-control" readonly />                                        
+                                </div>
+                            </div>       
+                        </div>
+
+                        <div class="row mt-3">                            
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="bookingBagTypeId">Bag Type </label>
+                                    <input type="text" name="bookingBagTypeId" id="bookingBagTypeId" class="form-control" readonly />
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="bookingBagColor">Bag Color </label>
+                                    <input type="text" name="bookingBagColor" id="bookingBagColor" class="form-control" readonly />                                    
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="form-label" for="bookingBagUnits">Bag Unit</label>
                                     <input name="bookingBagUnits" id="bookingBagUnits" class="form-control" readonly />
@@ -96,7 +129,7 @@
                         <div class="row mt-3"> 
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label class="form-label" for="totalUnits">QTR</label>
+                                    <label class="form-label" for="totalUnits">QTY</label>
                                     <input name="totalUnits" id="totalUnits" class="form-control" readonly />
                                 </div>
                             </div>
