@@ -2345,6 +2345,68 @@ class RollController extends Controller
         }
     }
 
+    public function removeBookedRoll(Request $request){
+        try{
+            $rule = [
+                "id"=>"required",
+            ];
+            $validate = Validator::make($request->all(),$rule);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            $roll = $this->_M_RollDetail->find($request->id);
+            if(!$roll){
+                $roll = $this->_M_RollTransit->find($request->id);
+            }
+            if($roll->is_printed){
+                throw new Exception("Roll is Printed");
+            }
+            if($roll->is_cut){
+                throw new Exception("Roll is cut");
+            }
+            DB::beginTransaction();
+            if($roll->client_detail_id){
+                $orderRoll = $this->_M_OrderRollBagType->where("roll_id",$roll->id)->where("lock_status",false)->first();
+                if($orderRoll){
+                    $order = $this->_M_OrderPunches->find($orderRoll->order_id);
+                    $bag = $this->_M_BagType->find($order->bag_type_id);
+                    $bestFind = "";
+                    if($order->units=="Kg"){
+                        $bestFind = "RW";
+                    }elseif($order->units=="Piece"){
+                        $bestFind = $bag->roll_find;
+                    }
+                    $newRequest = new Request();
+                    $newRequest->merge(
+                        [
+                        "bookingBagUnits" => $order->units,
+                        "formula" => $bestFind,
+                        "length" => $roll->length,
+                        "netWeight"=>$roll->net_weight,
+                        "size"=>$roll->size,
+                        "gsm"=>$roll->gsm,
+
+                        "bagL"=>$order->bag_l,
+                        "bagW"=>$order->bag_w,
+                        "bagG"=>$order->bag_g
+                        ]
+                    );
+                    $result = $this->calculatePossibleProduction($newRequest);
+                    $order->booked_units = $order->booked_units - $result["result"]??0;
+                    $orderRoll->lock_status=true;
+                    $order->update();
+                    $orderRoll->update();
+                }                        
+            }
+            $roll->resizeRollFromClient($roll->id);
+            DB::commit();
+            return responseMsgs(true,"Roll Remove From Booking","");
+        }catch(Exception $e){
+            DB::rollBack();
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
     public function disbursedOrder(Request $request){
         try{
             $validate = Validator::make($request->all(),[

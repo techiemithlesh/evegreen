@@ -166,7 +166,7 @@
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
-            responsive: true,
+            // responsive: true,
             ajax: {
                 url: "{{route('roll.list',':flag')}}".replace(':flag', flag), // The route where you're getting data from
                 data: function(d) {
@@ -766,6 +766,30 @@
     }
     function searchData(){
         $('#postsTable').DataTable().ajax.reload();
+    }
+
+    function removeBooking(id){
+        $.ajax({
+            url:"{{route('roll.order.remove.booking')}}",
+            type:"post",
+            data:{"id":id},
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(data){                
+                $("#loadingDiv").hide();
+                if(data?.status){
+                    $('#postsTable').DataTable().ajax.reload();
+                }else{
+                    modelInfo(data?.message,"warning");
+                }
+            },
+            error:function(errors){
+                console.log(errors);
+                $("#loadingDiv").hide();
+                modelInfo("server error","error")
+            }
+        })
     }
     
 

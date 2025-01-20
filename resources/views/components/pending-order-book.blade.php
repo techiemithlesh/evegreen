@@ -177,7 +177,7 @@
             },
             success:function(data){
                 $("#loadingDiv").hide();
-                if(data.status){   debugger;
+                if(data.status){ 
                     
                     Livewire.dispatchTo('pending-order-book', 'refreshComponent');                 
                     resetForm("myForm");
