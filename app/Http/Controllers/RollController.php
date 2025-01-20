@@ -266,13 +266,13 @@ class RollController extends Controller
                         if(!$val->client_detail_id){
                             $button .= '<button class="btn btn-sm btn-warning" onClick="openModelBookingModel('.$val->id.')" >Book</button>';
                         }if($val->client_detail_id && !$val->is_printed){
-                            $button .= '<button class="btn btn-sm btn-danger" onClick="openModelAlterBookingModel('.$val->id.')" >Alter Booking</button>';
+                            $button .= '<button class="btn btn-sm btn-danger" onClick="openModelBookingModel('.$val->id.')" >Alter Booking</button>';
+                            $button .= '<button class="btn btn-sm btn-warning" onClick="removeBooking('.$val->id.')" >Remove</button>';
                         }
                         return $button;
                     })
                     ->rawColumns(['action','color',"check"])
                     ->make(true);
-                    // dd($list);
                 return $list;
 
         }
@@ -691,7 +691,9 @@ class RollController extends Controller
                     if(in_array($user_type,[1,2]) && !$val->client_detail_id){
                         $button .= '<button class="btn btn-sm btn-warning" onClick="openModelBookingModel('.$val->id.')" >Book</button>';
                     }if(in_array($user_type,[1,2]) && $val->client_detail_id && !$val->is_printed){
-                        $button .= '<button class="btn btn-sm btn-danger" onClick="openModelAlterBookingModel('.$val->id.')" >Alter Booking</button>';
+                        $button .= '<button class="btn btn-sm btn-danger" onClick="openModelBookingModel('.$val->id.')" >Alter Booking</button>';
+                        $button .= '<button class="btn btn-sm btn-warning" onClick="removeBooking('.$val->id.')" >Remove</button>';
+                        // $button .= '<button class="btn btn-sm btn-danger" onClick="openModelAlterBookingModel('.$val->id.')" >Alter Booking</button>';
                     }
                     if($flag=="schedule-printing"){
                         $button='<button class="btn btn-sm btn-warning" onClick="openPrintingScheduleModel('.$val->id.')" >Schedule For Print</button>';
@@ -1653,6 +1655,7 @@ class RollController extends Controller
                         
             $data["roll"]= collect($roll->values());
             $data["rollTransit"]= collect($transit->values());
+            // dd($request->all());
             return responseMsgs(true,"data Fetched",$data);
         }catch(ExcelExcel $e){
             return responseMsgs(false,$e->getMessage(),"");
@@ -1746,15 +1749,15 @@ class RollController extends Controller
 
                     $bag = $this->_M_BagType->find($orderNew->bag_type_id);
                     $formula = "";
-                    if($request->bookingBagUnits=="Kg"){
+                    if($orderNew->units=="Kg"){
                         $formula = "RW";
-                    }elseif($request->bookingBagUnits=="Piece"){
+                    }elseif($orderNew->units=="Piece"){
                         $formula = $bag->roll_find;
                     }
                     $newRequest = new Request();
                     $newRequest->merge(
                         [
-                        "bookingBagUnits" => $orderNew->bookingBagUnits,
+                        "bookingBagUnits" => $orderNew->units,
                         "formula" => $formula,
                         "length" => $roll->length,
                         "netWeight"=>$roll->net_weight,
@@ -2268,6 +2271,75 @@ class RollController extends Controller
                 $message=" Roll Not Found For ".$request->totalUnits." ".$request->bookingBagUnits;
             }
             return responseMsgs(true,$message,$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function rollTestByOrder(Request $request){
+        try{
+            $rollId = $request->id;
+            $orderId = $request->bookingForClientId;
+            $roll = $this->_M_RollTransit->find($rollId);
+            if(!$roll){
+                $roll= $this->_M_RollDetail->find($rollId);
+            }
+            $order = $this->_M_OrderPunches->find($orderId);
+            $newRequest = new Request();
+            $newRequest->merge([
+                "bagQuality"=>$order->bag_quality,
+                "gradeId"=>$order->grade_id,
+                "ratePerUnit"=>$order->rate_per_unit,
+                "rateTypeId"=>$order->rate_type_id,
+                "fareTypeId"=>$order->fare_type_id,
+                "stereoTypeId"=>$order->stereo_type_id,
+                "bookingBagColor"=>$order->bag_color,
+                "bagGsm"=>$order->bag_gsm,
+                "bagGsmJson"=>collect(json_decode($order->bag_gsm_json,true))->implode("/"),
+                "bookingBagTypeId"=>$order->bag_type_id,
+                "totalUnits"=> $order->total_units - $order->booked_units - $order->disbursed_units,
+                "bookingBagUnits"=>$order->units,
+
+                "l"=>$order->bag_l,
+                "w"=>$order->bag_w,
+                "g"=>$order->bag_g,
+                
+            ]); 
+            $result = $this->orderSuggestionClient($newRequest)->original;
+            if(!$result["status"]){
+                throw new Exception($result["message"]);                
+            }
+            $test = false;
+            if($roll && $roll->getTable()=="roll_details"){
+                $test = collect($result["data"]["roll"])->where("id",$rollId)->count()>0 ? true : false;
+            }
+            if($roll && $roll->getTable()=="roll_transits"){
+                $test = collect($result["data"]["rollTransit"])->where("id",$rollId)->count()>0 ? true : false;
+            }
+            $message="Roll is tested and suitable for this order";
+            if(!$test){
+                $message="Roll is tested and not suitable for this order";
+            }
+            $data["test"]=$test;
+            return responseMsgs(true,$message,$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function bookRollToOrder(Request $request){
+        try{
+            $rule = [
+                "id"=>"required",
+                "bookingForClientId"=>"required",
+            ];
+            $newRequest = new Request([
+                "id"=>$request->bookingForClientId,
+                "roll"=>[
+                    ["id"=>$request->id],
+                ]
+                ]);
+                return $this->orderPunchesSave($newRequest);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
         }

@@ -95,7 +95,7 @@
     </div>
 
     <!-- Modal -->
-    <x-roll-booking />
+    <x-pending-order-book />
 </main>
 <script>
     const rules = {
@@ -147,13 +147,13 @@
 
     var flag = window.location.pathname.split('/').pop();
     $(document).ready(function() {
-        $('#bookingPrintingColor').select2({
-            placeholder: "Select tags",
-            allowClear: true,
-            dropdownParent: $('#rollBookingModal'),
-            templateResult: formatOption,
-            templateSelection: formatOption 
-        });
+        // $('#bookingPrintingColor').select2({
+        //     placeholder: "Select tags",
+        //     allowClear: true,
+        //     dropdownParent: $('#rollBookingModal'),
+        //     templateResult: formatOption,
+        //     templateSelection: formatOption 
+        // });
 
         $('#clientModal').on('hidden.bs.modal', function() {
             $('#rollBookingModal').css("z-index","");
@@ -380,17 +380,7 @@
 
     });
 
-    // function addEventListenersToForm() {
-    //     const form = document.getElementById("rollForm");
-    //     // Loop through all elements in the form
-    //     Array.from(form.elements).forEach((element) => {
-    //         // Add event listeners based on input type
-    //         if (element.tagName === "INPUT" || element.tagName === "SELECT" || element.tagName === "TEXTAREA") {
-    //             element.addEventListener("input", hideErrorMessage);
-    //             element.addEventListener("change", hideErrorMessage);
-    //         }
-    //     });
-    // }
+    
 
     function hideErrorMessage(event) {
         const element = event.target;
@@ -469,7 +459,7 @@
 
     function openModelBookingModel(id) {
         if (id) {
-            $("#rollId").val(id);
+            $("#id").val(id);
             $("#rollBookingModal").modal("show");
 
         }

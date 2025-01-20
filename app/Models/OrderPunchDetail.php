@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderPunchDetail extends Model
 {
@@ -53,6 +54,12 @@ class OrderPunchDetail extends Model
         }
         $id= self::create($inputs->all())->id;
         return $id;
+    }
+
+    public function getPendingOrderOrm(){
+        return self::where("lock_status",false)
+                ->where("is_delivered",false)
+                ->where(DB::raw("(total_units - disbursed_units)"),">",DB::raw("booked_units"));
     }
 
     public function getBagType(){

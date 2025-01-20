@@ -134,9 +134,9 @@
                 { data: "transport_date", name: "transport_date", orderable: false, searchable: false },                
                 { data: "auto_name", name: "auto_name", orderable: false, searchable: false },                
                 { data: "transporter_name", name: "transporter_name", orderable: false, searchable: false },
-                { data: "bag_no", name: "bag_no", orderable: false, searchable: false },
                 { data: "invoice_no", name: "invoice_no", orderable: false, searchable: false },
                 { data: "bill_no", name: "bill_no", orderable: false, searchable: false },
+                { data: "bag_no", name: "bag_no", orderable: false, searchable: false },
                 { data: "client_name", name: "client_name", orderable: false, searchable: false },
                 { data: "action", name: "action", orderable: false, searchable: false },
                 

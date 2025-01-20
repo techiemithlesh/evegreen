@@ -1,4 +1,4 @@
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true" style="z-index: 1000000000000000;">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -40,5 +40,33 @@
         const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
         confirmModal.show();
     }
+
+    $(document).ready(function(){
+      let modelInfo = {};
+      let modalZIndex = 1050; // Define the z-index value here or dynamically
+
+      $('#confirmModal').on('show.bs.modal', function() {
+          $('.modal').each(function() {
+              let modal = $(this);
+              if (modal.attr('id') !== 'confirmModal') {
+                  // Store the z-index of each modal except 'confirmModal'
+                  let zIndex = modal.css('z-index');
+                  modelInfo[modal.attr('id')] = zIndex;
+                  modal.css('z-index', parseInt(zIndex)-10); // Set a lower z-index to all other modals
+              }
+          });
+      });
+
+      $('#confirmModal').on('hidden.bs.modal', function() {
+          $('.modal').each(function() {
+              let modal = $(this);
+              let zIndex = modelInfo[modal.attr('id')];
+              if (zIndex) {
+                  // Restore the original z-index from modelInfo
+                  modal.css('z-index', zIndex);
+              }
+          });
+      });
+  });
 
 </script>

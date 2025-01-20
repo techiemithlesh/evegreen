@@ -54,7 +54,8 @@
             </table>
         </div>
     </div>    
-    <x-roll-booking />
+    
+    <x-pending-order-book />
 </main>
 
 <script>
@@ -149,18 +150,18 @@
         
 
     // Booking form validation
-    $("#rollBookingForm").validate({
-        rules: {
-            bookingForClientId: { required: true },
-            bookingEstimatedDespatchDate: { required: true },
-            bookingBagUnits: { required: true },
-            bookingBagTypeId: { required: true },
-            bookingPrintingColor: { required: true },
-        },
-        submitHandler: function () {
-            bookForClient();
-        },
-    });
+    // $("#rollBookingForm").validate({
+    //     rules: {
+    //         bookingForClientId: { required: true },
+    //         bookingEstimatedDespatchDate: { required: true },
+    //         bookingBagUnits: { required: true },
+    //         bookingBagTypeId: { required: true },
+    //         bookingPrintingColor: { required: true },
+    //     },
+    //     submitHandler: function () {
+    //         bookForClient();
+    //     },
+    // });
 
     
 
@@ -229,43 +230,36 @@
         });
     }
 
-    function openModelBookingModel(id) {
-        if (id) {
-            $("#rollId").val(id);
-            $("#rollBookingModal").modal("show");
-
-        }
-    }
 
     // Book for client
-    function bookForClient() {
-        $.ajax({
-            type: "POST",
-            url: "{{route('roll.transit.book')}}",
-            dataType: "json",
-            data: $("#rollBookingForm").serialize(),
-            beforeSend: function () {
-                $("#loadingDiv").show();
-            },
-            success: function (data) {
-                $("#loadingDiv").hide();
-                if (data.status) {
-                    $("#rollBookingForm").get(0).reset();
-                    $("#rollBookingModal").modal('hide');
-                    var table = $('#postsTable').DataTable();
-                    table.ajax.reload(null, false);  
-                    modelInfo(data.messages);
-                } else if (data?.errors) {
-                    let errors = data.errors;
-                    for (let field in errors) {
-                        $(`#${field}-error`).text(errors[field][0]);
-                    }
-                } else {
-                    modelInfo("Something Went Wrong!!");
-                }
-            },
-        });
-    }
+    // function bookForClient() {
+    //     $.ajax({
+    //         type: "POST",
+    //         url: "{{route('roll.transit.book')}}",
+    //         dataType: "json",
+    //         data: $("#rollBookingForm").serialize(),
+    //         beforeSend: function () {
+    //             $("#loadingDiv").show();
+    //         },
+    //         success: function (data) {
+    //             $("#loadingDiv").hide();
+    //             if (data.status) {
+    //                 $("#rollBookingForm").get(0).reset();
+    //                 $("#rollBookingModal").modal('hide');
+    //                 var table = $('#postsTable').DataTable();
+    //                 table.ajax.reload(null, false);  
+    //                 modelInfo(data.messages);
+    //             } else if (data?.errors) {
+    //                 let errors = data.errors;
+    //                 for (let field in errors) {
+    //                     $(`#${field}-error`).text(errors[field][0]);
+    //                 }
+    //             } else {
+    //                 modelInfo("Something Went Wrong!!");
+    //             }
+    //         },
+    //     });
+    // }
 
     // Trigger table redraw on search
     function searchData() {
@@ -274,8 +268,9 @@
 
     function openModelBookingModel(id) {
         if (id) {
-            $("#rollId").val(id);
+            $("#id").val(id);
             $("#rollBookingModal").modal("show");
+            resetForm("myForm");
 
         }
         return;

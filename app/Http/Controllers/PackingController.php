@@ -595,7 +595,7 @@ class PackingController extends Controller
                     return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
                 })
                 ->addColumn('bag_no', function ($val) { 
-                    return collect($val->getBag()->get())->pluck("packing_no")->implode(",") ;
+                    return collect($val->getBag()->get())->pluck("packing_no")->implode(" , ") ;
                 })
                 ->addColumn('client_name', function ($val) { 
                     $bag = $val->getBag()->get();
@@ -603,7 +603,7 @@ class PackingController extends Controller
                     $order = $this->_M_OrderPunchDetail->whereIn("id",$orderId)->get();
                     $clineId = $order->unique("client_detail_id")->pluck("client_detail_id");
                     $client = $this->_M_ClientDetails->whereIn("id",$clineId)->get();
-                    return collect($client)->pluck("client_name")->implode(",") ;
+                    return collect($client)->pluck("client_name")->implode(" , ") ;
                 })
                 ->addColumn('action', function ($val) {                    
                     $button = "";                    
