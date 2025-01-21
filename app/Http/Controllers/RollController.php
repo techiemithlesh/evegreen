@@ -247,6 +247,9 @@ class RollController extends Controller
                         
                         return $color;
                     })
+                    ->addColumn("bag_size",function ($val) {
+                        return $val->bag_type_id ? ($val->w."x".$val->l."x".($val->g?$val->g:"0.00")):null;
+                    })
                     ->addColumn("grade",function($val){
                         $quality = RollQualityMaster::find($val->quality_id);
                         $grade = $quality ? $quality->getGrade()->first()->grade??"":"";

@@ -48,6 +48,9 @@
                         <th>Gross Weight</th>
                         <th>Net Weight</th>
                         <th>GSM Variation</th>
+                        <th>Bag Size</th>
+                        <th>Client Name</th>
+                        <th>Unit</th>
                         <th>Action</th>
                     </tr>                    
                 </thead>
@@ -104,6 +107,9 @@
                 { data: "gross_weight", name: "gross_weight" ,render:function(row,type,data){return (data.gross_weight ? data.gross_weight :"N/A")}},
                 { data: "net_weight", name: "net_weight" ,render:function(row,type,data){return (data.net_weight ? data.net_weight :"N/A")}},
                 { data: "gsm_variation", name: "gsm_variation" ,render:function(row,type,data){return (data.gsm_variation ? data.gsm_variation :"N/A")}},
+                { data: "bag_size", name: "bag_size" ,render:function(row,type,data){return (data.bag_size ? data.bag_size :"N/A")}},
+                { data: "client_name", name: "client_name" ,render:function(row,type,data){return (data.client_name ? data.client_name :"N/A")}},
+                { data: "bag_unit", name: "bag_unit" ,render:function(row,type,data){return (data.bag_unit ? data.bag_unit :"N/A")}},
                 { data: "action", name: "action", orderable: false, searchable: false },
             ],
             dom: 'lBfrtip', // Updated dom configuration
@@ -143,6 +149,9 @@
                 addFilter('postsTable',[0,1,$('#postsTable thead tr:nth-child(1) th').length - 1]);
             },
         });
+
+        const columnsToHide = [4,5,5,8,9,11,13,15];
+            columnsToHide.forEach(index => table.column(index).visible(false));
 
         if (!isCheckBox) {
             table.column(1).visible(false);
