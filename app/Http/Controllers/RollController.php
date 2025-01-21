@@ -1649,8 +1649,10 @@ class RollController extends Controller
                     "bagG"=> $request->g,
                 ]);
                 $result = $this->calculatePossibleProduction($newRequest);
-                $roll->where("roll_details.size","<=",(int)$result["result"]??0);
-                $transit->where("roll_transits.size","<=",(int)$result["result"]??0);
+                $size = (int)$result["result"]??0;
+                $fromSize = $size-2;
+                $roll->whereBetween("roll_details.size",[$fromSize,$size]);
+                $transit->whereBetween("roll_transits.size",[$fromSize,$size]);
             }
 
             $roll= $roll->get();
