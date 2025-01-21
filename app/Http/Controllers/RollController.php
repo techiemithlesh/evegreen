@@ -939,6 +939,43 @@ class RollController extends Controller
         return view("Roll/register",$data);
     }
 
+    public function loopRegister(Request $request){
+        list($from,$upto)=explode("-",getFY());
+        $data["fromDate"] = $from."-04-01";
+        $data["uptoDate"] = Carbon::now()->format("Y-m-d");
+        if($request->ajax()){
+            $fromDate = $request->fromDate;
+            $uptoDate = $request->uptoDate;
+            $data = $this->_M_LoopDetail->select("loop_details.*","vendor_detail_masters.vendor_name",)
+                    ->join("vendor_detail_masters","vendor_detail_masters.id","loop_details.vender_id")
+                    ->where("loop_details.lock_status",false)
+                    ->orderBy("loop_details.id","DESC"); 
+
+            if($fromDate && $uptoDate){              
+                $data->whereBetween("purchase_date",[$fromDate,$uptoDate]);
+            }
+            elseif($fromDate){
+                $data->where("purchase_date",">=",$fromDate);
+            }
+            elseif($uptoDate){
+                $data->where("purchase_date","<=",$uptoDate);
+            } 
+            $list = DataTables::of($data)
+                ->addIndexColumn() 
+                ->addColumn("purchase_date",function($val){
+                    return Carbon::parse($val->purchase_date)->format("d-m-Y");                        
+                })
+                ->addColumn("gsm_json",function($val){
+                    return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
+                })
+                ->rawColumns(['row_color', 'action'])
+                ->make(true);
+            return $list;
+
+        }
+        return view("Roll/loopRegister",$data);
+    }
+
     public function rollRegisterPrinting(Request $request){
         $flag= $request->flag;
         $machineId = $request->machineId;

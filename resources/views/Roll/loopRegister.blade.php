@@ -7,16 +7,13 @@
             <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
                 <ol class="breadcrumb fs-6">
                     <li class="breadcrumb-item fs-6"><a href="#">Roll</a></li>
-                    <li class="breadcrumb-item active fs-6" aria-current="page">List</li>
+                    <li class="breadcrumb-item active fs-6" aria-current="page">Loop Register</li>
                 </ol>
             </nav>
 
         </div>
     </div>
     <div class="container">
-        <div class="panel-heading">
-            <h5 class="panel-title">Roll List</h5>            
-        </div>
         <div class="panel-body">
             <form id="searchForm">
                 <div class="row g-3">
@@ -47,7 +44,10 @@
             </form>
 
         </div>
-        <div class="panel-body">
+        <div class="panel-body">            
+            <div class="panel-heading">
+                <h5 class="panel-title">List</h5>            
+            </div>
             <table id="postsTable" class="table table-striped table-bordered table-fixed">
                 <thead>
                     <tr>
@@ -58,21 +58,12 @@
                         <th>Roll Type</th>
                         <th>Roll Size</th>
                         <th>GSM </th>
-                        <th>Roll Color</th>
+                        <th>Loop Color</th>
                         <th>Length</th>
                         <th>Roll No</th>
                         <th>Gross Weight</th>
                         <th>Net Weight</th>
                         <th>GSM Variation</th>
-
-                        <th>W</th>
-                        <th>L</th>
-                        <th>G</th>
-                        <th>Bag Type</th>
-                        <th>Unit</th>
-                        <th>Customer</th>
-                        <th>Printing Color</th>
-                        <th>Loop Color</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -83,17 +74,12 @@
     </div>
 </main>
 <script>
-    var flag = window.location.pathname.split('/').pop();
     $(document).ready(function() {
-        if (flag != "stoke") {
-            $("#addRoll").hide();
-            $("#addRollImport").hide();
-        }
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
             ajax: {
-                url: "{{route('roll.list',':flag')}}".replace(':flag', flag), // The route where you're getting data from
+                url: "{{route('roll.loop.register')}}", // The route where you're getting data from
                 data: function(d) {
 
                     // Add custom form data to the AJAX request
@@ -120,21 +106,12 @@
                 { data: "roll_type", name: "roll_type" },
                 { data: "size", name: "size" },
                 { data: "gsm", name: "gsm" },
-                { data: "roll_color", name: "roll_color" },
+                { data: "loop_color", name: "loop_color" },
                 { data: "length", name: "length" },
                 { data: "roll_no", name: "roll_no" },
                 { data: "gross_weight", name: "gross_weight" },
                 { data: "net_weight", name: "net_weight" },
                 { data: "gsm_variation", name: "gsm_variation" },
-                { data : "w", name: "w" },
-                { data : "l", name: "l" },
-                { data : "g", name: "g" },
-                { data : "bag_type", name: "bag_type" },
-                { data : "bag_unit", name: "bag_unit" },
-                { data : "client_name", name: "client_name" },
-                { data : "print_color", name: "print_color" },
-                { data : "loop_color", name: "loop_color" },
-                // { data: "action", name: "action", orderable: false, searchable: false },
             ],
             dom: 'lBfrtip', // This enables the buttons
             language: {
@@ -187,21 +164,6 @@
                 addFilter('postsTable',[0]);
             },
         });
-        if(flag=="history"){
-            table.column(21).visible(false);
-            table.column(20).visible(false);
-            table.column(19).visible(false);
-            table.column(18).visible(false);
-            table.column(17).visible(false);
-            table.column(16).visible(false);
-            table.column(15).visible(false);
-            table.column(14).visible(false);
-            table.column(13).visible(false);
-            table.column(12).visible(false);
-            table.column(11).visible(false);
-            table.column(10).visible(false);
-
-        }
 
     });
 
