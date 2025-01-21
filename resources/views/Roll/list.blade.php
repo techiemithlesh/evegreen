@@ -268,7 +268,7 @@
             },     
         });
         if (flag === "history") {
-            const columnsToHide = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+            const columnsToHide = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,$('#postsTable thead tr:nth-child(1) th').length - 1];
             columnsToHide.forEach(index => table.column(index).visible(false));
         }
 
