@@ -1605,6 +1605,7 @@ class RollController extends Controller
         $data["fare"]=$this->_M_FareDetail->getFareListOrm()->orderBy("id")->get();
         $data["stereo"]=$this->_M_StereoDetail->getStereoListOrm()->orderBy("id")->get();
         $data["rateType"] = $this->_M_RateTypeMaster->getRateTypeListOrm()->orderBy("id")->get();
+        $data["loopColor"] = $this->_M_LoopStock->getLoopColorOrm()->where("balance",">",0)->orderBy("id")->get();
         return view("Roll/orderPunches",$data);
     }
 

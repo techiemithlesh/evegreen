@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\FareDetail;
 use App\Models\GradeMaster;
+use App\Models\LoopStock;
+use App\Models\LoopUsageAccount;
 use App\Models\RateTypeMaster;
 use App\Models\RollQualityGradeMap;
 use App\Models\RollQualityMaster;
@@ -12,6 +14,7 @@ use App\Models\UserTypeMaster;
 use App\Models\VendorDetailMaster;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -26,6 +29,8 @@ class MasterController extends Controller
     protected $_M_VendorDetail;
     protected $_M_RateType;
     protected $_M_UserTypeMaster;
+    protected $_M_LoopStock;
+    protected $_M_LoopUsageAccount;
 
     function __construct()
     {
@@ -37,6 +42,8 @@ class MasterController extends Controller
         $this->_M_VendorDetail = new VendorDetailMaster();
         $this->_M_RateType = new RateTypeMaster();
         $this->_M_UserTypeMaster = new UserTypeMaster();
+        $this->_M_LoopStock = new LoopStock();
+        $this->_M_LoopUsageAccount = new LoopUsageAccount();
     }
 
 
@@ -339,7 +346,9 @@ class MasterController extends Controller
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
-                    return '<button class="btn btn-sm btn-primary" onClick="openModelEdit('.$val->id.')" >Edit</button>';
+                    return <<<EOD
+                            <i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('$val->id')" ></i>
+                          EOD;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
@@ -366,6 +375,77 @@ class MasterController extends Controller
         try{
             $data = $this->_M_UserTypeMaster->find($id);
             return responseMsgs(true,"Data Fetched",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function loopStockList(Request $request){
+       if($request->ajax()){
+            $data = $this->_M_LoopStock->where("lock_status",false)->orderBy("id","ASC");
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($val) {
+                    return <<<EOD
+                            <i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('$val->id')" ></i>
+                            <i class="bi bi-trash3-fill btn btn-sm" style ="color:rgb(229, 37, 37)" onclick="showConfirmDialog('Are you sure you want to deactivate this item?', function() { deactivate('$val->id'); })" ></i>
+                          EOD;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+       }
+       return view("Master/loop_stock_list");
+    }
+
+    public function loopStockEdit(Request $request){
+        try{
+            DB::beginTransaction();
+            $this->_M_LoopStock->edit($request);
+            DB::commit();
+            return responseMsgs(true,"Loop Stock Updated","");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function loopStockDtl($id){
+        try{
+            $data = $this->_M_LoopStock->find($id);
+            return responseMsgs(true,"Data Fetched",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function deactivateLoopStock($id,Request $request){
+        try{
+            $request->merge(["id",$id]);
+            $this->_M_LoopStock->edit($request);
+            return responseMsgs(true,"Loop Stock Deactivated","");
+        }catch(Exception $e){
+            return responseMsgs(true,$e->getMessage(),"");
+        }
+    }
+
+    public function loopStockTestBooking(Request $request){
+        try{
+            $stock = $this->_M_LoopStock->where("loop_color",$request->loopColor)->first();
+            if(!$stock){
+                throw new Exception("Invalid Color");
+            }
+            $message = "";
+            $class = "";
+            if($stock->balance==0){
+                $message= $stock->loop_color." loop is not available in stock";
+                $class = "error";
+            }elseif($stock->balance < $stock->min_limit){
+                $message= $stock->loop_color." loop is very short";
+                $class = "warning";
+            }elseif($stock->balance < ($stock->min_limit+100)){
+                $message= $stock->loop_color." loop is nearly sorted.";
+                $class = "info";
+            }
+            return responseMsgs(true,$message,$class);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
         }

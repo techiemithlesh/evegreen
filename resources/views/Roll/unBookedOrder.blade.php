@@ -210,6 +210,7 @@
         $("#stereoType").val(item?.stereo_type);
         showHidePrintingColorDiv();
         getBalance();
+        testLoop();
         
         // Set the multi-select field for 'bookingPrintingColor'
         try {
@@ -566,6 +567,28 @@
                 $("#loadingDiv").hide();
             }
         });
+    }
+
+    function testLoop(){
+        let loopColor = $("#looColor").val();
+        if(loopColor){
+            $.ajax({
+                url : "{{route('master.loop.stock.booking.test')}}",
+                type : "post",
+                data : {"loopColor":loopColor},
+                beforeSend:function(){
+                    $("loadingDiv").show();
+                },
+                success:function(data){
+                    if(data?.status){
+                        modelInfo(data?.message,data?.data);
+                    }
+                },
+                error:function(error){
+                    console.log(error);
+                }
+            })
+        }
     }
     
 

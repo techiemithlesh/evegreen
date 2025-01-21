@@ -248,7 +248,13 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="looColor">Loop Color</label>
-                                <input name="looColor" id="looColor" class="form-control" required />                               
+                                <select name="looColor" id="looColor" class="form-control"  required onchange="testLoop()">
+                                    <option value="">select</option>
+                                    @foreach($loopColor as $val)
+                                      <option value="{{$val->loop_color}}" id="{{$val->loop_color}}" data-item="{{json_encode($val)}}">{{$val->loop_color}}</option>
+                                    @endforeach
+                                </select>
+                                <!-- <input name="looColor" id="looColor" class="form-control" required />                                -->
                                 <span class="error-text" id="looColor-error"></span>
                             </div>
                         </div>
@@ -505,6 +511,7 @@
         $("#rateTypeId").val(item?.rate_type_id);
         $("#fareTypeId").val(item?.fare_type_id);
         $("#stereoTypeId").val(item?.stereo_type_id);
+        $("#looColor").val(item?.bag_loop_color);
         showHidePrintingColorDiv();
         getBalance();
         
@@ -847,6 +854,41 @@
                 $(this).val(null).trigger('change');
             }
         });
+    }
+
+    function testLoop(){
+        let loopColor = $("#looColor").val();
+        if(loopColor){
+            $.ajax({
+                url : "{{route('master.loop.stock.booking.test')}}",
+                type : "post",
+                data : {"loopColor":loopColor},
+                beforeSend:function(){
+                    $("loadingDiv").show();
+                },
+                success:function(data){
+                    if(data?.status){
+                        modelInfo(data?.message,data?.data);
+                    }
+                    else{                        
+                        testTemp(loopColor);
+                    }
+                },
+                error:function(error){
+                    console.log(error);
+                    testTemp(loopColor);
+                }
+            })
+        }
+    }
+
+    function testTemp(color){
+        item = JSON.parse($("#"+color).attr("data-item"));
+        if(item?.balance < item?.min_limit){
+            modelInfo(item?.loop_color+" is very short","warning");
+        }else if(item?.balance < (item?.min_limit+100)){
+            modelInfo(item?.loop_color+" is nearly sorted.","info");
+        }
     }
 
 
