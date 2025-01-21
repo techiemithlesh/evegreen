@@ -12,6 +12,8 @@ class LoopUsageAccount extends Model
     protected $fillable = [
         "loop_stock_id",
         "loop_id",
+        "roll_id",
+        "order_id",
         "description",
         "opening_balance",
         'credit',

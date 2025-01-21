@@ -401,9 +401,9 @@ class RollController extends Controller
                                 "user_id"=>Auth()->user()->id
                             ]
                         );
-                        // $this->_M_LoopAccount->store($newLoopAccRequest);
-                        // $loopStock->balance =  $loopStock->balance +  $rollDtl->net_weight;   
-                        // $loopStock->update();                  
+                        $this->_M_LoopAccount->store($newLoopAccRequest);
+                        $loopStock->balance =  $loopStock->balance +  $rollDtl->net_weight;   
+                        $loopStock->update();                  
                     }
 
                     $rollTransit->delete();
@@ -1841,6 +1841,33 @@ class RollController extends Controller
                                 ]
                             );
                             $result = $this->calculatePossibleProduction($newRequest);
+                            $newRequest->merge([
+                                "formula" => $bag->roll_find,
+                            ]);
+                            $pieces = $this->calculatePossibleProduction($newRequest);
+                            $totalPiece = $pieces["result"]??0; 
+                            $totalLoopWeight = (($totalPiece*3.4)/1000);
+                            if(in_array($bag->id,[2,4])){
+                                $loopStock = $this->_M_LoopStock->where("loop_color",$order->bag_loop_color)->first();
+
+                                $newLoopAccRequest = new Request(
+                                    [
+                                        "loop_stock_id"=>$loopStock->id,
+                                        "roll_id"=>$roll->id,
+                                        "order_id"=>$order->id,
+                                        "description"=>"Roll Remove From Booking",
+                                        "opening_balance"=>$loopStock->balance,
+                                        "credit"=>0,
+                                        "debit"=>$totalLoopWeight,
+                                        "balance"=>$loopStock->balance +  $totalLoopWeight,
+                                        "user_id"=>Auth()->user()->id
+                                    ]
+                                );
+                                $this->_M_LoopAccount->store($newLoopAccRequest);
+
+                                $loopStock->balance = $loopStock->balance + $totalLoopWeight;
+                                $loopStock->update();
+                            }
                             $order->booked_units = $order->booked_units - $result["result"]??0;
                             $orderRoll->lock_status=true;
                             $order->update();
@@ -1885,6 +1912,33 @@ class RollController extends Controller
                     );
                     $result = $this->calculatePossibleProduction($newRequest);
                     $bookOrders += $result["result"]??0; 
+
+                    $newRequest->merge([
+                        "formula" => $bag->roll_find,
+                    ]);
+                    $pieces = $this->calculatePossibleProduction($newRequest);
+                    $totalPiece = $pieces["result"]??0; 
+                    $totalLoopWeight = (($totalPiece*3.4)/1000);
+                    if(in_array($bag->id,[2,4])){
+                        $loopStock = $this->_M_LoopStock->where("loop_color",$order->bag_loop_color)->first();
+
+                        $newLoopAccRequest = new Request(
+                            [
+                                "loop_stock_id"=>$loopStock->id,
+                                "roll_id"=>$roll->id,
+                                "order_id"=>$order->id,
+                                "description"=>"Roll Add To Booking",
+                                "opening_balance"=>$loopStock->balance,
+                                "credit"=>$totalLoopWeight,
+                                "debit"=>0,
+                                "balance"=>$loopStock->balance -  $totalLoopWeight,
+                                "user_id"=>Auth()->user()->id
+                            ]
+                        );
+                        $this->_M_LoopAccount->store($newLoopAccRequest);
+                        $loopStock->balance = $loopStock->balance - $totalLoopWeight;
+                        $loopStock->update();
+                    }
                 } 
                 $orderNew = $this->_M_OrderPunches->find($orderId);               
                 $orderNew->booked_units = $orderNew->booked_units+$bookOrders;
@@ -2510,6 +2564,34 @@ class RollController extends Controller
                     $orderRoll->lock_status=true;
                     $order->update();
                     $orderRoll->update();
+
+                    $newRequest->merge([
+                        "formula" => $bag->roll_find,
+                    ]);
+                    $pieces = $this->calculatePossibleProduction($newRequest);
+                    $totalPiece = $pieces["result"]??0; 
+                    $totalLoopWeight = (($totalPiece*3.4)/1000);
+                    if(in_array($bag->id,[2,4])){
+                        $loopStock = $this->_M_LoopStock->where("loop_color",$order->bag_loop_color)->first();
+
+                        $newLoopAccRequest = new Request(
+                            [
+                                "loop_stock_id"=>$loopStock->id,
+                                "roll_id"=>$roll->id,
+                                "order_id"=>$order->id,
+                                "description"=>"Roll Remove From Booking",
+                                "opening_balance"=>$loopStock->balance,
+                                "credit"=>0,
+                                "debit"=>$totalLoopWeight,
+                                "balance"=>$loopStock->balance +  $totalLoopWeight,
+                                "user_id"=>Auth()->user()->id
+                            ]
+                        );
+                        $this->_M_LoopAccount->store($newLoopAccRequest);
+
+                        $loopStock->balance = $loopStock->balance + $totalLoopWeight;
+                        $loopStock->update();
+                    }
                 }                        
             }
             $roll->resizeRollFromClient($roll->id);
