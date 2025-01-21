@@ -137,6 +137,27 @@
         $("#transporterModalLabel").html("Add Transporter");
     }
 
+    function deactivate(id){
+        $.ajax({
+            type:"post",
+            url: "{{ route('transporter.transporter.deactivate', ':id') }}".replace(':id', id),
+            dataType: "json",
+            data:{lock_status:true},
+            beforeSend: function() {
+                $("#loadingDiv").show();
+            },
+            success:function(data){
+                if(data.status==true) {
+                    $('#postsTable').DataTable().draw();
+                    modelInfo(data?.message,"success");
+                } 
+                $("#loadingDiv").hide();
+            },
+            error:function(error){
+                $("#loadingDiv").hide();
+            }
+        });
+    }
 </script>
 
 @include("layout.footer")

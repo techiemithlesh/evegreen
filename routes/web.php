@@ -100,6 +100,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("sector/list","sectorList")->name("sector.list");
         Route::post("sector/add-edit","addEditSector")->name("sector.add.edit");
         Route::get("sector/dtl/{id}","getSectorDtl")->name("sector.dtl");
+        Route::post("sector/deactivate/{id}","deactivate")->name("sector.deactivate");
     });
 
     Route::controller(BagController::class)->group(function(){
@@ -125,10 +126,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("transporter/auto/list","autoList")->name("transporter.auto.list");
         Route::post("transporter/auto/add","addAuto")->name("transporter.auto.add");
         Route::get("transporter/auto/dtl/{id}","autoDtl")->name("transporter.auto.dtl");
+        Route::post("transporter/auto/deactivate/{id}","deactivateAuto")->name("transporter.auto.deactivate");
 
         Route::get("transporter/transporter/list","transporterList")->name("transporter.transporter.list");
         Route::post("transporter/transporter/add","addTransporter")->name("transporter.transporter.add");
         Route::get("transporter/transporter/dtl/{id}","transporterDtl")->name("transporter.transporter.dtl");
+        Route::post("transporter/transporter/deactivate/{id}","deactivateTransporter")->name("transporter.transporter.deactivate");
     });
 
     Route::controller(RollController::class)->group(function(){

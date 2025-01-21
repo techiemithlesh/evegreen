@@ -52,7 +52,10 @@ class SectorController extends Controller
                 return DataTables::of($data)
                     ->addIndexColumn()
                     ->addColumn('action', function ($val) {
-                        return '<button class="btn btn-sm btn-primary" onClick="openModelEdit('.$val->id.')" >Edit</button>';
+                        return <<<EOD
+                            <i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('$val->id')" ></i>
+                            <i class="bi bi-trash3-fill btn btn-sm" style ="color:rgb(229, 37, 37)" onclick="showConfirmDialog('Are you sure you want to deactivate this item?', function() { deactivate('$val->id'); })" ></i>
+                        EOD;
                     })->rawColumns(['action'])
                     ->make(true);
             }
@@ -60,6 +63,16 @@ class SectorController extends Controller
         }catch(Exception $e){
             flashToast("message","Internal Server Error");
             return redirect()->back();
+        }
+    }
+
+    public function deactivate($id,Request $request){
+        try{
+            $request->merge(["id",$id]);
+            $this->_M_Sector->edit($request);
+            return responseMsgs(true,"Sector Deactivated","");
+        }catch(Exception $e){
+            return responseMsgs(true,$e->getMessage(),"");
         }
     }
 
