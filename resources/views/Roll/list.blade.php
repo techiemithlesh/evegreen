@@ -74,6 +74,8 @@
                         <th>Gross Weight</th>
                         <th>Net Weight</th>
                         <th>GSM Variation</th>
+                        <th>Grade</th>
+                        <th>Quality</th>
 
                         <th>W</th>
                         <th>L</th>
@@ -202,6 +204,8 @@
                 { data: "gross_weight", name: "gross_weight",render:function(row,type,data){return (data.gross_weight ? data.gross_weight :"N/A")} },
                 { data: "net_weight", name: "net_weight",render:function(row,type,data){return (data.net_weight ? data.net_weight :"N/A")} },
                 { data: "gsm_variation", name: "gsm_variation",render:function(row,type,data){return (data.gsm_variation ? data.gsm_variation :"N/A")} },
+                { data : "grade", name: "grade" ,render:function(row,type,data){return (data.grade ? data.grade :"N/A")}},
+                { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality :"N/A")}},
                 { data : "w", name: "w" ,render:function(row,type,data){return (data.w ? data.w :"N/A")}},
                 { data : "l", name: "l" ,render:function(row,type,data){return (data.l ? data.l :"N/A")}},
                 { data : "g", name: "g" ,render:function(row,type,data){return (data.g ? data.g :"N/A")}},

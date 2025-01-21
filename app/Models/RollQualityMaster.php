@@ -37,6 +37,6 @@ class RollQualityMaster extends Model
     }
 
     public function getGrade(){
-        return $this->hasM(GradeMaster::class,"roll_quality_id","id");
+        return $this->belongsTo(GradeMaster::class,"grade_id","id");
     }
 }

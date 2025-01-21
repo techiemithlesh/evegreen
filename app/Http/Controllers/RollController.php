@@ -247,6 +247,15 @@ class RollController extends Controller
                         
                         return $color;
                     })
+                    ->addColumn("grade",function($val){
+                        $quality = RollQualityMaster::find($val->quality_id);
+                        $grade = $quality ? $quality->getGrade()->first()->grade??"":"";
+                        return $grade ;                        
+                    })
+                    ->addColumn("quality",function($val){
+                        $quality = RollQualityMaster::find($val->quality_id);
+                        return $quality->quality??"" ;                        
+                    })
                     ->addColumn('gsm_variation', function ($val) {                        
                         return roundFigure($val->gsm_variation)."%";
                     })
@@ -730,6 +739,15 @@ class RollController extends Controller
                 })
                 ->addColumn('gsm_variation', function ($val) {                        
                     return roundFigure($val->gsm_variation)."%";
+                })
+                ->addColumn("grade",function($val){
+                    $quality = RollQualityMaster::find($val->quality_id);
+                    $grade = $quality ? $quality->getGrade()->first()->grade??"":"";
+                    return $grade ;                        
+                })
+                ->addColumn("quality",function($val){
+                    $quality = RollQualityMaster::find($val->quality_id);
+                    return $quality->quality??"" ;                        
                 })
                 ->addColumn("gsm_json",function($val){
                     return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        

@@ -40,6 +40,8 @@
                         <th>Roll Type</th>
                         <th>Roll Size</th>
                         <th>GSM</th>
+                        <th>Grade</th>
+                        <th>Quality</th>
                         <th>Roll Color</th>
                         <th>Length</th>
                         <th>Roll No</th>
@@ -94,6 +96,8 @@
                 { data: "roll_type", name: "roll_type",render:function(row,type,data){return (data.roll_type ? data.roll_type :"N/A")} },
                 { data: "size", name: "size" ,render:function(row,type,data){return (data.size ? data.size :"N/A")}},
                 { data: "gsm", name: "gsm",render:function(row,type,data){return (data.gsm ? data.gsm :"N/A")} },
+                { data : "grade", name: "grade" ,render:function(row,type,data){return (data.grade ? data.grade :"N/A")}},
+                { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality :"N/A")}},
                 { data: "roll_color", name: "roll_color" ,render:function(row,type,data){return (data.roll_color ? data.roll_color :"N/A")}},
                 { data: "length", name: "length",render:function(row,type,data){return (data.length ? data.length :"N/A")} },
                 { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no :"N/A")} },
