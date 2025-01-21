@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Models\LoopTransit;
 use App\Models\RollDetail;
 use App\Models\RollQualityMaster;
 use App\Models\VendorDetailMaster;
@@ -42,14 +43,8 @@ class RollDetailsImport implements ToCollection,WithHeadingRow
             $row["length"] = $row["roll_length"];
             $row['roll_type'] = $row['roll_type']? $row['roll_type']: "NW";
             $row["purchase_date"] = $row["purchase_date"]?Carbon::parse($row["purchase_date"])->format("Y-m-d"):null;
-            $request = new Request($row->toArray());
-            // if($row["roll_size"]<=2){
-
-            // }
-            // else
-            {
-                $_M_RollDetail->store($request);
-            }
+            $request = new Request($row->toArray());            
+            $_M_RollDetail->store($request);
         }
     }
 

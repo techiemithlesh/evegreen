@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\LoopDetail;
 use App\Models\RollDetail;
 use App\Models\RollTransit;
 use Carbon\Carbon;
@@ -18,14 +19,16 @@ class RollTransitObserver
             $rolNo = $purchaseDate->clone()->format("m")."/".$purchaseDate->clone()->format("y")."-";
             $sl = RollTransit::where("purchase_date",$rollTransit->purchase_date)->count("id");
             $sl2 = RollDetail::where("purchase_date",$rollTransit->purchase_date)->count("id");
-            $sl = $sl+$sl2;
+            $sl3 = LoopDetail::where("purchase_date",$rollTransit->purchase_date)->count("id");
+            $sl = $sl+$sl2+$sl3;
             $slNo="";
             while(true){   
                 $slNo = str_pad((string)$sl,4,"0",STR_PAD_LEFT);
                 $sl=($sl+1);             
                 $test = RollTransit::where("roll_no",$rolNo.$slNo)->count();
                 $test2 = RollDetail::where("roll_no",$rolNo.$slNo)->count();
-                if((!$test) && (!$test2)){                    
+                $test3 = LoopDetail::where("roll_no",$rolNo.$slNo)->count();
+                if((!$test) && (!$test2) &&(!$test3)){                    
                     $rolNo.=$slNo;
                     break;
                 }

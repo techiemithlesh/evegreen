@@ -14,6 +14,9 @@ use App\Models\FareDetail;
 use App\Models\GarbageAcceptRegister;
 use App\Models\GarbageNotAcceptRegister;
 use App\Models\GradeMaster;
+use App\Models\LoopDetail;
+use App\Models\LoopStock;
+use App\Models\LoopUsageAccount;
 use App\Models\MachineMater;
 use App\Models\OrderPunchDetail;
 use App\Models\OrderRollBagType;
@@ -75,6 +78,9 @@ class RollController extends Controller
     protected $_M_RateTypeMaster;
     protected $_M_RollQualityMaster;
     protected $_M_RollQualityGradeMap;
+    protected $_M_LoopStock;
+    protected $_M_LoopDetail;
+    protected $_M_LoopAccount;
 
     function __construct()
     {
@@ -100,6 +106,9 @@ class RollController extends Controller
         $this->_M_RateTypeMaster = new RateTypeMaster();
         $this->_M_RollQualityMaster = new RollQualityMaster();
         $this->_M_RollQualityGradeMap = new RollQualityGradeMap();
+        $this->_M_LoopDetail = new LoopDetail();
+        $this->_M_LoopStock = new LoopStock();
+        $this->_M_LoopAccount = new LoopUsageAccount();
     }
 
     #================ Roll Transit =====================
@@ -157,15 +166,19 @@ class RollController extends Controller
                         ->select("roll_transits.vender_id","roll_transits.purchase_date",
                             "vendor_detail_masters.vendor_name",
                             DB::raw("count(roll_transits.id) as total_count,
-                                    count( CASE WHEN roll_transits.client_detail_id IS NOT NULL THEN roll_transits.id END ) as total_book,
-                                TO_CHAR(roll_transits.purchase_date, 'DD-MM-YYYY') as purchase_date 
+                                    count(CASE WHEN roll_transits.size <=2 then roll_transits.id END) as total_loop,
+                                    count( CASE WHEN roll_transits.client_detail_id IS NOT NULL THEN roll_transits.id END ) as total_book 
                             ")
                         )
                         ->join("vendor_detail_masters","vendor_detail_masters.id","roll_transits.vender_id")
                         ->where("roll_transits.lock_status",false)
                         ->groupBy("roll_transits.vender_id","roll_transits.purchase_date","vendor_detail_masters.vendor_name")
                         ->orderBy("roll_transits.purchase_date")
-                        ->get(); 
+                        ->get()
+                        ->map(function($val){
+                            $val->purchase_date = Carbon::parse($val->purchase_date)->format("d-m-Y");
+                            return $val;
+                        }); 
         return view("Roll/transit",$data);
     }
 
@@ -263,6 +276,9 @@ class RollController extends Controller
                         if($val->is_roll_cut){
                             return $button;
                         }
+                        if($val->size<=2){
+                            return $button;
+                        }
                         if(!$val->client_detail_id){
                             $button .= '<button class="btn btn-sm btn-warning" onClick="openModelBookingModel('.$val->id.')" >Book</button>';
                         }if($val->client_detail_id && !$val->is_printed){
@@ -336,10 +352,48 @@ class RollController extends Controller
     
                 if($rollTransit){
                     DB::beginTransaction();
-                    $rollDtl =$rollTransit->replicate();
-                    $rollDtl->setTable($this->_M_RollDetail->getTable());
-                    $rollDtl->id =  $rollTransit->id;
-                    $rollDtl->save();
+                    if($rollTransit->size>2){
+                        $rollDtl =$rollTransit->replicate();
+                        $rollDtl->setTable($this->_M_RollDetail->getTable());
+                        $rollDtl->id =  $rollTransit->id;
+                        $rollDtl->save();
+                    }else{
+                        $rollTransit->loop_color = $rollTransit->roll_color;
+                        $loop = array_filter($rollTransit->getAttributes(), function ($value, $key) {
+                            
+                            return in_array($key,$this->_M_LoopDetail->getFillable()); // Example: Filter out null values
+                        },ARRAY_FILTER_USE_BOTH);               
+                        $rollDtl =$this->_M_LoopDetail->newInstance($loop);
+                        $rollDtl->setTable($this->_M_LoopDetail->getTable());
+                        $rollDtl->id =  $rollTransit->id;
+                        $rollDtl->save(); 
+                        $loopStock = $this->_M_LoopStock->where("loop_color",$rollDtl->loop_color)->first();
+                        if(!$loopStock){
+                            $newRequest = new Request(
+                                [
+                                    "loop_color"=>$rollDtl->loop_color,
+                                ]
+                            );
+                            $loopStockId = $this->_M_LoopStock->store($newRequest);
+                            $loopStock = $this->_M_LoopStock->find($loopStockId);
+                        }
+                        $newLoopAccRequest = new Request(
+                            [
+                                "loop_stock_id"=>$loopStock->id,
+                                "loop_id"=>$rollDtl->id,
+                                "description"=>"new roll add",
+                                "opening_balance"=>$loopStock->balance,
+                                "credit"=>0,
+                                "debit"=>$rollDtl->net_weight,
+                                "balance"=>$loopStock->balance +  $rollDtl->net_weight,
+                                "user_id"=>Auth()->user()->id
+                            ]
+                        );
+                        // $this->_M_LoopAccount->store($newLoopAccRequest);
+                        // $loopStock->balance =  $loopStock->balance +  $rollDtl->net_weight;   
+                        // $loopStock->update();                  
+                    }
+
                     $rollTransit->delete();
                     DB::commit();
                 }
