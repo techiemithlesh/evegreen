@@ -18,7 +18,7 @@
         <div class="panel-heading">
             <h5 class="panel-title">List</h5>            
         </div>
-        <div class="panel-body">
+        <!-- <div class="panel-body">
             <form id="searchForm">
                 <div class="row g-3">
                     <div class="col-sm-3">
@@ -41,7 +41,7 @@
                 </div>
             </form>
 
-        </div>
+        </div> -->
         <div class="panel-body">
             <table id="postsTable" class="table table-striped table-bordered text-center table-fixed">
                 <thead>
