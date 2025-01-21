@@ -2000,7 +2000,7 @@ class RollController extends Controller
                     // ->where(function($where){
                     //     $where->where(DB::raw("order_punch_details.total_units"),"<=",DB::raw("order_punch_details.booked_units + order_punch_details.disbursed_units"));
                     // })
-                    ->orderBy("order_punch_details.created_at","DESC");                               
+                    ->orderBy("order_punch_details.created_at","ASC");                               
 
             if($fromDate && $uptoDate){             
                 $data->whereBetween(DB::raw("order_punch_details.created_at::date"),[$fromDate,$uptoDate]);
