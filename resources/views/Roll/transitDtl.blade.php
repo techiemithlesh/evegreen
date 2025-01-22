@@ -74,6 +74,7 @@
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
+            responsive: true,
             ajax: {
                 url: url,
                 data: function (d) {

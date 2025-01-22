@@ -17,22 +17,23 @@ class RollTransitObserver
         if(!$rollTransit->roll_no){
             $purchaseDate = Carbon::parse($rollTransit->purchase_date);
             $rolNo = $purchaseDate->clone()->format("m")."/".$purchaseDate->clone()->format("y")."-";
-            $sl = RollTransit::where("purchase_date",$rollTransit->purchase_date)->count("id");
-            $sl2 = RollDetail::where("purchase_date",$rollTransit->purchase_date)->count("id");
-            $sl3 = LoopDetail::where("purchase_date",$rollTransit->purchase_date)->count("id");
+            $sl = RollTransit::where("purchase_date",$rollTransit->purchase_date)->where("size",">",2)->count("id");
+            $sl2 = RollDetail::where("purchase_date",$rollTransit->purchase_date)->where("size",">",2)->count("id");
+            $sl3 = LoopDetail::where("purchase_date",$rollTransit->purchase_date)->where("size",">",2)->count("id");
             $sl = $sl+$sl2+$sl3;
             $slNo="";
             while(true){   
                 $slNo = str_pad((string)$sl,4,"0",STR_PAD_LEFT);
                 $sl=($sl+1);             
-                $test = RollTransit::where("roll_no",$rolNo.$slNo)->count();
-                $test2 = RollDetail::where("roll_no",$rolNo.$slNo)->count();
-                $test3 = LoopDetail::where("roll_no",$rolNo.$slNo)->count();
+                $test = RollTransit::where("roll_no",$rolNo.$slNo)->where("size",">",2)->count();
+                $test2 = RollDetail::where("roll_no",$rolNo.$slNo)->where("size",">",2)->count();
+                $test3 = LoopDetail::where("roll_no",$rolNo.$slNo)->where("size",">",2)->count();
                 if((!$test) && (!$test2) &&(!$test3)){                    
                     $rolNo.=$slNo;
                     break;
                 }
             }
+            if($rollTransit->size>2)
             $rollTransit->roll_no  = $rolNo;
         }
         if(!$rollTransit->gsm_variation){

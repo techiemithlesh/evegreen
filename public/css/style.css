@@ -292,8 +292,13 @@ a.sidebar-link:hover {
     background-color: #f63b3b !important;
     color: rgba(255, 255, 255, 0.9)!important;
 }
-.tr-gsm_variation td{
+.tr-gsm_variation_danger td{
     background-color: #e01111 !important;
+    color: rgba(255, 255, 255, 0.9)!important;
+    font-weight: bolder;
+}
+.tr-gsm_variation td{
+    background-color: #f49146 !important;
     color: rgba(255, 255, 255, 0.9)!important;
     font-weight: bolder;
 }

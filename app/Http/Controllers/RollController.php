@@ -241,7 +241,10 @@ class RollController extends Controller
                     ->addColumn('row_color', function ($val) {
                         $color = "";
                         $gsmVariationPer = $val->gsm_variation;
-                        if(!is_between($gsmVariationPer,-4,4)){
+                        if(!is_between($gsmVariationPer,-8,8)){
+                            $color="tr-gsm_variation_danger";
+                        }
+                        elseif(!is_between($gsmVariationPer,-4,4)){
                             $color="tr-gsm_variation";
                         }
                         
@@ -249,6 +252,9 @@ class RollController extends Controller
                     })
                     ->addColumn("bag_size",function ($val) {
                         return $val->bag_type_id ? ($val->w."x".$val->l.($val->g?("x".$val->g):"")):null;
+                    })
+                    ->addColumn("size",function ($val) {
+                        return $val->size>2 ? $val->size:"Loop";
                     })
                     ->addColumn("grade",function($val){
                         $quality = RollQualityMaster::find($val->quality_id);
@@ -503,7 +509,20 @@ class RollController extends Controller
                     'roll_type' => 'nullable|in:NW,BOPP',
                     "hardness" => "nullable",
                     'roll_gsm' => 'required',
-                    'bopp' => 'required_if:roll_type,BOPP',
+                    'bopp' => [
+                        'required_if:roll_type,BOPP',
+                        function ($attribute, $value, $fail)use ($rowData,$index )
+                        {
+                            $sumJson = $value ? array_sum(explode("/",$value)):null;
+                            $gsm = $rowData["roll_gsm"];
+                            if($sumJson && $sumJson!=$gsm)
+                            {
+                                $fail('The '.$attribute.' is invalid.');
+                            }
+
+                        },
+
+                    ],
                     'roll_color' => 'required|exists:'.$this->_M_RollColor->getTable().",color",
                     'roll_length' => 'required|int',
                     'net_weight' => 'required',
@@ -694,7 +713,10 @@ class RollController extends Controller
                 ->addColumn('row_color', function ($val) use($flag) {
                     $color = "";
                     $gsmVariationPer = $val->gsm_variation;
-                    if(!is_between($gsmVariationPer,-4,4)){
+                    if(!is_between($gsmVariationPer,-8,8)){
+                        $color="tr-gsm_variation_danger";
+                    }
+                    elseif(!is_between($gsmVariationPer,-4,4)){
                         $color="tr-gsm_variation";
                     }
                     if($val->for_client_id && $val->is_printed){
@@ -909,7 +931,14 @@ class RollController extends Controller
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('row_color', function ($val) use($flag) {
-                    $color = "";
+                    $color = "";                    
+                    $gsmVariationPer = $val->gsm_variation;
+                    if(!is_between($gsmVariationPer,-8,8)){
+                        $color="tr-gsm_variation_danger";
+                    }
+                    elseif(!is_between($gsmVariationPer,-4,4)){
+                        $color="tr-gsm_variation";
+                    }
                     if($val->for_client_id && $val->is_printed){
                         $color="tr-client-printed";
                     }elseif($val->is_printed){
