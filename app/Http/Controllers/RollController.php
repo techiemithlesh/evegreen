@@ -2739,16 +2739,16 @@ class RollController extends Controller
                     return $val->is_delivered ? "YES" : "NO";
                 })
                 ->addColumn("bag_size",function($val){
-                    return $val->bag_w."x".$val->bag_l."x".($val->bag_g ? $val->bag_g : "0.00") ;
+                    return $val->bag_w."x".$val->bag_l.($val->bag_g ? ("x".$val->bag_g) : "") ;
                 })
                 ->addColumn("total_units",function($val){
-                    return $val->total_units ? $val->total_units." ".$val->units : "";
+                    return round($val->total_units);
                 })
                 ->addColumn("booked_units",function($val){
-                    return $val->booked_units." ".$val->units ;
+                    return round($val->booked_units) ;
                 })
                 ->addColumn("disbursed_units",function($val){
-                    return roundFigure($val->disbursed_units)." ".$val->units ;
+                    return round($val->disbursed_units) ;
                 })
                 ->addColumn('created_at', function ($val) {                    
                     return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    
