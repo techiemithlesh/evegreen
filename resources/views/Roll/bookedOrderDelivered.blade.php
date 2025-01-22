@@ -53,10 +53,10 @@
                         <th>Delivered Date</th>
                         <th>Client Name</th>                        
                         <th>Bag Size</th>
+                        <th>Bag Color</th>
                         <th>Bag Type</th>
                         <th>Order Qty</th>
                         <th>Bag Unit</th>
-                        <th>Bag Color</th>
                         <!-- <th>Roll No</th>
                         <th>Is Delivered</th> -->
                     </tr>
@@ -103,10 +103,10 @@
                 { data: "delivery_date", name: "delivery_date" },
                 { data: "client_name", name: "client_name" },
                 { data: "bag_type", name: "bag_type" },
+                { data: "bag_color", name: "bag_color" },
                 { data: "bag_size", name: "bag_size" },
                 { data: "total_units", name: "total_units" },
                 { data: "units", name: "units" },
-                { data: "bag_color", name: "bag_color" },
                 // { data: "roll_no", name: "roll_no" },
                 // { data: "is_delivered", name: "is_delivered" },
                 
