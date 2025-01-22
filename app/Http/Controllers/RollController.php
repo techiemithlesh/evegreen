@@ -2120,7 +2120,7 @@ class RollController extends Controller
                     return $val->bag_printing_color ? collect(json_decode($val->bag_printing_color,true))->implode(",") : "";
                 })
                 ->addColumn("total_units",function($val){
-                    return $val->total_units ? $val->total_units." ".$val->units : "";
+                    return round($val->total_units);
                 })
                 ->addColumn('created_at', function ($val) {                    
                     return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    
