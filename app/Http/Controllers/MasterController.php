@@ -397,10 +397,15 @@ class MasterController extends Controller
        return view("Master/loop_stock_list");
     }
 
-    public function loopStockEdit(Request $request){
+    public function loopStockAddEdit(Request $request){
         try{
             DB::beginTransaction();
-            $this->_M_LoopStock->edit($request);
+            if($request->id){
+                $this->_M_LoopStock->edit($request);
+                $message = "User Type Update";
+            }else{
+                $this->_M_LoopStock->store($request);
+            }
             DB::commit();
             return responseMsgs(true,"Loop Stock Updated","");
         }catch(Exception $e){

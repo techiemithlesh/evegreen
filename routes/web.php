@@ -59,7 +59,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("master/user-type/dtl/{id?}","userTypeDtl")->name("master.user.type.dtl");
 
         Route::get("master/loop-stock/list","loopStockList")->name("master.loop.stock.list");
-        Route::post("master/loop-stock/edit","loopStockEdit")->name("master.loop.stock.edit");
+        Route::post("master/loop-stock/add-edit","loopStockAddEdit")->name("master.loop.stock.add.edit");
         Route::get("master/loop-stock/dtl/{id?}","loopStockDtl")->name("master.loop.stock.dtl");
         Route::post("master/loop-stock/deactivateLoopStock/{id}","deactivateLoopStock")->name("master.loop-stock.deactivate");
         Route::post("master/loop-stock-booking/test","loopStockTestBooking")->name("master.loop.stock.booking.test");

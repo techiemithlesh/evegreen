@@ -13,11 +13,11 @@
         </div>
         <div class="panel-heading">
             <h5 class="panel-title">List</h5>
-            <!-- <div class="panel-control">
-                <button type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#gradeModal" onclick="resetModelForm()">
+            <div class="panel-control">
+                <button type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#loopStockModal" onclick="resetModelForm()">
                     Add <ion-icon name="add-circle-outline"></ion-icon>
                 </button>
-            </div> -->
+            </div>
         </div>
     </div>
     <div class="container">
@@ -42,7 +42,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="loopStockModalLabel">Edit Stock</h5>
+                    <h5 class="modal-title" id="loopStockModalLabel">Add Stock</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -53,8 +53,8 @@
 
                         <!-- Client Name -->
                         <div class="mb-3">
-                            <label class="form-label" for="loopColor">Loop Color</label>
-                            <input type="text"  id="loopColor" name="loopColor" class="form-control" readonly />
+                            <label class="form-label" for="loopColor">Loop Color<span class="text-danger">*</span></label>
+                            <input type="text"  id="loopColor" name="loopColor" class="form-control" required />
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="balance"> Balance<span class="text-danger">*</span></label>
@@ -68,7 +68,7 @@
                         <!-- Submit Button -->
                         <div class="row mt-4">
                             <div class="col-sm-12 text-end">
-                                <button type="submit" class="btn btn-success" id="submit">Edit</button>
+                                <button type="submit" class="btn btn-success" id="submit">Add</button>
                             </div>
                         </div>
                     </form>
@@ -134,7 +134,7 @@
     function editStock(){
         $.ajax({
                 type: "POST",
-                'url':"{{route('master.loop.stock.edit')}}",            
+                'url':"{{route('master.loop.stock.add.edit')}}",            
                                 
                 "deferRender": true,
                 "dataType": "json",
@@ -177,7 +177,7 @@
                     $("#minLimit").val(bagDtl?.min_limit);
                     $("#loopStockModal").modal("show");
                     $("#submit").html("Edit");
-                    $("#gradeModalLabel").html("Edit Stock");                
+                    $("#loopStockModalLabel").html("Edit Stock");                
                 } 
                 $("#loadingDiv").hide();
             },
@@ -191,7 +191,7 @@
         $("#loopStockForm").get(0).reset();
         $("#id").val("");
         $("#submit").html("Add");
-        $("#gradeModalLabel").html("Add Stock");
+        $("#loopStockModalLabel").html("Add Stock");
     }
 
     function deactivate(id){
