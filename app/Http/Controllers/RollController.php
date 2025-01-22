@@ -517,7 +517,7 @@ class RollController extends Controller
                             $gsm = $rowData["roll_gsm"];
                             if($sumJson && $sumJson!=$gsm)
                             {
-                                $fail('The '.$attribute.' is invalid.');
+                                $fail('The '.$attribute.' thickness is invalid.');
                             }
 
                         },
