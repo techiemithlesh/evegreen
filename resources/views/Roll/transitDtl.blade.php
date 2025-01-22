@@ -36,6 +36,7 @@
                         <th onclick="selectAllCheck()">Select</th>
                         <th>Purchase Date</th>
                         <th>Vendor Name</th>
+                        <th>Quality</th>
                         <th>Roll Size</th>
                         <th>GSM</th>
                         <th>Roll Color</th>
@@ -48,7 +49,6 @@
                         <th>Hardness</th>
                         <th>Roll Type</th>
                         <th>Grade</th>
-                        <th>Quality</th>
                         <th>Length</th>
                         <th>Gross Weight</th>
                         <th>GSM Variation</th>
@@ -96,6 +96,7 @@
                 { data: "check", name: "check", orderable: false, searchable: false },
                 { data: "purchase_date", name: "purchase_date" ,render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")}},
                 { data: "vendor_name", name: "vendor_name",render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")} },
+                { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality :"N/A")}},
                 { data: "size", name: "size" ,render:function(row,type,data){return (data.size ? data.size :"N/A")}},
                 { data: "gsm", name: "gsm",render:function(row,type,data){return (data.gsm ? data.gsm :"N/A")} },
                 { data: "roll_color", name: "roll_color" ,render:function(row,type,data){return (data.roll_color ? data.roll_color :"N/A")}},
@@ -108,7 +109,6 @@
                 { data: "hardness", name: "hardness" ,render:function(row,type,data){return (data.hardness ? data.hardness :"N/A")} },
                 { data: "roll_type", name: "roll_type",render:function(row,type,data){return (data.roll_type ? data.roll_type :"N/A")} },
                 { data : "grade", name: "grade" ,render:function(row,type,data){return (data.grade ? data.grade :"N/A")}},
-                { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality :"N/A")}},
                 { data: "length", name: "length",render:function(row,type,data){return (data.length ? data.length :"N/A")} },
                 { data: "gross_weight", name: "gross_weight" ,render:function(row,type,data){return (data.gross_weight ? data.gross_weight :"N/A")}},
                 { data: "gsm_variation", name: "gsm_variation" ,render:function(row,type,data){return (data.gsm_variation ? data.gsm_variation :"N/A")}},
@@ -163,7 +163,7 @@
     
         
     function hideColumn(table){
-        const columnsToHide = [13,14,15,16,17,18,19];
+        const columnsToHide = [14,15,16,17,18,19];
         columnsToHide.forEach(index => table.column(index).visible(false));
     }
 
