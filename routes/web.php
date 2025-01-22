@@ -24,6 +24,7 @@ Route::get("/test",function(){
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(Dashboard::class)->group(function(){
         Route::get('/home',"home")->name("home");
+        Route::get("dashboard/loop-status","loopStatus")->name("dashboard.loop.status");
     });
     Route::controller(MasterController::class)->group(function(){
         Route::get("master/fare/list","fareList")->name("master.fare.list");
