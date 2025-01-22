@@ -56,8 +56,8 @@
                         <th>Qtr</th>
                         <th>Booked Qty</th>
                         <th>Bag Color</th>
-                        <th>Roll No</th>
-                        <th>Is Delivered</th>
+                        <!-- <th>Roll No</th>
+                        <th>Is Delivered</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -106,8 +106,8 @@
                 { data: "total_units", name: "total_units" },
                 { data: "booked_units", name: "booked_units" },
                 { data: "bag_color", name: "bag_color" },
-                { data: "roll_no", name: "roll_no" },
-                { data: "is_delivered", name: "is_delivered" },
+                // { data: "roll_no", name: "roll_no" },
+                // { data: "is_delivered", name: "is_delivered" },
                 
             ],
             dom: 'lBfrtip', // This enables the buttons
