@@ -523,7 +523,7 @@ class RollController extends Controller
                         },
 
                     ],
-                    'roll_color' => 'required|exists:'.$this->_M_RollColor->getTable().",color",
+                    'roll_color' => 'required|exists:'.($rowData["roll_size"]>2 ? ($this->_M_RollColor->getTable().",color") : ($this->_M_LoopStock->getTable().",loop_color") ),
                     'roll_length' => 'required|int',
                     'net_weight' => 'required',
                     'gross_weight' => 'required',
