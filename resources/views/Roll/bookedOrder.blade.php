@@ -53,7 +53,7 @@
                         <th>Client Name</th>
                         <th>Bag Size</th>
                         <th>Bag Type</th>
-                        <th>Qtr</th>
+                        <th>Order Qty</th>
                         <th>Bag Unit</th>
                         <th>Booked Qty</th>
                         <th>Bag Color</th>

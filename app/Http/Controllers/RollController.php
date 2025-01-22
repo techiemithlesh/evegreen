@@ -2211,7 +2211,13 @@ class RollController extends Controller
                     return $val->bag_color ? collect(json_decode($val->bag_color,true))->implode(",") : "";
                 })
                 ->addColumn("total_units",function($val){
-                    return $val->total_units ? $val->total_units." ".$val->units : "";
+                    return round($val->total_units);
+                })
+                ->addColumn("booked_units",function($val){
+                    return round($val->booked_units);
+                })
+                ->addColumn("bag_size",function($val){
+                    return $val->bag_w."x".$val->bag_l.($val->bag_g ?("x".$val->bag_g) :"") ;
                 })
                 ->addColumn('created_at', function ($val) {                    
                     return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    
@@ -2220,7 +2226,7 @@ class RollController extends Controller
                     return $val->estimate_delivery_date ? Carbon::parse($val->estimate_delivery_date)->format("d-m-Y") : "";                    
                 })
                 ->addColumn('delivery_date', function ($val) {                    
-                    return $val->delivery_date ? Carbon::parse($val->delivery_date)->format("d-m-Y") : "";                    
+                    return $val->delivery_date ? Carbon::parse($val->delivery_date)->format("d-m-Y") : Carbon::parse($val->updated_at)->format("d-m-Y") ;                    
                 })
                 ->make(true);
             return $list;
@@ -2367,13 +2373,13 @@ class RollController extends Controller
                     return $val->bag_w."x".$val->bag_l.($val->bag_g ?("x".$val->bag_g) :"") ;
                 })
                 ->addColumn("total_units",function($val){
-                    return $val->total_units ? $val->total_units." ".$val->units : "";
+                    return round($val->total_units) ;
                 })
                 ->addColumn("booked_units",function($val){
-                    return $val->booked_units." ".$val->units ;
+                    return round($val->booked_units) ;
                 })
                 ->addColumn("balance_units",function($val){
-                    return roundFigure($val->total_units -( $val->booked_units + $val->disbursed_units))." ".$val->units ;
+                    return round($val->total_units -( $val->booked_units + $val->disbursed_units));
                 })
                 ->addColumn('created_at', function ($val) {                    
                     return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    

@@ -50,14 +50,15 @@
                         <th >#</th>
                         <!-- <th>Order No</th> -->
                         <th>Booking Date</th>
-                        <th>Client Name</th>
-                        <th>Estimate Delivery Date</th>
+                        <th>Delivered Date</th>
+                        <th>Client Name</th>                        
+                        <th>Bag Size</th>
                         <th>Bag Type</th>
+                        <th>Order Qty</th>
                         <th>Bag Unit</th>
-                        <th>Qtr</th>
                         <th>Bag Color</th>
-                        <th>Roll No</th>
-                        <th>Is Delivered</th>
+                        <!-- <th>Roll No</th>
+                        <th>Is Delivered</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -99,14 +100,15 @@
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
                 // { data: "order_no", name: "order_no" },
                 { data: "created_at", name: "created_at" },
+                { data: "delivery_date", name: "delivery_date" },
                 { data: "client_name", name: "client_name" },
-                { data: "estimate_delivery_date", name: "estimate_delivery_date" },
                 { data: "bag_type", name: "bag_type" },
-                { data: "units", name: "units" },
+                { data: "bag_size", name: "bag_size" },
                 { data: "total_units", name: "total_units" },
+                { data: "units", name: "units" },
                 { data: "bag_color", name: "bag_color" },
-                { data: "roll_no", name: "roll_no" },
-                { data: "is_delivered", name: "is_delivered" },
+                // { data: "roll_no", name: "roll_no" },
+                // { data: "is_delivered", name: "is_delivered" },
                 
             ],
             dom: 'lBfrtip', // This enables the buttons

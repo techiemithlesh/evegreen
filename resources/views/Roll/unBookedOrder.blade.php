@@ -25,16 +25,15 @@
                     <tr>
                         <th >#</th>
                         <th>Booking Date</th>
-                        <th>Client Name</th>
                         <th>Estimate Delivery Date</th>
+                        <th>Client Name</th>
                         <th>Bag Type</th>
-                        <th>Bag Unit</th>
-                        <th>Bag Size <br> <i style="font-size: xx-small; font-weight:lighter;">(WXLXG)</i></th>
-                        <th>Qty</th>
+                        <th>Bag Size</th>
+                        <th>Order Qty</th>
                         <th>Booked Qty</th>
                         <th>Balance Qty</th>
+                        <th>Bag Unit</th>
                         <th>Bag Color</th>
-                        <th>Roll No</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -78,16 +77,16 @@
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
                 // { data: "order_no", name: "order_no" },
                 { data: "created_at", name: "created_at" },
-                { data: "client_name", name: "client_name" },
                 { data: "estimate_delivery_date", name: "estimate_delivery_date" },
+                { data: "client_name", name: "client_name" },
                 { data: "bag_type", name: "bag_type" },
-                { data: "units", name: "units" },
                 { data: "bag_size", name: "bag_size" },
                 { data: "total_units", name: "total_units" },
                 { data: "booked_units", name: "booked_units" },
                 { data: "balance_units", name: "balance_units" },
+                { data: "units", name: "units" },
                 { data: "bag_color", name: "bag_color" },
-                { data: "roll_no", name: "roll_no" },
+                // { data: "roll_no", name: "roll_no" },
                 { data: "action", name: "action" },
                 
             ],
