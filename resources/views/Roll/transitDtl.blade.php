@@ -42,6 +42,7 @@
                         <th>Roll No</th>
                         <th>Net Weight</th>
                         <th>Bag Size</th>
+                        <th>Bag Type</th>
                         <th>Client Name</th>
                         <th>Unit</th>
                         <th>Hardness</th>
@@ -101,6 +102,7 @@
                 { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no :"N/A")} },
                 { data: "net_weight", name: "net_weight" ,render:function(row,type,data){return (data.net_weight ? data.net_weight :"N/A")}},
                 { data: "bag_size", name: "bag_size" ,render:function(row,type,data){return (data.bag_size ? data.bag_size :"N/A")}},
+                { data: "bag_type", name: "bag_type" ,render:function(row,type,data){return (data.bag_type ? data.bag_type :"N/A")}},
                 { data: "client_name", name: "client_name" ,render:function(row,type,data){return (data.client_name ? data.client_name :"N/A")}},
                 { data: "bag_unit", name: "bag_unit" ,render:function(row,type,data){return (data.bag_unit ? data.bag_unit :"N/A")}},
                 { data: "hardness", name: "hardness" ,render:function(row,type,data){return (data.hardness ? data.hardness :"N/A")} },
@@ -161,7 +163,7 @@
     
         
     function hideColumn(table){
-        const columnsToHide = [12,13,14,15,16,17,18];
+        const columnsToHide = [13,14,15,16,17,18,19];
         columnsToHide.forEach(index => table.column(index).visible(false));
     }
 
