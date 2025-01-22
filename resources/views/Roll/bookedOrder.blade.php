@@ -49,8 +49,9 @@
                         <th >#</th>
                         <!-- <th>Order No</th> -->
                         <th>Booking Date</th>
-                        <th>Client Name</th>
                         <th>Estimate Delivery Date</th>
+                        <th>Client Name</th>
+                        <th>Bag Size</th>
                         <th>Bag Type</th>
                         <th>Bag Unit</th>
                         <th>Qtr</th>
@@ -99,8 +100,9 @@
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
                 // { data: "order_no", name: "order_no" },
                 { data: "created_at", name: "created_at" },
-                { data: "client_name", name: "client_name" },
                 { data: "estimate_delivery_date", name: "estimate_delivery_date" },
+                { data: "client_name", name: "client_name" },
+                { data: "bag_size", name: "bag_size" },
                 { data: "bag_type", name: "bag_type" },
                 { data: "units", name: "units" },
                 { data: "total_units", name: "total_units" },
