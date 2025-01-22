@@ -464,6 +464,7 @@ class RollController extends Controller
 
     public function importRoll(Request $request){
         try{
+            ini_set('max_execution_time', 600);
             $validate = Validator::make($request->all(),["csvFile"=>"required|mimes:csv,xlsx"]);
             if($validate->fails()){
                 return validationError($validate);
