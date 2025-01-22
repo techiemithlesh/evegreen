@@ -2391,10 +2391,10 @@ class RollController extends Controller
                     return $val->delivery_date ? Carbon::parse($val->delivery_date)->format("d-m-Y") : "";                    
                 })
                 ->addColumn('action', function ($val) {     
-                    $button ='<button class="btn btn-sm btn-success mx-2" onClick="openBookingModel('.$val->id.')" >Search</button>';      
-                    $button .= '<button class="btn btn-sm btn-warning mx-2" onClick="disbursedOrder('.$val->id.')" >Disbursed</button>';
-                    $button .= '<button class="btn btn-sm btn-danger mx-2" onClick="deactivate('.$val->id.')" >Discard Order</button>';         
-                    return $button;                    
+                    $button ='<i class="btn btn-sm btn-success mx-2" onClick="openBookingModel('.$val->id.')">S</i>';      
+                    $button .= '<i class="btn btn-sm btn-warning mx-2" onClick="disbursedOrder('.$val->id.')" >D</i>';
+                    $button .= '<i class="btn btn-sm btn-danger mx-2" onClick="deactivate('.$val->id.')" >X</i>';         
+                    return '<div style="display:flex">'.$button.'</div>';                    
                 })
                 ->make(true);
             return $list;
