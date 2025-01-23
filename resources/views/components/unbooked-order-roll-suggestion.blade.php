@@ -9,7 +9,7 @@
             </div>
             <div class="modal-body">
                 
-                <div id="suggestion" style="display: none;">
+                <!-- <div id="suggestion" style="display: none;">
                     <div style="text-align: center;" id="suggestion1">
                         <div class="example-box movable" style="background-color: rgb(238, 80, 96); right: 20px; width:450px">
                             <div class="header">
@@ -34,7 +34,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <form action="" id="myForm" class="row g-3">                
                     @csrf
@@ -185,6 +185,22 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="row mt-3"  id="suggestion" style="display:none;">
+                            <div class="collapsible"  id="suggestion2"> 
+                                <div class="panel-title">Transit</div>                                
+                                <button type="button" class="collapsible-btn"><i class="bi bi-eye-fill" class="collapsible-btn"></i></button>                            
+                                <div class="collapsible-content content" id="suggestionRollTransit" style="overflow-y: scroll;">
+                                </div>
+                            </div>
+                            <div class="collapsible"  id="suggestion1"> 
+                                <div class="panel-title">Stock</div>                                
+                                <button type="button" class="collapsible-btn"><i class="bi bi-eye-fill" class="collapsible-btn"></i></button>                            
+                                <div class="collapsible-content content" id="suggestionRoll" style="overflow-y: scroll;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="row mt-3" style="text-align:right">
                             <div > Balance <span id="balance" style="color: red;"> </span> </div>
                         </div>
@@ -211,7 +227,7 @@
                                 </table>
                             </div>
                         </div>
-                    </div>
+                    </div>                    
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary" onclick="setHintCollapse();">Submit</button>
                     </div>

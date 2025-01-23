@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CityStateMap;
 use App\Models\FareDetail;
 use App\Models\GradeMaster;
 use App\Models\LoopStock;
 use App\Models\LoopUsageAccount;
+use App\Models\OrderBroker;
 use App\Models\RateTypeMaster;
 use App\Models\RollQualityGradeMap;
 use App\Models\RollQualityMaster;
+use App\Models\StateMaster;
 use App\Models\StereoDetail;
 use App\Models\UserTypeMaster;
 use App\Models\VendorDetailMaster;
@@ -16,6 +19,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class MasterController extends Controller
@@ -31,6 +35,9 @@ class MasterController extends Controller
     protected $_M_UserTypeMaster;
     protected $_M_LoopStock;
     protected $_M_LoopUsageAccount;
+    protected $_M_broker;
+    protected $_M_Sate;
+    protected $_M_CityStateMap;
 
     function __construct()
     {
@@ -44,6 +51,9 @@ class MasterController extends Controller
         $this->_M_UserTypeMaster = new UserTypeMaster();
         $this->_M_LoopStock = new LoopStock();
         $this->_M_LoopUsageAccount = new LoopUsageAccount();
+        $this->_M_broker = new OrderBroker();
+        $this->_M_Sate = new StateMaster();
+        $this->_M_CityStateMap = new CityStateMap();
     }
 
 
@@ -453,6 +463,244 @@ class MasterController extends Controller
             return responseMsgs(true,$message,$class);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    /**
+     * Broker
+     */
+
+    public function brokerList(Request $request){
+        if($request->ajax()){
+            $data = $this->_M_broker->orderBy("id","ASC");
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($val) {
+                    $button = '<i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('.$val->id.')" ></i>';
+                    $btn2 ='<i class="bi bi-lock-fill btn btn-sm" style ="color:rgb(229, 37, 37)" onclick="showConfirmDialog('."'Are you sure you want to lock this item?'".', function() { deactivate('.$val->id.'); })" ></i>';
+                    if($val->lock_status){
+                        $btn2 ='<i class="bi bi-unlock-fill btn btn-sm" style ="color:rgb(37, 229, 37)" onclick="showConfirmDialog('."'Are you sure you want to unlock this item?'".', function() { activate('.$val->id.'); })" ></i>';
+                    }
+                    return $button.$btn2;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+       }
+       return view("Master/broker_list");
+    }
+
+    public function brokerAddEdit(Request $request){
+        try{
+            DB::beginTransaction();
+            $message = "New Broker Add";
+            if($request->id){
+                $this->_M_broker->edit($request);
+                $message = "Broker Update";
+            }else{
+                $this->_M_broker->store($request);
+            }
+            DB::commit();
+            return responseMsgs(true,$message,"");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function brokerDtl($id){
+        try{
+            $data = $this->_M_broker->find($id);
+            return responseMsgs(true,"Data Fetched",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function activeDeactivateBroker($id,Request $request){
+        try{
+            $message="Broker Unlock";
+            if($request->lock_status){
+                $message="Broker Locked";
+            }
+            $request->merge(["id",$id]);
+            $this->_M_broker->edit($request);
+            return responseMsgs(true,$message,"");
+        }catch(Exception $e){
+            return responseMsgs(true,$e->getMessage(),"");
+        }
+    }
+
+    /**
+     * State
+     */
+
+    public function stateList(Request $request){
+        if($request->ajax()){
+            $data = $this->_M_Sate->orderBy("state_name","ASC");
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($val) {
+                    $button = '<i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('.$val->id.')" ></i>';
+                    $btn2 ='<i class="bi bi-lock-fill btn btn-sm" style ="color:rgb(229, 37, 37)" onclick="showConfirmDialog('."'Are you sure you want to lock this item?'".', function() { deactivate('.$val->id.'); })" ></i>';
+                    if($val->lock_status){
+                        $btn2 ='<i class="bi bi-unlock-fill btn btn-sm" style ="color:rgb(37, 229, 37)" onclick="showConfirmDialog('."'Are you sure you want to unlock this item?'".', function() { activate('.$val->id.'); })" ></i>';
+                    }
+                    return $button.$btn2;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+       }
+       return view("Master/state_list");
+    }
+
+    public function stateAddEdit(Request $request){
+        try{
+            DB::beginTransaction();
+            $message = "New State Add";
+            if($request->id){
+                $this->_M_Sate->edit($request);
+                $message = "State Update";
+            }else{
+                $this->_M_Sate->store($request);
+            }
+            DB::commit();
+            return responseMsgs(true,$message,"");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function stateDtl($id){
+        try{
+            $data = $this->_M_Sate->find($id);
+            return responseMsgs(true,"Data Fetched",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function activeDeactivateState($id,Request $request){
+        try{
+            $message="State Unlock";
+            if($request->lock_status){
+                $message="State Locked";
+            }
+            $request->merge(["id",$id]);
+            $this->_M_Sate->edit($request);
+            return responseMsgs(true,$message,"");
+        }catch(Exception $e){
+            return responseMsgs(true,$e->getMessage(),"");
+        }
+    }
+
+    public function importStateAndCity(Request $request){
+        $row="";
+        $index="";
+        if($request->post()){            
+            ini_set('max_execution_time', 600);
+            $file = $request->file('csvFile');
+            $rows = Excel::toArray([], $file);
+            $headings=[];
+            DB::beginTransaction();
+            try{
+                foreach ($rows[0] as $index => $row) {
+                    // Skip the header row
+                    if ($index == 0) {
+                        $headings = $row;
+                        continue;
+                    }
+                    $rowData = array_combine($headings, $row);
+                    $testState = $this->_M_Sate->where("state_name",$rowData["stateName"])->first();
+                    if(!$testState){
+                        $stateRequest = new Request($rowData);
+                        $stateId = $this->_M_Sate->store($stateRequest);
+                    }else{
+                        $stateId = $testState->id;
+                    }
+                    $testCity = $this->_M_CityStateMap->where("state_id",$stateId)->where("city_name",$rowData["cityName"])->first();
+                    if(!$testCity){
+                        $citeRequest = new Request($rowData);
+                        $citeRequest->merge(["state_id"=>$stateId]);
+                        $this->_M_CityStateMap->store($citeRequest);
+                    }
+                }
+                DB::commit();
+                flashToast("message","data Import");
+                return redirect()->to('/master/state/list');
+            }catch(Exception $e){
+                flashToast("message","data Import Error");
+                return redirect()->back('/home');
+            }
+        }else{
+            return view("importStateCity");
+        }
+    }
+
+    /**
+     * City
+     */
+
+    public function cityList(Request $request){
+       if($request->ajax()){
+            $data = $this->_M_CityStateMap
+            ->orderBy("state_id","ASC")
+            ->get()->map(function($val){
+                $val->state_name = $val->getState()->first()->state_name??"";
+                return $val;
+            });
+            return DataTables::of($data)
+                ->addIndexColumn()                
+                ->addColumn('action', function ($val) {
+                    $button = '<i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('.$val->id.')" ></i>';
+                    $btn2 ='<i class="bi bi-lock-fill btn btn-sm" style ="color:rgb(229, 37, 37)" onclick="showConfirmDialog('."'Are you sure you want to lock this item?'".', function() { deactivate('.$val->id.'); })" ></i>';
+                    if($val->lock_status){
+                        $btn2 ='<i class="bi bi-unlock-fill btn btn-sm" style ="color:rgb(37, 229, 37)" onclick="showConfirmDialog('."'Are you sure you want to unlock this item?'".', function() { activate('.$val->id.'); })" ></i>';
+                    }
+                    return $button.$btn2;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+       }
+       $data["stateList"] = $this->_M_Sate->getStateOrm()->orderBy("state_name","ASC")->get();
+       return view("Master/city_list",$data);
+    }
+
+    public function cityAddEdit(Request $request){
+        try{
+            DB::beginTransaction();
+            $message = "New State Add";
+            if($request->id){
+                $this->_M_CityStateMap->edit($request);
+                $message = "State Update";
+            }else{
+                $this->_M_CityStateMap->store($request);
+            }
+            DB::commit();
+            return responseMsgs(true,$message,"");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function cityDtl($id){
+        try{
+            $data = $this->_M_CityStateMap->find($id);
+            return responseMsgs(true,"Data Fetched",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function activeDeactivateCity($id,Request $request){
+        try{
+            $message="State Unlock";
+            if($request->lock_status){
+                $message="State Locked";
+            }
+            $request->merge(["id",$id]);
+            $this->_M_CityStateMap->edit($request);
+            return responseMsgs(true,$message,"");
+        }catch(Exception $e){
+            return responseMsgs(true,$e->getMessage(),"");
         }
     }
 }

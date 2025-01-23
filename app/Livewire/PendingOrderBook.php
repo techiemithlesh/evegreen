@@ -42,7 +42,7 @@ class PendingOrderBook extends Component
                 $val->stereo = $val->getStereo()->stereo ?? '';
                 $val->bag_printing_color = (json_decode($val->bag_printing_color,true));
                 return $val;
-            });
+            })->sortBy("client_name");
 
         $this->bagType = (new BagTypeMaster())->getBagListOrm()->orderBy("id")->get();
         $this->color = (new ColorMaster())->getColorListOrm()->orderBy("id")->get();

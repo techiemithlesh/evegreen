@@ -64,6 +64,23 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post("master/loop-stock/deactivateLoopStock/{id}","deactivateLoopStock")->name("master.loop-stock.deactivate");
         Route::post("master/loop-stock-booking/test","loopStockTestBooking")->name("master.loop.stock.booking.test");
 
+        Route::get("master/broker/list","brokerList")->name("master.broker.list");
+        Route::post("master/broker/add-edit","brokerAddEdit")->name("master.broker.add.edit");
+        Route::get("master/broker/dtl/{id?}","brokerDtl")->name("master.broker.dtl");
+        Route::post("master/broker/deactivateLoopStock/{id}","activeDeactivateBroker")->name("master.broker.deactivate");
+
+        Route::get("master/state/list","stateList")->name("master.state.list");
+        Route::post("master/state/add-edit","stateAddEdit")->name("master.state.add.edit");
+        Route::get("master/state/dtl/{id?}","stateDtl")->name("master.state.dtl");
+        Route::post("master/state/deactivateLoopStock/{id}","activeDeactivateState")->name("master.state.deactivate");
+        Route::match(["get","post"],"master/state-city/import","importStateAndCity");
+
+
+        Route::get("master/city/list","cityList")->name("master.city.list");
+        Route::post("master/city/add-edit","cityAddEdit")->name("master.city.add.edit");
+        Route::get("master/city/dtl/{id?}","cityDtl")->name("master.city.dtl");
+        Route::post("master/city/deactivateLoopStock/{id}","activeDeactivateCity")->name("master.city.deactivate");
+
         
     });
 

@@ -442,6 +442,10 @@ a.sidebar-link:hover {
     /* min-width: 50% */
 }
 
+.select2-container {
+    display: block;
+}
+
 
   
 

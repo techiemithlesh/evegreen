@@ -11,7 +11,7 @@
                         <select name="bookingForClientId" id="bookingForClientId" class="form-control" required >
                             <option value="">Select</option>
                             @foreach ($pendingOrder as $val)
-                            <option value="{{ $val->id }}" id="or{{$val->id}}" data-item="{{htmlspecialchars(json_encode($val))}}" >{{ $val->client_name }}</option>
+                            <option value="{{ $val->id }}" id="or{{$val->id}}" data-item="{{htmlspecialchars(json_encode($val))}}" >{{ $val->client_name  }} ({{$val->bag_w.'x'.$val->bag_l.($val->bag_g?('x'.$val->bag_g):"")}})</option>
                             @endforeach
                         </select>
                         <br>

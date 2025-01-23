@@ -49,6 +49,22 @@
     <x-custom-alert />
 </main>
 <script>
+
+    var collapsibleButtons = document.querySelectorAll('.collapsible-btn');
+                
+    collapsibleButtons.forEach(function(button) {
+        button.addEventListener("click", function() {
+            var content = button.nextElementSibling;
+            
+            if (content.style.display === "block") {
+                content.style.display = "none";
+                button.innerHTML = '<i class="bi bi-eye-fill" class="collapsible-btn"></i>'; // Change icon to plus
+            } else {
+                content.style.display = "block";
+                button.innerHTML = '<i class="bi bi-eye-slash-fill" class="collapsible-btn"></i>';; // Change icon to minus
+            }
+        });
+    });
     
     $(document).ready(function() {        
         const table = $('#postsTable').DataTable({
@@ -233,7 +249,11 @@
             $("#suggestion1").show();
             setHintDefault("suggestion1");
             $("#suggestionRoll").empty();
-
+            button = $("#suggestion1 button");                        
+            var content = button.next();console.log(content)
+            if(content.css("display")==="none"){
+                button.click();
+            }
             // Create the table
             const table = $("<table>").addClass("history-table");
             const thead = $("<thead>").append(
@@ -270,7 +290,7 @@
                         `<td>${item.hardness || "N/A"}</td>`,
                         `<td>${item?.unit || "N/A"}</td>`, 
                         `<td>${item?.client_name || ""}</td>`,                                
-                        `<td><button data-item='${JSON.stringify(item)}' id="rl${index}" onclick="addToBook('rl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
+                        `<td><button type="button" data-item='${JSON.stringify(item)}' id="rl${index}" onclick="addToBook('rl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
                     )
                 );
             });
@@ -300,7 +320,7 @@
             
         } else {
             $("#suggestion1").hide();
-            $("#suggestionRoll").html("<p>No records found.</p>");
+            // $("#suggestionRoll").html("<p>No records found.</p>");
         }
         if (response.status && response.data.rollTransit.length > 0) {
             $("#rollBookForUnbookedOrderModel").modal("show");
@@ -308,7 +328,11 @@
             $("#suggestion2").show();                    
             setHintDefault("suggestion2");
             $("#suggestionRollTransit").empty();
-
+            button = $("#suggestion2 button");                        
+            var content = button.next();console.log(content)
+            if(content.css("display")==="none"){
+                button.click();
+            }
             // Create the table
             const table = $("<table>").addClass("history-table");
             const thead = $("<thead>").append(
@@ -345,7 +369,7 @@
                         `<td>${item.hardness || "N/A"}</td>`,                                
                         `<td>${item.unit || "N/A"}</td>`,
                         `<td>${item?.client_name || ""}</td>`,
-                        `<td><button data-item='${JSON.stringify(item)}' id="tl${index}" onclick="addToBook('tl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
+                        `<td><button type="button" data-item='${JSON.stringify(item)}' id="tl${index}" onclick="addToBook('tl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
                     )
                 );
             });
@@ -374,7 +398,7 @@
             });
         } else {
             $("#suggestion2").hide();
-            $("#suggestionRollTransit").html("<p>No records found.</p>");
+            // $("#suggestionRollTransit").html("<p>No records found.</p>");
         }
     }
 

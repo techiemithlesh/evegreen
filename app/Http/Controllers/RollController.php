@@ -18,6 +18,7 @@ use App\Models\LoopDetail;
 use App\Models\LoopStock;
 use App\Models\LoopUsageAccount;
 use App\Models\MachineMater;
+use App\Models\OrderBroker;
 use App\Models\OrderPunchDetail;
 use App\Models\OrderRollBagType;
 use App\Models\PendingOrderBagType;
@@ -81,6 +82,7 @@ class RollController extends Controller
     protected $_M_LoopStock;
     protected $_M_LoopDetail;
     protected $_M_LoopAccount;
+    protected $_M_OrderBroker;
 
     function __construct()
     {
@@ -109,6 +111,7 @@ class RollController extends Controller
         $this->_M_LoopDetail = new LoopDetail();
         $this->_M_LoopStock = new LoopStock();
         $this->_M_LoopAccount = new LoopUsageAccount();
+        $this->_M_OrderBroker = new OrderBroker();
     }
 
     #================ Roll Transit =====================
@@ -1627,7 +1630,7 @@ class RollController extends Controller
 
 
     public function orderPunches(Request $request){
-        $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->orderBy("id")->get();
+        $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->orderBy("client_name","ASC")->get();
         $data["bagType"] = $this->_M_BagType->getBagListOrm()->orderBy("id")->get();
         $data["color"] = $this->_M_Color->getColorListOrm()->orderBy("id")->get();
         $data["rollColor"]=$this->_M_RollColor->getRollColorListOrm()->orderBy("id")->get();
@@ -1636,6 +1639,7 @@ class RollController extends Controller
         $data["stereo"]=$this->_M_StereoDetail->getStereoListOrm()->orderBy("id")->get();
         $data["rateType"] = $this->_M_RateTypeMaster->getRateTypeListOrm()->orderBy("id")->get();
         $data["loopColor"] = $this->_M_LoopStock->getLoopColorOrm()->where("balance",">",0)->orderBy("id")->get();
+        $data["broker"] = $this->_M_OrderBroker->getBrokerOrm()->orderBy("broker_name","ASC")->get();
         return view("Roll/orderPunches",$data);
     }
 

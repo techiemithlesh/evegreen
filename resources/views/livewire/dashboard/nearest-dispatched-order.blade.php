@@ -6,27 +6,21 @@
         position: relative;
         width: 300px;
         /* Adjust the width as needed */
-        height: 400px;
+        height: 300px;
         /* Adjust the height as needed */
     }
 
     .chart-card {
         position: absolute;
         width: 300px;
-        height: 400px;
+        height: 200px;
         background-color: white;
         border: 1px solid #ddd;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
-        overflow: hidden;
+        overflow: auto;
         cursor: pointer;
         transition: transform 0.3s ease, z-index 0.3s ease;
-    }
-
-    .chart-card img {
-        width: 100%;
-        height: 70%;
-        object-fit: cover;
     }
 
     .chart-title {
@@ -86,14 +80,13 @@
     }
 </style>
 
-<div style="width: 30%; margin: auto;">
-    <h6 class="chart-header">Interactive Stacked Cards</h6>
+<div>
     <div class="chart-container">
         <!-- Cards -->
         @foreach($cards as $index=>$card)
         <div class="chart-card" data-order="{{$index+1}}">
             <p class="chart-title">{{ $card['date'] }} <span style="float:right;">[{{$index+1}}]</span></p>
-            <table class="table table-striped" style="font-size: xx-small;">
+            <table class="table table-striped table-responsive" style="font-size: xx-small;">
                 <thead>
                     <tr>
                         <th>Client Name</th>
@@ -105,7 +98,7 @@
                     @foreach($card["data"] as $val)
                     <tr>
                         <td>{{$val->id}}</td>
-                        <td>{{$val->bag_w}} x {{$val->bag_l}} x {{$val->bag_g ? $val->bag_g : 0.00}}</td>
+                        <td>{{$val->bag_w}} x {{$val->bag_l}} {{$val->bag_g ? 'x'.$val->bag_g : ''}}</td>
                         <td>{{$val->total_units}}</td>
                     </tr>
                     @endforeach
@@ -115,7 +108,6 @@
         @endforeach
         
     </div>
-
 </div>
 
 <script>

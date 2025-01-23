@@ -1,5 +1,5 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<div style="width: 30%; margin: auto;">
+<div>
   <canvas id="looStockStatus"></canvas>
 </div>
 

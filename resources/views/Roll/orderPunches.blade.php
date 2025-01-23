@@ -1,6 +1,30 @@
 @include("layout.header")
 <!-- Main Component -->
+<style>
+    .collapsible {
+        background-color: #f1f1f1;
+        border: 1px solid #ccc;
+        padding: 10px;
+        width: 100%;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+    .collapsible .content {
+        display: none;
+        overflow: hidden;
+        padding-top: 10px;
+    }
+    .collapsible button {
+        background-color: transparent;
+        color: #4CAF50;
+        /* font-size: 24px; */
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+    }
 
+</style>
 <main class="p-3">
     <div class="container-fluid">
         <div class="mb-3 text-left">
@@ -18,20 +42,20 @@
     </div>
     <div class="container">
         <div class="panel-body">
-            <div style="text-align: center; max-height:50px" id="orderHistory">
+            <!-- <div style="text-align: center; max-height:50px" id="orderHistory1">
                 <div class="example-box movable" style="right: 30px; width:500px;">
                     <div class="header">
                         <span>Old Orders</span>
                         <span class="icons">▼</span>
                     </div>
                     <div class="content">
-                        <div id="history">
+                        <div id="history1">
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
-            <div id="suggestion" style="display: none;">                
+            <!-- <div id="suggestion1" style="display: none;">                
                 <div style="text-align: center;" id="suggestion2">
                     <div class="example-box movable" style="background-color: rgb(181, 217, 220); width:450px;">
                         <div class="header">
@@ -56,7 +80,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <form action="" id="myForm" class="row g-3">                
                 @csrf
@@ -76,7 +100,7 @@
                                             <option value="{{ $val->id }}">{{ $val->client_name }}</option>
                                         @endforeach
                                     </select><br>
-                                    <span class="error-text" id="bookingForClientId-error"></span>
+                                    <label class="error-text" id="bookingForClientId-error"></label>
                                 </div>
                             </div>
                         </div>
@@ -95,6 +119,16 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="row">
+                    <div class="row mt-3" id="orderHistory" >
+                        <div class="collapsible">                            
+                            <button type="button" class="collapsible-btn"><i class="bi bi-eye-fill" class="collapsible-btn"></i></button>
+                            <div class="collapsible-content content" id="history" style="overflow-y: scroll;">                                
+                            </div>
+                        </div>
+                    </div>
+                    
 
                     <div class="row mt-3"> 
                         <div class="col-sm-4">
@@ -281,7 +315,37 @@
                                 <span class="error-text" id="bookingPrintingColor-error"></span>
                             </div>
                         </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="form-label" for="brokerId">Broker</label>
+                                <div class="col-md-12">
+                                    <select name="brokerId" id="brokerId" class="form-select select22" required> 
+                                        <option value="">Select</option>                                     
+                                        @foreach($broker as $val)
+                                        <option value="{{$val->id}}">{{$val->broker_name}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>                                                                                                          
+                                <span class="error-text" id="brokerId-error"></span>
+                            </div>
+                        </div>
                         
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="row mt-3"  id="suggestion" style="display:none;">
+                        <div class="collapsible"  id="suggestion2"> 
+                            <div class="panel-title">Transit</div>                                
+                            <button type="button" class="collapsible-btn"><i class="bi bi-eye-fill" class="collapsible-btn"></i></button>                            
+                            <div class="collapsible-content content" id="suggestionRollTransit" style="overflow-y: scroll;">
+                            </div>
+                        </div>
+                        <div class="collapsible"  id="suggestion1"> 
+                            <div class="panel-title">Stock</div>                                
+                            <button type="button" class="collapsible-btn"><i class="bi bi-eye-fill" class="collapsible-btn"></i></button>                            
+                            <div class="collapsible-content content" id="suggestionRoll" style="overflow-y: scroll;">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -322,9 +386,29 @@
 
 
 <script>
+
+    var collapsibleButtons = document.querySelectorAll('.collapsible-btn');
+            
+    collapsibleButtons.forEach(function(button) {
+        button.addEventListener("click", function() {
+            var content = button.nextElementSibling;
+            
+            if (content.style.display === "block") {
+                content.style.display = "none";
+                button.innerHTML = '<i class="bi bi-eye-fill" class="collapsible-btn"></i>'; // Change icon to plus
+            } else {
+                content.style.display = "block";
+                button.innerHTML = '<i class="bi bi-eye-slash-fill" class="collapsible-btn"></i>';; // Change icon to minus
+            }
+        });
+    });
+
     $(document).ready(function(){
         getBalance();
-        $('.select22').select2(); 
+        $('.select22').select2({            
+            width:"100%",
+            display:"block"
+        }); 
         $("#orderHistory").hide();      
 
         $('#bookingPrintingColor').select2({
@@ -332,7 +416,8 @@
             allowClear: true,
             maximumSelectionLength: 4,
             dropdownCssClass: 'form-control',
-            // dropdownParent: $('#rollBookingModal'),
+            // dropdownParent: $('#rollBookingModal'),            
+            width:"100%",
             templateResult: formatOption,
             templateSelection: formatOption 
         });
@@ -370,7 +455,9 @@
             }
         });
 
-        $('#bookingForClientId').select2(); 
+        $('#bookingForClientId').select2({
+            width:"100%",
+        }); 
     });
     function openRollBookingClineModel(){
         $('#rollBookingModal').css("z-index",0);
@@ -419,9 +506,14 @@
 
                     if (response.status && response.data.length > 0) {
                         // Clear previous content
-                        $("#orderHistory").show();                        
+                        $("#orderHistory").show();                       
                         setHintDefault("orderHistory");
                         $("#history").empty();
+                        button = $("#orderHistory button");                        
+                        var content = button.next();console.log(content)
+                        if(content.css("display")==="none"){
+                            button.click();
+                        }
 
                         // Create the table
                         const table = $("<table>").addClass("history-table");
@@ -445,7 +537,7 @@
                                     `<td>${item.bag_color}</td>`,
                                     `<td>${item.bag_gsm || "N/A"}</td>`,
                                     `<td>${item.bag_type || "N/A"}</td>`,
-                                    `<td><button data-item='${JSON.stringify(item)}' id="or${index}" onclick="setOrderValue('or${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
+                                    `<td><button type="button" data-item='${JSON.stringify(item)}' id="or${index}" onclick="setOrderValue('or${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
                                     
                                 )
                             );
@@ -480,7 +572,7 @@
                 },
                 error: function () {
                     $("#loadingDiv").hide();
-                    $("#history").html("<p>An error occurred while fetching data.</p>");
+                    // $("#history").html("<p>An error occurred while fetching data.</p>");
                 }
             });
         }else{
@@ -573,14 +665,19 @@
                 $("#loadingDiv").hide();
                 $("#suggestion").show();
 
-                if (response.status && response.data.roll.length > 0) {
+                if (response.status) {
                     // Clear previous content
                     $("#suggestion1").show();
                     setHintDefault("suggestion1");
                     $("#suggestionRoll").empty();
+                    button = $("#suggestion1 button");                        
+                    var content = button.next();console.log(content)
+                    if(content.css("display")==="none"){
+                        button.click();
+                    }
 
                     // Create the table
-                    const table = $("<table>").addClass("history-table");
+                    const table = $("<table class='table table-responsive'>").addClass("history-table");
                     const thead = $("<thead>").append(
                         $("<tr>").append(
                             "<th>Sl</th>",
@@ -598,27 +695,35 @@
                         )
                     );
 
-                    const tbody = $("<tbody style='color:#ffff;'>");
+                    const tbody = $("<tbody>");
                     
                     // Populate the rows
-                    response.data.roll.forEach((item,index) => {
+                    if(response.data.roll.length > 0){
+                        response.data.roll.forEach((item,index) => {
+                            tbody.append(                               
+                                $("<tr>").append(
+                                    `<td>${index+1}</td>`,
+                                    `<td>${item.roll_no}</td>`,
+                                    `<td>${item.gsm}</td>`,
+                                    `<td>${item.roll_color || "N/A"}</td>`,
+                                    `<td>${item.length || "N/A"}</td>`,
+                                    `<td>${item.size || "N/A"}</td>`,
+                                    `<td>${item.net_weight || "N/A"}</td>`,
+                                    `<td>${item.roll_type || "N/A"}</td>`,
+                                    `<td>${item.hardness || "N/A"}</td>`,
+                                    `<td>${item?.unit || "N/A"}</td>`, 
+                                    `<td>${item?.client_name || ""}</td>`,                                
+                                    `<td><button type="button" data-item='${JSON.stringify(item)}' id="rl${index}" onclick="addToBook('rl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
+                                )
+                            );
+                        });
+                    }else{
                         tbody.append(                               
-                            $("<tr>").append(
-                                `<td>${index+1}</td>`,
-                                `<td>${item.roll_no}</td>`,
-                                `<td>${item.gsm}</td>`,
-                                `<td>${item.roll_color || "N/A"}</td>`,
-                                `<td>${item.length || "N/A"}</td>`,
-                                `<td>${item.size || "N/A"}</td>`,
-                                `<td>${item.net_weight || "N/A"}</td>`,
-                                `<td>${item.roll_type || "N/A"}</td>`,
-                                `<td>${item.hardness || "N/A"}</td>`,
-                                `<td>${item?.unit || "N/A"}</td>`, 
-                                `<td>${item?.client_name || ""}</td>`,                                
-                                `<td><button data-item='${JSON.stringify(item)}' id="rl${index}" onclick="addToBook('rl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
-                            )
-                        );
-                    });
+                                $("<tr>").append(
+                                    `<td colspan="12">No Data</td>`,
+                                )
+                            );
+                    }
 
                     // Append the table structure
                     table.append(thead).append(tbody);
@@ -645,16 +750,21 @@
                     
                 } else {
                     $("#suggestion1").hide();
-                    $("#suggestionRoll").html("<p>No records found.</p>");
+                    // $("#suggestionRoll").html("<p>No records found.</p>");
                 }
-                if (response.status && response.data.rollTransit.length > 0) {
+                if (response.status) {
                     // Clear previous content
                     $("#suggestion2").show();                    
                     setHintDefault("suggestion2");
                     $("#suggestionRollTransit").empty();
+                    button = $("#suggestion2 button");                        
+                    var content = button.next();console.log(content)
+                    if(content.css("display")==="none"){
+                        button.click();
+                    }
 
                     // Create the table
-                    const table = $("<table>").addClass("history-table");
+                    const table = $("<table class='table table-responsive'>").addClass("history-table");
                     const thead = $("<thead>").append(
                         $("<tr>").append(
                             "<th>Sl</th>",
@@ -675,24 +785,33 @@
                     const tbody = $("<tbody>");
                     
                     // Populate the rows
-                    response.data.rollTransit.forEach((item,index) => {
+                    if(response.data.rollTransit.length > 0){
+                        response.data.rollTransit.forEach((item,index) => {
+                            tbody.append(                               
+                                $("<tr>").append(
+                                    `<td>${index+1}</td>`,
+                                    `<td>${item.roll_no}</td>`,
+                                    `<td>${item.gsm}</td>`,
+                                    `<td>${item.roll_color || "N/A"}</td>`,
+                                    `<td>${item.length || "N/A"}</td>`,
+                                    `<td>${item.size || "N/A"}</td>`,
+                                    `<td>${item.net_weight || "N/A"}</td>`,
+                                    `<td>${item.roll_type || "N/A"}</td>`,
+                                    `<td>${item.hardness || "N/A"}</td>`,                                
+                                    `<td>${item.unit || "N/A"}</td>`,
+                                    `<td>${item?.client_name || ""}</td>`,
+                                    `<td><button type="button" data-item='${JSON.stringify(item)}' id="tl${index}" onclick="addToBook('tl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
+                                )
+                            );
+                        });
+                    }
+                    else{
                         tbody.append(                               
-                            $("<tr>").append(
-                                `<td>${index+1}</td>`,
-                                `<td>${item.roll_no}</td>`,
-                                `<td>${item.gsm}</td>`,
-                                `<td>${item.roll_color || "N/A"}</td>`,
-                                `<td>${item.length || "N/A"}</td>`,
-                                `<td>${item.size || "N/A"}</td>`,
-                                `<td>${item.net_weight || "N/A"}</td>`,
-                                `<td>${item.roll_type || "N/A"}</td>`,
-                                `<td>${item.hardness || "N/A"}</td>`,                                
-                                `<td>${item.unit || "N/A"}</td>`,
-                                `<td>${item?.client_name || ""}</td>`,
-                                `<td><button data-item='${JSON.stringify(item)}' id="tl${index}" onclick="addToBook('tl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
-                            )
-                        );
-                    });
+                                $("<tr>").append(
+                                    `<td colspan="12">No Data</td>`,
+                                )
+                            );
+                    }
 
                     // Append the table structure
                     table.append(thead).append(tbody);
@@ -718,7 +837,7 @@
                     });
                 } else {
                     $("#suggestion2").hide();
-                    $("#suggestionRollTransit").html("<p>No records found.</p>");
+                    // $("#suggestionRollTransit").html("<p>No records found.</p>");
                 }
             },
             error:function(errors){
