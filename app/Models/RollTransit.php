@@ -15,6 +15,7 @@ class RollTransit extends Model
         'roll_no',
         "purchase_date",
         "vender_id",
+        "vehicle_no",
         "gsm",
         "gsm_json",
         "gsm_variation",

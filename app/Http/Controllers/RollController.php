@@ -164,9 +164,10 @@ class RollController extends Controller
     public function transitList(Request $request){        
         $flag= $request->flag;
         $user_type = Auth()->user()->user_type_id??"";
+        $data["user_type"] = $user_type;
         $data["flag"]=$flag;
         $data["items"] = $this->_M_RollTransit
-                        ->select("roll_transits.vender_id","roll_transits.purchase_date",
+                        ->select("roll_transits.vender_id","roll_transits.purchase_date","roll_transits.vehicle_no",
                             "vendor_detail_masters.vendor_name",
                             DB::raw("count(roll_transits.id) as total_count,
                                     count(CASE WHEN roll_transits.size <=2 then roll_transits.id END) as total_loop,
@@ -175,11 +176,14 @@ class RollController extends Controller
                         )
                         ->join("vendor_detail_masters","vendor_detail_masters.id","roll_transits.vender_id")
                         ->where("roll_transits.lock_status",false)
-                        ->groupBy("roll_transits.vender_id","roll_transits.purchase_date","vendor_detail_masters.vendor_name")
+                        ->groupBy("roll_transits.vender_id","roll_transits.purchase_date","vendor_detail_masters.vendor_name","roll_transits.vehicle_no")
                         ->orderBy("roll_transits.purchase_date")
                         ->get()
                         ->map(function($val){
                             $val->purchase_date = Carbon::parse($val->purchase_date)->format("d-m-Y");
+                            $val->deletesAction = "
+                                showConfirmDialog('Are You Sure Want To Delete', function(){ deleteTransit('".$val->vender_id."','".$val->purchase_date."','".$val->vehicle_no."');});
+                            ";
                             return $val;
                         }); 
         return view("Roll/transit",$data);
@@ -206,6 +210,9 @@ class RollController extends Controller
                 if($request->purchase_date){
                     $request->merge(["purchase_date"=>Carbon::parse($request->purchase_date)->format("Y-m-d")]);
                     $data->where("roll_transits.purchase_date",$request->purchase_date);
+                }
+                if($request->vehicle_no){
+                    $data->where("roll_transits.vehicle_no",$request->vehicle_no);
                 }
                 if($vendor_id){
                     $data->where("roll_transits.vender_id",$vendor_id);
@@ -314,6 +321,21 @@ class RollController extends Controller
 
         }
         return view("Roll/transitDtl",$data);
+    }
+
+    public function deleteTransit(Request $request){
+        try{
+            DB::beginTransaction();
+            $this->_M_RollTransit
+                ->where("vender_id",$request->vendorId)
+                ->where("purchase_date",Carbon::parse($request->purchaseDate)->format("Y-m-d"))
+                ->where("vehicle_no",$request->vehicleNo)
+                ->update(["lock_status"=>true]);
+            DB::commit();
+            return responseMsgs(true,"Roll Delete","");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
     }
 
 
@@ -474,7 +496,7 @@ class RollController extends Controller
             }
             $file = $request->file('csvFile');
             $headings = (new HeadingRowImport())->toArray($file)[0][0];
-            $expectedHeadings = ['vendor_name', 'purchase_date',"quality", 'roll_size',"roll_type","hardness","roll_gsm","bopp","roll_color","roll_length","net_weight","gross_weight"];
+            $expectedHeadings = ['vendor_name','vehicle_no', 'purchase_date',"quality", 'roll_size',"roll_type","hardness","roll_gsm","bopp","roll_color","roll_length","net_weight","gross_weight"];
             if (array_diff($expectedHeadings, $headings)) {
                 return responseMsgs(false,"data in invalid Formate","");;
             }

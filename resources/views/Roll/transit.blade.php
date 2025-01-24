@@ -34,10 +34,14 @@
                     <tr>
                         <th>Vendor Name</th>
                         <th>Purchase Date</th>
+                        <th>Vehicle No.</th>
                         <th>Total Roll</th>
                         <th>Total Loop</th>
                         <th>Book Roll</th>
                         <th>Action</th>
+                        @if(in_array($user_type,[1,2]))
+                        <th>Delete</th>
+                        @endif
                     </tr>
                     
                 </thead>
@@ -46,10 +50,14 @@
                     <tr>
                         <td>{{ $item->vendor_name }}</td>
                         <td>{{ $item->purchase_date }}</td>
+                        <td>{{ $item->vehicle_no }}</td>
                         <td>{{ $item->total_count - $item->total_loop}}</td>
                         <td>{{ $item->total_loop}}</td>
                         <td class="text-info">{{ $item->total_book }}</td>
-                        <td> <a href="{{ url('roll/transit/dtl/' . $item->vender_id.'?purchase_date='.$item->purchase_date) }}">View</a></td>
+                        <td> <a href="{{ url('roll/transit/dtl/' . $item->vender_id.'?purchase_date='.$item->purchase_date.'&vehicle_no='.$item->vehicle_no) }}">View</a></td>
+                        @if(in_array($user_type,[1,2]))
+                        <td> <button type="button" class="btn btn-sm btn-danger" onclick="{{$item->deletesAction}}">Delete</button></td>
+                        @endif
                     </tr>
                     @endforeach
                 </tbody>
@@ -218,7 +226,10 @@
                             }
 
                         }
-                    } else {
+                    } else if(!data.status){
+                        modelInfo(data.message,"error");  
+                    } 
+                    else {
                         modelInfo("Something Went Wrong!!","error");
                     }
                 },
@@ -229,6 +240,31 @@
             }
 
         )
+    }
+
+    function deleteTransit(vendorId,purchaseDate,vehicleNo){
+        $.ajax({
+            url:"{{route('roll.delete.transit')}}",
+            type:"post",
+            data:{"vendorId":vendorId,"purchaseDate":purchaseDate,"vehicleNo":vehicleNo},
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(response){
+                if(response?.status){
+                    modelInfo(response?.message);
+                    window.location.reload();
+                }else{
+                    modelInfo("something went wrong","waring");                    
+                    $("#loadingDiv").hide();
+                }
+            },
+            error:function(error){
+                console.log(error);
+                modelInfo("server error","error");
+                $("#loadingDiv").hide();
+            }
+        })
     }
 </script>
 @include("layout.footer")

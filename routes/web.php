@@ -169,6 +169,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post("roll/order/deactivate","deactivateOrder")->name("order.deactivate");
         Route::get("roll/order/disabused/register","disburseRegister")->name("order.disabused.register");
         Route::post("roll/order/test","rollTestByOrder")->name("roll.order.test");
+        Route::post("roll/delete/transit","deleteTransit")->name("roll.delete.transit");
         Route::post("roll/order/to/book","bookRollToOrder")->name("roll.order.to.book");
         Route::post("roll/order/remove/booking","removeBookedRoll")->name("roll.order.remove.booking");
 
