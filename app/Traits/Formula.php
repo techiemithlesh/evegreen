@@ -32,4 +32,9 @@ trait Formula{
             "formula"=>$request->formula,
         ]);
     }
+
+    public function gsmVariation($roll){
+        $oldGsm = $roll->gsm_variation;
+        $roll->gsm_variation = (((($roll->net_weight * 39.37 * 1000) / $roll->size)/$roll->length)-$roll->gsm)/$roll->gsm;
+    }
 }

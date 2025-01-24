@@ -450,6 +450,10 @@ thead {
     top: 0;
 }
 
+form label{
+    font-weight: bolder;
+}
+
   
 
   /* end */

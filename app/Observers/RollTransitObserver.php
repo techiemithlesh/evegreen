@@ -5,10 +5,12 @@ namespace App\Observers;
 use App\Models\LoopDetail;
 use App\Models\RollDetail;
 use App\Models\RollTransit;
+use App\Traits\Formula;
 use Carbon\Carbon;
 
 class RollTransitObserver
 {
+    use Formula;
     /**
      * Handle the RollTransit "created" event.
      */
@@ -37,7 +39,8 @@ class RollTransitObserver
             $rollTransit->roll_no  = $rolNo;
         }
         if(!$rollTransit->gsm_variation){
-            $rollTransit->gsm_variation = (((($rollTransit->net_weight * 39.37 * 1000) / $rollTransit->size)/$rollTransit->length)-$rollTransit->gsm)/$rollTransit->gsm;
+            $this->gsmVariation($rollTransit);
+            // $rollTransit->gsm_variation = (((($rollTransit->net_weight * 39.37 * 1000) / $rollTransit->size)/$rollTransit->length)-$rollTransit->gsm)/$rollTransit->gsm;
         }
         $rollTransit->save();
     }
@@ -48,6 +51,14 @@ class RollTransitObserver
     public function updated(RollTransit $rollTransit): void
     {
         //
+        if ($rollTransit->isDirty('gsm')){
+            $this->gsmVariation($rollTransit);
+        } 
+        // foreach ($rollTransit->getDirty() as $attribute => $newValue) {
+        //     $oldValue = $rollTransit->getOriginal($attribute);
+        //     dd($oldValue,$rollTransit->getDirty());
+        // }
+
     }
 
     /**

@@ -189,6 +189,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('roll/import-template', 'downloadCsvTemplate')->name('download.roll.import.template')->withoutMiddleware("auth:sanctum");
         Route::post("roll/book","rollBook")->name("roll.book");
         Route::get("roll/dtl/{id}","rollDtl")->name("roll.dtl");
+        Route::get("roll/dtl-full/{id}","rollDtlFull")->name("roll.dtl.full");
         Route::post("roll/schedule/printing","rollPrintingSchedule")->name("roll.printing.schedule");
         Route::post("roll/printing/update","rollPrintingUpdate")->name("roll.printing.update");
         Route::post("roll/schedule/cutting","rollCuttingSchedule")->name("roll.cutting.schedule");
@@ -205,6 +206,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::post("roll/search/printing","rollSearchPrinting")->name("roll.search.printing");
         Route::post("roll/search/cutting","rollSearchCutting")->name("roll.search.cutting");
+        Route::post("roll/update/edit","rollUpdate")->name("roll.update.edit");
     });
 
     Route::controller(PackingController::class)->group(function(){

@@ -849,8 +849,11 @@ class RollController extends Controller
                 })
                 ->addColumn('action', function ($val) use($flag,$user_type) {                    
                     $button = "";
-                    if($val->is_roll_cut){
+                    if($val->is_cut){
                         return $button;
+                    }
+                    if(!($val->is_cut || $val->is_printed)){
+                        $button.='<button class="btn btn-sm btn-primary" onClick="editRoll('.$val->id.')" >Edit</button>';
                     }
                     if(in_array($user_type,[1,2]) && !$val->client_detail_id){
                         $button .= '<button class="btn btn-sm btn-warning" onClick="openModelBookingModel('.$val->id.')" >Book</button>';
@@ -897,6 +900,22 @@ class RollController extends Controller
             }elseif($request->flag=="printing"){
                 $data->schedule_date = $data->getPrintingSchedule()->first();
             }
+            return responseMsgs(true,"roll dtl fetched",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function rollDtlFull($id,Request $request){
+        try{
+            $data = $this->_M_RollDetail->find($id);
+            if(!$data){
+                $data = $this->_M_RollTransit->find($id);
+            }
+            if(!$data){
+                throw new Exception("no data find");
+            }
+            $data->vender_name = $data->getVendor()->first()->vendor_name??"";
             return responseMsgs(true,"roll dtl fetched",$data);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
@@ -2914,6 +2933,37 @@ class RollController extends Controller
 
         }
         return view("Roll/disburseRegister");
+    }
+
+    public function rollUpdate(Request $request){
+        try{
+            $roll = $this->_M_RollDetail->find($request->editRollId);
+            if(!$roll){
+                $roll = $this->_M_RollTransit->find($request->editRollId);
+            }
+            if($roll->is_printed){
+                throw new Exception("Roll Is Printed");
+            }
+            if($roll->is_cut){
+                throw new Exception("Roll Is Cut");
+            }
+            $roll->quality_id = $request->qualityId;
+            $roll->roll_type = $request->rollType;
+            $roll->hardness = $request->hardness;
+            $roll->gsm = $request->gsm;
+            $roll->gsm_json = $request->gsmJson;
+            $roll->roll_color = $request->rollColor;
+            $roll->length = $request->length;
+            $roll->size = $request->size;
+            $roll->net_weight = $request->netWeight;
+            $roll->gross_weight = $request->grossWeight;
+            DB::beginTransaction();
+            $roll->update();
+            DB::commit();
+            return responseMsgs(true,"Roll Update","");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
     }
     
 

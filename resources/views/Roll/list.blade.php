@@ -17,14 +17,6 @@
     <div class="container">
         <div class="panel-heading">
             <h5 class="panel-title">Roll List</h5>
-            <div class="panel-control">
-                <button id="addRoll" type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#rollModal">
-                    Add <ion-icon name="add-circle-outline"></ion-icon>
-                </button>
-                <button id="addRollImport" type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#fileImportModal">
-                    Add Roll Import Excel <ion-icon name="add-circle-outline"></ion-icon>
-                </button>
-            </div>
         </div>
         @if($flag && $flag=='history')
         <div class="panel-body">
@@ -98,6 +90,7 @@
 
     <!-- Modal -->
     <x-pending-order-book />
+    <x-roll.edit-roll />
 </main>
 <script>
     const rules = {

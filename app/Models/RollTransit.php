@@ -88,4 +88,8 @@ class RollTransit extends Model
     public function getNotAcceptedGarbage(){
         return $this->hasMany(GarbageNotAcceptRegister::class,"roll_id","id")->where("lock_status",false);
     }
+
+    public function getVendor(){
+        return $this->belongsTo(VendorDetailMaster::class,"vender_id","id");
+    }
 }
