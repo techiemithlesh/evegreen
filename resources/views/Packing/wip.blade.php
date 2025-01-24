@@ -76,7 +76,7 @@
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
                 { data: "client_name", name: "client_name" },
                 { data: "bag_type", name: "bag_type" },
-                { data: "bag_size", name: "bag_size" },
+                { data: "bag_size", name: "bag_size" ,render: function(item) {  return `<pre>${item}</pre>`; }},
                 { data: "units", name: "units" },
                 { data: "total_units", name: "total_units" },
                 { data: "roll_weight", name: "roll_weight" },

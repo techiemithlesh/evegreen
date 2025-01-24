@@ -445,7 +445,10 @@ a.sidebar-link:hover {
 .select2-container {
     display: block;
 }
-
+thead {
+    position: sticky;
+    top: 0;
+}
 
   
 

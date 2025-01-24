@@ -262,7 +262,7 @@ class RollController extends Controller
                         return $color;
                     })
                     ->addColumn("bag_size",function ($val) {
-                        return $val->bag_type_id ? ($val->w."x".$val->l.($val->g?("x".$val->g):"")):null;
+                        return $val->bag_type_id ? ((float)$val->w." x ".(float)$val->l.($val->g?(" x ".(float)$val->g):"")):null;
                     })
                     ->addColumn("size",function ($val) {
                         return $val->size>2 ? $val->size:"Loop";
@@ -1815,12 +1815,15 @@ class RollController extends Controller
             $transit = $transit->get();
             if($request->bookingBagTypeId && $request->totalUnits && $request->bookingBagUnits){
                 $bestFind = "";
+                $bestFind2 = ""; 
                 if($request->bookingBagUnits=="Kg"){
                     $bestFind = "RW";
+                    $bestFind2 = "RW";
                 }elseif($request->bookingBagUnits=="Piece"){
-                    $bestFind = $bag->roll_find;
+                    $bestFind = $bag->roll_find;                    
+                    $bestFind2 = $bag->roll_find_as_weight;
                 }
-                $roll = $roll->map(function($val)use($request,$bestFind){
+                $roll = $roll->map(function($val)use($request,$bestFind,$bestFind2){
                     $newRequest = new Request($val->toArray());
                     $newRequest->merge([
                         "formula"=>$bestFind,
@@ -1833,16 +1836,22 @@ class RollController extends Controller
                         "bagW"=> $request->w,
                         "bagG"=> $request->g,
                     ]);
+                    $newRequest2 = new Request($newRequest->all());
+                    $newRequest2->merge([
+                        "formula"=>$bestFind2
+                    ]);
                     $result = $this->calculatePossibleProduction($newRequest);
-                    $val->result = $result["result"]??"";
-                    $val->unit = $result["unit"]??"";
+                    $result1 = $this->calculatePossibleProduction($newRequest);
+                    $avg = round((($result["result"]??0)+($result1["result"]??0))/2);
+                    $val->result = $avg; 
+                    $val->unit =  $avg." ".$request->bookingBagUnits; 
                     return $val;
                 })->where("result","<=",$request->totalUnits)
                 ->sortByDesc(function ($item) {
                     return [$item['result'], $item['size']];
                 });
 
-                $transit = $transit->map(function($val)use($request,$bestFind){
+                $transit = $transit->map(function($val)use($request,$bestFind,$bestFind2){
                     $newRequest = new Request($val->toArray());
                     $newRequest->merge([
                         "formula"=>$bestFind,
@@ -1855,9 +1864,15 @@ class RollController extends Controller
                         "bagW"=> $request->w,
                         "bagG"=> $request->g,
                     ]);
+                    $newRequest2 = new Request($newRequest->all());
+                    $newRequest2->merge([
+                        "formula"=>$bestFind2
+                    ]);
                     $result = $this->calculatePossibleProduction($newRequest);
-                    $val->result = $result["result"]??"";
-                    $val->unit = $result["unit"]??"";
+                    $result1 = $this->calculatePossibleProduction($newRequest2);
+                    $avg = round((($result["result"]??0)+($result1["result"]??0))/2);
+                    $val->result = $avg; 
+                    $val->unit =  $avg." ".$request->bookingBagUnits; 
                     return $val;
                 })->where("result","<=",$request->totalUnits)
                 ->sortByDesc(function ($item) {
@@ -1918,10 +1933,13 @@ class RollController extends Controller
                             $order = $this->_M_OrderPunches->find($orderRoll->order_id);
                             $bag = $this->_M_BagType->find($order->bag_type_id);
                             $bestFind = "";
+                            $bestFind2 ="";
                             if($order->units=="Kg"){
                                 $bestFind = "RW";
+                                $bestFind2 = "RW";
                             }elseif($order->units=="Piece"){
                                 $bestFind = $bag->roll_find;
+                                $bestFind2 = $bag->roll_find_as_weight;
                             }
                             $newRequest = new Request();
                             $newRequest->merge(
@@ -1938,12 +1956,23 @@ class RollController extends Controller
                                 "bagG"=>$order->bag_g
                                 ]
                             );
+                            $newRequest2 = new Request($newRequest->all());
+                            $newRequest2->merge([
+                                "formula"=>$bestFind2
+                            ]);
                             $result = $this->calculatePossibleProduction($newRequest);
+                            $result2 = $this->calculatePossibleProduction($newRequest2);
+                            $qty = ((($result["result"]??0)+($result2["result"]??0))/2);
+
                             $newRequest->merge([
                                 "formula" => $bag->roll_find,
                             ]);
+                            $newRequest2->merge([
+                                "formula" => $bag->roll_find_as_weight,
+                            ]);
                             $pieces = $this->calculatePossibleProduction($newRequest);
-                            $totalPiece = $pieces["result"]??0; 
+                            $pieces2 = $this->calculatePossibleProduction($newRequest2);
+                            $totalPiece = ((($pieces["result"]??0)+($pieces2["result"]??0))/2); 
                             $totalLoopWeight = (($totalPiece*3.4)/1000);
                             if(in_array($bag->id,[2,4])){
                                 $loopStock = $this->_M_LoopStock->where("loop_color",$order->bag_loop_color)->first();
@@ -1966,7 +1995,7 @@ class RollController extends Controller
                                 $loopStock->balance = $loopStock->balance + $totalLoopWeight;
                                 $loopStock->update();
                             }
-                            $order->booked_units = $order->booked_units - $result["result"]??0;
+                            $order->booked_units = $order->booked_units - $qty;
                             $orderRoll->lock_status=true;
                             $order->update();
                             $orderRoll->update();
@@ -1988,10 +2017,13 @@ class RollController extends Controller
 
                     $bag = $this->_M_BagType->find($orderNew->bag_type_id);
                     $formula = "";
+                    $formula2 = "";
                     if($orderNew->units=="Kg"){
                         $formula = "RW";
+                        $formula2 = "RW";
                     }elseif($orderNew->units=="Piece"){
                         $formula = $bag->roll_find;
+                        $formula2 = $bag->roll_find_as_weight;
                     }
                     $newRequest = new Request();
                     $newRequest->merge(
@@ -2008,14 +2040,23 @@ class RollController extends Controller
                         "bagG"=>$orderNew->bag_g
                         ]
                     );
+                    $newRequest2 = new Request($newRequest->all());
+                    $newRequest2->merge([
+                        "formula" => $formula2,
+                    ]); 
                     $result = $this->calculatePossibleProduction($newRequest);
-                    $bookOrders += $result["result"]??0; 
+                    $result2 = $this->calculatePossibleProduction($newRequest2);
+                    $bookOrders += ((($result["result"]??0)+($result2["result"]??0))/2); 
 
                     $newRequest->merge([
                         "formula" => $bag->roll_find,
                     ]);
+                    $newRequest2->merge([
+                        "formula" => $bag->roll_find_as_weight,
+                    ]);
                     $pieces = $this->calculatePossibleProduction($newRequest);
-                    $totalPiece = $pieces["result"]??0; 
+                    $pieces2 = $this->calculatePossibleProduction($newRequest2);
+                    $totalPiece = ((($pieces["result"]??0)+($pieces2["result"]??0))/2); 
                     $totalLoopWeight = (($totalPiece*3.4)/1000);
                     if(in_array($bag->id,[2,4])){
                         $loopStock = $this->_M_LoopStock->where("loop_color",$order->bag_loop_color)->first();
@@ -2223,7 +2264,7 @@ class RollController extends Controller
                     return round($val->booked_units);
                 })
                 ->addColumn("bag_size",function($val){
-                    return $val->bag_w."x".$val->bag_l.($val->bag_g ?("x".$val->bag_g) :"") ;
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
                 })
                 ->addColumn('created_at', function ($val) {                    
                     return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    
@@ -2314,7 +2355,7 @@ class RollController extends Controller
                     return round($val->booked_units);
                 })
                 ->addColumn("bag_size",function($val){
-                    return $val->bag_w."x".$val->bag_l.($val->bag_g ?("x".$val->bag_g) :"") ;
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
                 })
                 ->addColumn('created_at', function ($val) {                    
                     return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    
@@ -2467,7 +2508,7 @@ class RollController extends Controller
                     return $val->is_delivered ? "YES" : "NO";
                 })
                 ->addColumn("bag_size",function($val){
-                    return $val->bag_w."x".$val->bag_l.($val->bag_g ?("x".$val->bag_g) :"") ;
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
                 })
                 ->addColumn("total_units",function($val){
                     return round($val->total_units) ;
@@ -2649,10 +2690,13 @@ class RollController extends Controller
                     $order = $this->_M_OrderPunches->find($orderRoll->order_id);
                     $bag = $this->_M_BagType->find($order->bag_type_id);
                     $bestFind = "";
+                    $bestFind2 = "";
                     if($order->units=="Kg"){
                         $bestFind = "RW";
+                        $bestFind2 = "RW";
                     }elseif($order->units=="Piece"){
                         $bestFind = $bag->roll_find;
+                        $bestFind2 = $bag->roll_find_as_weight;
                     }
                     $newRequest = new Request();
                     $newRequest->merge(
@@ -2669,8 +2713,13 @@ class RollController extends Controller
                         "bagG"=>$order->bag_g
                         ]
                     );
+                    $newRequest2 = new Request($newRequest->all());
+                    $newRequest2->merge([
+                        "formula" => $bestFind2,
+                    ]);
                     $result = $this->calculatePossibleProduction($newRequest);
-                    $order->booked_units = $order->booked_units - $result["result"]??0;
+                    $result2 = $this->calculatePossibleProduction($newRequest2);
+                    $order->booked_units = $order->booked_units - ((($result["result"]??0)+($result2["result"]??0))/2);
                     $orderRoll->lock_status=true;
                     $order->update();
                     $orderRoll->update();
@@ -2678,8 +2727,12 @@ class RollController extends Controller
                     $newRequest->merge([
                         "formula" => $bag->roll_find,
                     ]);
+                    $newRequest2->merge([
+                        "formula" => $bag->roll_find_as_weight,
+                    ]);
                     $pieces = $this->calculatePossibleProduction($newRequest);
-                    $totalPiece = $pieces["result"]??0; 
+                    $pieces2 = $this->calculatePossibleProduction($newRequest2);
+                    $totalPiece = ((($pieces["result"]??0)+($pieces2["result"]??0))/2); 
                     $totalLoopWeight = (($totalPiece*3.4)/1000);
                     if(in_array($bag->id,[2,4])){
                         $loopStock = $this->_M_LoopStock->where("loop_color",$order->bag_loop_color)->first();
@@ -2836,7 +2889,7 @@ class RollController extends Controller
                     return $val->is_delivered ? "YES" : "NO";
                 })
                 ->addColumn("bag_size",function($val){
-                    return $val->bag_w."x".$val->bag_l.($val->bag_g ? ("x".$val->bag_g) : "") ;
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ? (" x ".(float)$val->bag_g) : "") ;
                 })
                 ->addColumn("total_units",function($val){
                     return round($val->total_units);

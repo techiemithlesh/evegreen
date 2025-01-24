@@ -104,7 +104,7 @@
                 { data: "client_name", name: "client_name" },
                 { data: "bag_type", name: "bag_type" },
                 { data: "bag_color", name: "bag_color" },
-                { data: "bag_size", name: "bag_size" },
+                { data: "bag_size", name: "bag_size" ,render: function(item) {  return `<pre>${item}</pre>`; }},
                 { data: "total_units", name: "total_units" },
                 { data: "units", name: "units" },
                 // { data: "roll_no", name: "roll_no" },

@@ -42,45 +42,6 @@
     </div>
     <div class="container">
         <div class="panel-body">
-            <!-- <div style="text-align: center; max-height:50px" id="orderHistory1">
-                <div class="example-box movable" style="right: 30px; width:500px;">
-                    <div class="header">
-                        <span>Old Orders</span>
-                        <span class="icons">▼</span>
-                    </div>
-                    <div class="content">
-                        <div id="history1">
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-
-            <!-- <div id="suggestion1" style="display: none;">                
-                <div style="text-align: center;" id="suggestion2">
-                    <div class="example-box movable" style="background-color: rgb(181, 217, 220); width:450px;">
-                        <div class="header">
-                            <span>Roll Transit</span>
-                            <span class="icons">▼</span>
-                        </div>
-                        <div class="content">
-                            <div id="suggestionRollTransit">b
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div style="text-align: center;" id="suggestion1">
-                    <div class="example-box movable" style="background-color: rgb(119, 163, 202); right: 20px; width:400px;">
-                        <div class="header">
-                            <span>Roll Stock</span>
-                            <span class="icons">▼</span>
-                        </div>
-                        <div class="content">
-                            <div id="suggestionRoll"> a
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
 
             <form action="" id="myForm" class="row g-3">                
                 @csrf
@@ -124,7 +85,7 @@
                     <div class="row mt-3" id="orderHistory" >
                         <div class="collapsible">                            
                             <button type="button" class="collapsible-btn"><i class="bi bi-eye-fill" class="collapsible-btn"></i></button>
-                            <div class="collapsible-content content" id="history" style="overflow-y: scroll;">                                
+                            <div class="collapsible-content content" id="history" style="overflow: scroll;">                                
                             </div>
                         </div>
                     </div>
@@ -337,13 +298,13 @@
                         <div class="collapsible"  id="suggestion2"> 
                             <div class="panel-title">Transit</div>                                
                             <button type="button" class="collapsible-btn"><i class="bi bi-eye-fill" class="collapsible-btn"></i></button>                            
-                            <div class="collapsible-content content" id="suggestionRollTransit" style="overflow-y: scroll;">
+                            <div class="collapsible-content content" id="suggestionRollTransit" style="overflow: scroll;">
                             </div>
                         </div>
                         <div class="collapsible"  id="suggestion1"> 
                             <div class="panel-title">Stock</div>                                
                             <button type="button" class="collapsible-btn"><i class="bi bi-eye-fill" class="collapsible-btn"></i></button>                            
-                            <div class="collapsible-content content" id="suggestionRoll" style="overflow-y: scroll;">
+                            <div class="collapsible-content content" id="suggestionRoll" style="overflow: scroll;">
                             </div>
                         </div>
                     </div>

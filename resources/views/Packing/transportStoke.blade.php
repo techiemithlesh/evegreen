@@ -140,7 +140,7 @@
                 { data: "bag_color", name: "bag_color" },
                 { data: "packing_weight", name: "packing_weight" },
                 { data: "packing_bag_pieces", name: "packing_bag_pieces" },
-                { data: "bag_size", name: "bag_size" },
+                { data: "bag_size", name: "bag_size",render: function(item) {  return `<pre>${item}</pre>`; } },
             ],
             dom: 'lBfrtip', // This enables the buttons
             language: {
