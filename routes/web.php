@@ -80,6 +80,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post("master/city/add-edit","cityAddEdit")->name("master.city.add.edit");
         Route::get("master/city/dtl/{id?}","cityDtl")->name("master.city.dtl");
         Route::post("master/city/deactivateLoopStock/{id}","activeDeactivateCity")->name("master.city.deactivate");
+        Route::get("master/city-by-state/{id}","getCityListByState")->name("master.city.by.state");
 
         
     });

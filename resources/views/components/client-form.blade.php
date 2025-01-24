@@ -11,6 +11,7 @@
                     @csrf
                     <!-- Hidden field for Client ID -->
                     <input type="hidden" id="id" name="id" value="">
+                    <input type="hidden" id="cityHidden"/>
 
                     <div class="row">
                         <!-- Client Name -->
@@ -32,19 +33,27 @@
                         </div>
                     </div>
 
-                    <div class="row mt-3">
+                    <div class="row mt-3">                        
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label class="control-label" for="city">City<span class="text-danger">*</span></label>
-                                <input type="text" id="city" name="city" class="form-control" placeholder="Enter city" required >
-                                <span class="error-text" id="city-error"></span>
+                                <label class="control-label" for="stateId">State<span class="text-danger">*</span></label>
+                                <select name="stateId" id="stateId" class="form-select" required>
+                                    <option value="">select</option>
+                                    @foreach($stateList as $val)
+                                    <option value="{{$val->id}}">{{$val->state_name}}</option>
+                                    @endforeach
+                                </select>
+                                <span class="error-text" id="stateId-error"></span>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label class="control-label" for="state">State<span class="text-danger">*</span></label>
-                                <input type="text" id="state" name="state" class="form-control" placeholder="Enter state" required >
-                                <span class="error-text" id="state-error"></span>
+                                <label class="control-label" for="cityId">City<span class="text-danger">*</span></label>
+                                <select name="cityId" id="cityId" class="form-select" required>
+                                    <option value="">select</option>
+                                </select>
+                                <!-- <input type="text" id="city" name="city" class="form-control" placeholder="Enter city" required > -->
+                                <span class="error-text" id="cityId-error"></span>
                             </div>
                         </div>
                     </div>
@@ -113,6 +122,37 @@
 
 <script>
     $(document).ready(function(){
+        $("#stateId").select2({
+            width:"100%",                    
+            dropdownCssClass: 'form-control',            
+            dropdownParent: $('#clientModal'),
+        });
+        $("#cityId").select2({
+            width:"100%",                   
+            dropdownCssClass: 'form-control',            
+            dropdownParent: $('#clientModal'),
+        });
+        $("#stateId").on("change",function(event,cityId=null){
+            stateId = event.target.value;
+            oldCity = cityId?cityId:$("#cityHidden").val();
+            $('#cityId').empty(); 
+            $('#cityId').append('<option value="">Select</option>');
+            if(stateId){
+                $.ajax({
+                    url:"{{route('master.city.by.state',':id')}}".replace(":id",stateId),
+                    type:"get",
+                    success:function(data){
+                        if(data?.status){
+                            $.each(data?.data, function (key, city) {
+                            $('#cityId').append(
+                                `<option value="${city.id}" ${city.id==oldCity?"selected":""}>${city.city_name}</option>`
+                            );
+                        });
+                        }
+                    }
+                })
+            }
+        });
         $("#clientForm").validate({
             rules: {
                 clientName: {

@@ -6,6 +6,7 @@ use App\Models\ClientDetailMaster;
 use App\Models\Sector;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -26,8 +27,8 @@ class ClientController extends Controller
                 "id"=>"nullable".($request->id?("|exists:".$this->_M_ClientDetail->getTable().",id"):""),
                 "clientName"=>"required|unique:".$this->_M_ClientDetail->getTable().",client_name".($request->id?(",".$request->id.",id"):""),
                 "mobileNo"=>"required",
-                "city"=>"required",
-                "state"=>"required",
+                "stateId"=>"required",
+                "cityId"=>"required",
                 "sectorId"=>"required|exists:".$this->_M_Sector->getTable().",id",
             ];
             $validate = Validator::make($request->all(),$rule);
@@ -50,7 +51,14 @@ class ClientController extends Controller
     public function clientList(Request $request){
         try{ 
             if($request->ajax()){
-                $data = $this->_M_ClientDetail->getClientListOrm()->orderBy("id","ASC")->get();
+                $data = $this->_M_ClientDetail->getClientListOrm()
+                        ->orderBy("id","ASC")
+                        ->get()
+                        ->map(function($val){
+                            $val->city_name = $val->getCity()->city_name??"";
+                            $val->state_name = $val->getState()->state_name??"";
+                            return $val;
+                        });
                 return DataTables::of($data)
                     ->addIndexColumn()
                     ->addColumn('action', function ($val) {

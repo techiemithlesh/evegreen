@@ -152,8 +152,9 @@
                     $("#address").val(clientDtl?.address);
                     $("#secondaryMobileNo").val(clientDtl?.secondary_mobile_no);
                     $("#temporaryMobileNo").val(clientDtl?.temporary_mobile_no);
-                    $("#city").val(clientDtl?.city);
-                    $("#state").val(clientDtl?.state);
+                    $("#stateId").val(clientDtl?.state_id).trigger("change",[clientDtl?.city_id]);
+                    $("#cityId").val(clientDtl?.city_id).trigger("change");
+                    $("#cityHidden").val(clientDtl?.city_id);
                     $("#sectorId").val(clientDtl?.sector_id);
                     $("#clientModal").modal("show");
                 
@@ -166,8 +167,20 @@
         });
     }
 
-    function resetModelForm(){
+    function resetModelForm(inits="0"){
         $("#id").val("");
+        $("#clientForm").get(0).reset();
+        $('#clientForm select').each(function() {
+            if ($(this).data('select2')) {
+                if(this.id=="bookingForClientId"){
+                    if(inits!="1"){ 
+                        $(this).val(null).trigger('change',["1"]);
+                    }
+                }else{
+                    $(this).val(null).trigger('change');
+                }
+            }
+        });
     }
 
     // function deactivate(id){

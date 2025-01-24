@@ -703,4 +703,13 @@ class MasterController extends Controller
             return responseMsgs(true,$e->getMessage(),"");
         }
     }
+
+    public function getCityListByState(Request $request){
+        try{
+            $data = $this->_M_CityStateMap->getCityOrm()->where("state_id",$request->id)->orderBy("city_name","ASC")->get();
+            return responseMsgs(true,"data",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
 }

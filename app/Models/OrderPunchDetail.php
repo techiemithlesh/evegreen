@@ -14,6 +14,7 @@ class OrderPunchDetail extends Model
 
     protected $fillable = [
         "order_date",
+        "broker_id",
         'client_detail_id',
         "estimate_delivery_date",
         "delivery_date",

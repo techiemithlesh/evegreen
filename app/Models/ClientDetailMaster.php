@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class ClientDetailMaster extends Model
 {
@@ -14,8 +15,8 @@ class ClientDetailMaster extends Model
         'mobile_no',
         'email',
         'address',
-        "city",
-        "state",
+        "city_id",
+        "state_id",
         "sector_id",
         "secondary_mobile_no",
         "temporary_mobile_no",
@@ -38,5 +39,13 @@ class ClientDetailMaster extends Model
 
     public function getClientListOrm(){
         return self::where("lock_status",false);
+    }
+
+    public function getCity(){
+        return $this->belongsTo(CityStateMap::class,"city_id","id")->first();
+    }
+
+    public function getState(){
+        return $this->belongsTo(StateMaster::class,"state_id","id")->first();
     }
 }
