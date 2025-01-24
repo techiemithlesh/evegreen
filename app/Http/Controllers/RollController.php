@@ -40,6 +40,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
@@ -487,6 +488,45 @@ class RollController extends Controller
     }
     */
 
+    public function downloadCsvTemplate()
+    {
+        
+        // Define the CSV headers (columns)
+        $headers = Config::get("customConfig.rollImportCsvHeader");
+
+        // Sample data for the CSV
+        $data=[];
+        foreach($headers as $val){
+            $data[0][]="";
+            $data[1][]="";
+        }
+
+        // Open a temporary file in memory to write the CSV content
+        $file = fopen('php://temp', 'w');
+
+        // Write the header row to the CSV file
+        fputcsv($file, $headers);
+
+        // Write the data rows to the CSV file
+        foreach ($data as $row) {
+            fputcsv($file, $row);
+        }
+
+        // Move the pointer back to the start of the file
+        rewind($file);
+
+        // Get the content of the CSV file
+        $csvContent = stream_get_contents($file);
+
+        // Close the file
+        fclose($file);
+
+        // Return the CSV content with the correct MIME type and headers
+        return response($csvContent)
+            ->header('Content-Type', 'text/csv')  // Ensure correct MIME type for CSV
+            ->header('Content-Disposition', 'attachment; filename="roll_template.csv"'); 
+    }
+
     public function importRoll(Request $request){
         try{
             ini_set('max_execution_time', 600);
@@ -496,7 +536,8 @@ class RollController extends Controller
             }
             $file = $request->file('csvFile');
             $headings = (new HeadingRowImport())->toArray($file)[0][0];
-            $expectedHeadings = ['vendor_name','vehicle_no', 'purchase_date',"quality", 'roll_size',"roll_type","hardness","roll_gsm","bopp","roll_color","roll_length","net_weight","gross_weight"];
+            $expectedHeadings = Config::get("customConfig.rollImportCsvHeader");
+            // $expectedHeadings = ['vendor_name','vehicle_no', 'purchase_date',"quality", 'roll_size',"roll_type","hardness","roll_gsm","bopp","roll_color","roll_length","net_weight","gross_weight"];
             if (array_diff($expectedHeadings, $headings)) {
                 return responseMsgs(false,"data in invalid Formate","");;
             }

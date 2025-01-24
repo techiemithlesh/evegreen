@@ -186,6 +186,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get("roll/list/{flag?}","rollList")->name("roll.list");
         Route::post("roll/add","addRoll")->name("roll.add");
         Route::post("roll/import","importRoll")->name("roll.import");
+        Route::get('roll/import-template', 'downloadCsvTemplate')->name('download.roll.import.template')->withoutMiddleware("auth:sanctum");
         Route::post("roll/book","rollBook")->name("roll.book");
         Route::get("roll/dtl/{id}","rollDtl")->name("roll.dtl");
         Route::post("roll/schedule/printing","rollPrintingSchedule")->name("roll.printing.schedule");
