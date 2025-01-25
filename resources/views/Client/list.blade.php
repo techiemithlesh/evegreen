@@ -150,6 +150,7 @@
                     $("#email").val(clientDtl?.email);
                     $("#mobileNo").val(clientDtl?.mobile_no);
                     $("#address").val(clientDtl?.address);
+                    $("#location").val(clientDtl?.location);
                     $("#secondaryMobileNo").val(clientDtl?.secondary_mobile_no);
                     $("#temporaryMobileNo").val(clientDtl?.temporary_mobile_no);
                     $("#stateId").val(clientDtl?.state_id).trigger("change",[clientDtl?.city_id]);
@@ -169,6 +170,7 @@
 
     function resetModelForm(inits="0"){
         $("#id").val("");
+        $("#clientForm").find("input[type=hidden]").val('');
         $("#clientForm").get(0).reset();
         $('#clientForm select').each(function() {
             if ($(this).data('select2')) {

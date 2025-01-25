@@ -2109,6 +2109,10 @@ class RollController extends Controller
         }
     }
 
+    public function orderPunchesEdit(Request $request){
+        dd($request);
+    }
+
     public function bookedOrder_old1(Request $request){
         
         if($request->ajax())

@@ -17,6 +17,7 @@ class ClientDetailMaster extends Model
         'mobile_no',
         'email',
         'address',
+        "location",
         "city_id",
         "state_id",
         "sector_id",

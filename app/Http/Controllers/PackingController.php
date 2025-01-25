@@ -556,6 +556,7 @@ class PackingController extends Controller
                     }
                     if(($order->total_units - $order->disbursed_units)<=round($totalUnit + ($order->units=="Kg" ? $totalGarbage : $garbagePossibleBagPiece))){
                         $order->is_delivered = true;
+                        $order->delivery_date = Carbon::now()->format("Y-m-d");
                     }
                     $order->update();
                 }

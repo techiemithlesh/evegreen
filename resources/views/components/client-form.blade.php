@@ -61,6 +61,16 @@
                     <div class="row mt-3">
                         <div class="col-sm-6">
                             <div class="form-group">
+                                <label class="control-label" for="location">Location</label>
+                                <textarea name="location" id="location" class="form-control" placeholder="Enter Location" maxlength="80"></textarea>
+                                <span class="error-text" id="cityId-error"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-sm-6">
+                            <div class="form-group">
                                 <label class="control-label" for="sectorId">Sector<span class="text-danger">*</span></label>
                                 <select type="text" id="sectorId" name="sectorId" class="form-select" placeholder="Enter state" required >
                                     <option value="">Select</option>
