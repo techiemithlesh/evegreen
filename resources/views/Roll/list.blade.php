@@ -207,7 +207,7 @@
                 { data : "client_name", name: "client_name" ,render:function(row,type,data){return (data.client_name ? data.client_name :"N/A")}},
                 { data : "print_color", name: "print_color" ,render:function(row,type,data){return (data.print_color ? data.print_color :"N/A")}},
                 { data : "loop_color", name: "loop_color" ,render:function(row,type,data){return (data.loop_color ? data.loop_color :"N/A")}},
-                { data: "action", name: "action", orderable: false, searchable: false },
+                { data: "action", name: "action", orderable: false, searchable: false,render:function(row,type,data){return "<div style='display:flex ;'>"+data?.action+"</div>";} },
             ],
             dom: 'lBfrtip', // This enables the buttons
             language: {
