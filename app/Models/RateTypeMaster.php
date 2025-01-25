@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Loggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class RateTypeMaster extends Model
 {
+    use Loggable;
     use HasFactory;
     protected $fillable = [
         "rate_type",

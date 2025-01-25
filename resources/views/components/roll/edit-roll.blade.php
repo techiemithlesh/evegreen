@@ -176,6 +176,7 @@
                 if(response.status){
                     resetForm("rollEditForm");
                     $('#postsTable').DataTable().draw();
+                    $("#rollModal").modal("hide");
                     modelInfo(data.message);
                 }
                 else{

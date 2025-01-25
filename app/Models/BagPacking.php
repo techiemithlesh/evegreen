@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Loggable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class BagPacking extends Model
 {
+    use Loggable;
     use HasFactory;
 
     protected $fillable = [

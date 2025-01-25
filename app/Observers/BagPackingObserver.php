@@ -28,7 +28,7 @@ class BagPackingObserver
             }
             $bagPacking->packing_no  = $rolNo;
         }
-        $bagPacking->save();
+        $bagPacking->saveQuietly();
     }
 
     /**

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Loggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 class LoopStock extends Model
 {
+    use Loggable;
     use HasFactory;
     protected $fillable = [
         "loop_color",

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Loggable;
 use Illuminate\Container\Attributes\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 class MenuPermission extends Model
 {
+    use Loggable;
     //
     protected $fillable = ["menu_master_id","user_type_master_id","lock_status"];
 

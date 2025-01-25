@@ -29,7 +29,7 @@ class OrderPunchDetailObserver
             }
             $orderPunchDetail->order_no  = $rolNo;
         }
-        $orderPunchDetail->save();
+        $orderPunchDetail->saveQuietly();
     }
 
     /**

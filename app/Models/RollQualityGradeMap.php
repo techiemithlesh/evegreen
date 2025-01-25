@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Loggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RollQualityGradeMap extends Model
 {
+    use Loggable;
     use HasFactory;
     protected $fillable = [
         "roll_quality_id",

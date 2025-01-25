@@ -42,7 +42,7 @@ class RollTransitObserver
             $this->gsmVariation($rollTransit);
             // $rollTransit->gsm_variation = (((($rollTransit->net_weight * 39.37 * 1000) / $rollTransit->size)/$rollTransit->length)-$rollTransit->gsm)/$rollTransit->gsm;
         }
-        $rollTransit->save();
+        $rollTransit->saveQuietly();
     }
 
     /**
@@ -58,6 +58,8 @@ class RollTransitObserver
         //     $oldValue = $rollTransit->getOriginal($attribute);
         //     dd($oldValue,$rollTransit->getDirty());
         // }
+                   
+        $rollTransit->saveQuietly();
 
     }
 

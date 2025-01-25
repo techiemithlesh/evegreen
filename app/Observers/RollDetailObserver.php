@@ -25,6 +25,8 @@ class RollDetailObserver
         if ($rollDetail->isDirty('gsm')){
             $this->gsmVariation($rollDetail);
         } 
+        
+        $rollDetail->saveQuietly();
     }
 
     /**

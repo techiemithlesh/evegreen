@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Loggable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 class MenuMaster extends Model
 {
+    use Loggable;
     //
     protected $fillable = ['menu_name',"order_no",'parent_menu_mstr_id','url_path','query_string','menu_icon','menu_type','lock_status'];
 

@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\Loggable;
 use Illuminate\Database\Eloquent\Model;
 
 class RollPrintColor extends Model
 {
+    use Loggable;
     /**
      * The attributes that are mass assignable.
      *
