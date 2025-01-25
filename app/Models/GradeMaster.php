@@ -26,8 +26,13 @@ class GradeMaster extends Model
         $inputs = snakeCase($request)->filter(function($val,$index){
             return (in_array($index,$this->fillable));
         });
-        $return= self::where("id",$request->id)->update($inputs->all());
-        return $return;
+        $model = self::find($request->id);
+        if($model){
+            $model->fill($inputs->all());
+            $model->update();
+            return true;
+        }
+        return false;
     }
 
     public function getGradeListOrm(){

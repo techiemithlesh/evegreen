@@ -65,7 +65,13 @@ class User extends Authenticatable
         $inputs = snakeCase($request)->filter(function($val,$index){
             return (in_array($index,$this->fillable));
         });
-        return self::where("id",$id)->update($inputs->all());
+        $model = self::find($request->id);
+        if($model){
+            $model->fill($inputs->all());
+            $model->update();
+            return true;
+        }
+        return false;
     }
 
     public function getHelperList(){

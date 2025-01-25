@@ -44,7 +44,12 @@ class LoopStock extends Model
             );
             (new LoopUsageAccount())->store($newLoopAccRequest);
         }
-        return self::where("id",$request->id)->update($inputs->all());
+        if($stock){
+            $stock->fill($inputs->all());
+            $stock->update();
+            return true;
+        }
+        return false;
     }
 
     public function getLoopColorOrm(){

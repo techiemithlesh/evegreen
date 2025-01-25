@@ -2110,7 +2110,63 @@ class RollController extends Controller
     }
 
     public function orderPunchesEdit(Request $request){
-        dd($request);
+        $order = $this->_M_OrderPunches->find($request->orderId);
+        if(!$order){
+            flashToast("message","Data not found");
+            return redirect()->back();
+        }
+        if($order->deceived_by){
+            flashToast("message","Data Order is Delved");
+            return redirect()->back();
+        }
+        if($request->post()){
+            try{
+
+                $request->merge([
+                    "estimateDeliveryDate"=>$request->bookingEstimatedDespatchDate,
+                    "bagTypeId"=>$request->bookingBagTypeId,
+                    "units"=>$request->bookingBagUnits,
+                    "bag_w"=>$request->w,
+                    "bag_l"=>$request->l,
+                    "bag_g"=>$request->g,
+                    "bag_loop_color"=>$request->looColor,
+                    "bag_color"=>$request->bookingBagColor,
+                    "bag_printing_color"=>$request->bookingPrintingColor,
+                ]); 
+                if($request->bagQuality!="BOPP"){
+                    $request->merge(["bagGsmJson"=>null]);
+                }
+                if($request->bagQuality=="BOPP"){
+                    $request->merge(["bagGsm"=>array_sum(explode("/",$request->bagGsmJson))]);
+                    $request->merge(["bagGsmJson"=>(explode("/",$request->bagGsmJson))]);
+                }
+                $request->merge(["id"=>$order->id]);
+                DB::beginTransaction();
+                $this->_M_OrderPunches->edit($request);
+                DB::commit();
+                flashToast("message","Order Updated");
+                return redirect()->route('order.unbook');
+            }catch (Exception $e) {
+                return redirect()->back()->withErrors(['error' => 'Order update failed.']);
+            }
+            
+
+        }
+        $order->bag_gsm_json = $order->bag_gsm_json ? implode("/",json_decode($order->bag_gsm_json,true)) : $order->bag_gsm_json;
+        $order->bag_printing_color = json_decode($order->bag_printing_color,true);
+        $data["prevUrl"] = url()->previous();
+        $data["order"] = $order;
+        $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->orderBy("client_name","ASC")->get();
+        $data["bagType"] = $this->_M_BagType->getBagListOrm()->orderBy("id")->get();
+        $data["color"] = $this->_M_Color->getColorListOrm()->orderBy("id")->get();
+        $data["rollColor"]=$this->_M_RollColor->getRollColorListOrm()->orderBy("id")->get();
+        $data["grade"]=$this->_M_GradeMaster->getGradeListOrm()->orderBy("id")->get();
+        $data["fare"]=$this->_M_FareDetail->getFareListOrm()->orderBy("id")->get();
+        $data["stereo"]=$this->_M_StereoDetail->getStereoListOrm()->orderBy("id")->get();
+        $data["rateType"] = $this->_M_RateTypeMaster->getRateTypeListOrm()->orderBy("id")->get();
+        $data["loopColor"] = $this->_M_LoopStock->getLoopColorOrm()->where("balance",">",0)->orderBy("id")->get();
+        $data["broker"] = $this->_M_OrderBroker->getBrokerOrm()->orderBy("broker_name","ASC")->get();
+        return view("Roll/orderEdit",$data);
     }
 
     public function bookedOrder_old1(Request $request){
@@ -2552,7 +2608,8 @@ class RollController extends Controller
                     return $val->delivery_date ? Carbon::parse($val->delivery_date)->format("d-m-Y") : "";                    
                 })
                 ->addColumn('action', function ($val) {     
-                    $button ='<i class="btn btn-sm btn-success mx-2" onClick="openBookingModel('.$val->id.')">S</i>';      
+                    $button ='<i class="btn btn-sm btn-success mx-2" onClick="openBookingModel('.$val->id.')">S</i>'; 
+                    $button .='<a href = "'.route('order.punches.edit',['orderId' => $val->id]).'" class="btn btn-sm btn-primary mx-2">E</a>';      
                     $button .= '<i class="btn btn-sm btn-warning mx-2" onClick="disbursedOrder('.$val->id.')" >D</i>';
                     $button .= '<i class="btn btn-sm btn-danger mx-2" onClick="deactivate('.$val->id.')" >X</i>';         
                     return '<div style="display:flex">'.$button.'</div>';                    

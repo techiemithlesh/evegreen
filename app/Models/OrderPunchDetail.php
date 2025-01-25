@@ -59,6 +59,19 @@ class OrderPunchDetail extends Model
         return $id;
     }
 
+    public function edit($request){
+        $inputs = snakeCase($request)->filter(function($val,$index){
+            return (in_array($index,$this->fillable));
+        });
+        $model = self::find($request->id);
+        if($model){
+            $model->fill($inputs->all());
+            $model->update();
+            return true;
+        }
+        return false;
+    }
+
     public function getPendingOrderOrm(){
         return self::where("lock_status",false)
                 ->where("is_delivered",false)
