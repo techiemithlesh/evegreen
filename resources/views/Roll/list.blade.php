@@ -22,7 +22,7 @@
         <div class="panel-body">
             <table id="postsTable" class="table table-striped table-bordered text-center table-fixed">
                 <thead>
-                    <tr>
+                    <!-- <tr>
                         <th >#</th>
                         <th>Purchase Date</th>
                         <th>Vendor Name</th>
@@ -49,7 +49,30 @@
                         <th>Loop Color</th>
 
                         <th>Action</th>
-                    </tr>
+                    </tr> -->
+
+                    <tr>
+                        <th >#</th>
+                        <th>Purchase Date</th>
+                        <th>Vendor Name</th>
+                        <th>Quality</th>
+                        <th>Roll Size</th>
+                        <th>GSM</th>
+                        <th>Roll Color</th>
+                        <th>Roll No</th>
+                        <th>Net Weight</th>
+                        <th>Bag Size</th>
+                        <th>Bag Type</th>
+                        <th>Client Name</th>
+                        <th>Unit</th>
+                        <th>Hardness</th>
+                        <th>Roll Type</th>
+                        <th>Grade</th>
+                        <th>Length</th>
+                        <th>Gross Weight</th>
+                        <th>GSM Variation</th>
+                        <th>Action</th>
+                    </tr> 
                 </thead>
                 <tbody>
 
@@ -154,31 +177,54 @@
                 },
             },
 
+            // columns: [
+            //     { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
+            //     { data: "purchase_date", name: "purchase_date",render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")} },
+            //     { data: "vendor_name", name: "vendor_name" ,render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")}},
+            //     { data: "hardness", name: "hardness" ,render:function(row,type,data){return (data.hardness ? data.hardness :"N/A")}},
+            //     { data: "roll_type", name: "roll_type",render:function(row,type,data){return (data.roll_type ? data.roll_type :"N/A")} },
+            //     { data: "size", name: "size",render:function(row,type,data){return (data.size ? data.size :"N/A")} },
+            //     { data: "gsm", name: "gsm" ,render:function(row,type,data){return (data.gsm ? data.gsm :"N/A")}},
+            //     { data: "roll_color", name: "roll_color" ,render:function(row,type,data){return (data.roll_color ? data.roll_color :"N/A")}},
+            //     { data: "length", name: "length" ,render:function(row,type,data){return (data.length ? data.length :"N/A")}},
+            //     { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no :"N/A")}},
+            //     { data: "gross_weight", name: "gross_weight",render:function(row,type,data){return (data.gross_weight ? data.gross_weight :"N/A")} },
+            //     { data: "net_weight", name: "net_weight",render:function(row,type,data){return (data.net_weight ? data.net_weight :"N/A")} },
+            //     { data: "gsm_variation", name: "gsm_variation",render:function(row,type,data){return (data.gsm_variation ? data.gsm_variation :"N/A")} },
+            //     { data : "grade", name: "grade" ,render:function(row,type,data){return (data.grade ? data.grade :"N/A")}},
+            //     { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality :"N/A")}},
+            //     { data : "w", name: "w" ,render:function(row,type,data){return (data.w ? data.w :"N/A")}},
+            //     { data : "l", name: "l" ,render:function(row,type,data){return (data.l ? data.l :"N/A")}},
+            //     { data : "g", name: "g" ,render:function(row,type,data){return (data.g ? data.g :"N/A")}},
+            //     { data : "bag_type", name: "bag_type" ,render:function(row,type,data){return (data.bag_type ? data.bag_type :"N/A")}},
+            //     { data : "bag_unit", name: "bag_unit" ,render:function(row,type,data){return (data.bag_unit ? data.bag_unit :"N/A")}},
+            //     { data : "client_name", name: "client_name" ,render:function(row,type,data){return (data.client_name ? data.client_name :"N/A")}},
+            //     { data : "print_color", name: "print_color" ,render:function(row,type,data){return (data.print_color ? data.print_color :"N/A")}},
+            //     { data : "loop_color", name: "loop_color" ,render:function(row,type,data){return (data.loop_color ? data.loop_color :"N/A")}},
+            //     { data: "action", name: "action", orderable: false, searchable: false,render:function(row,type,data){return "<div style='display:flex ;'>"+data?.action+"</div>";} },
+            // ],
+
             columns: [
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                { data: "purchase_date", name: "purchase_date",render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")} },
-                { data: "vendor_name", name: "vendor_name" ,render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")}},
-                { data: "hardness", name: "hardness" ,render:function(row,type,data){return (data.hardness ? data.hardness :"N/A")}},
-                { data: "roll_type", name: "roll_type",render:function(row,type,data){return (data.roll_type ? data.roll_type :"N/A")} },
-                { data: "size", name: "size",render:function(row,type,data){return (data.size ? data.size :"N/A")} },
-                { data: "gsm", name: "gsm" ,render:function(row,type,data){return (data.gsm ? data.gsm :"N/A")}},
-                { data: "roll_color", name: "roll_color" ,render:function(row,type,data){return (data.roll_color ? data.roll_color :"N/A")}},
-                { data: "length", name: "length" ,render:function(row,type,data){return (data.length ? data.length :"N/A")}},
-                { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no :"N/A")}},
-                { data: "gross_weight", name: "gross_weight",render:function(row,type,data){return (data.gross_weight ? data.gross_weight :"N/A")} },
-                { data: "net_weight", name: "net_weight",render:function(row,type,data){return (data.net_weight ? data.net_weight :"N/A")} },
-                { data: "gsm_variation", name: "gsm_variation",render:function(row,type,data){return (data.gsm_variation ? data.gsm_variation :"N/A")} },
-                { data : "grade", name: "grade" ,render:function(row,type,data){return (data.grade ? data.grade :"N/A")}},
+                { data: "purchase_date", name: "purchase_date" ,render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")}},
+                { data: "vendor_name", name: "vendor_name",render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")} },
                 { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality :"N/A")}},
-                { data : "w", name: "w" ,render:function(row,type,data){return (data.w ? data.w :"N/A")}},
-                { data : "l", name: "l" ,render:function(row,type,data){return (data.l ? data.l :"N/A")}},
-                { data : "g", name: "g" ,render:function(row,type,data){return (data.g ? data.g :"N/A")}},
-                { data : "bag_type", name: "bag_type" ,render:function(row,type,data){return (data.bag_type ? data.bag_type :"N/A")}},
-                { data : "bag_unit", name: "bag_unit" ,render:function(row,type,data){return (data.bag_unit ? data.bag_unit :"N/A")}},
-                { data : "client_name", name: "client_name" ,render:function(row,type,data){return (data.client_name ? data.client_name :"N/A")}},
-                { data : "print_color", name: "print_color" ,render:function(row,type,data){return (data.print_color ? data.print_color :"N/A")}},
-                { data : "loop_color", name: "loop_color" ,render:function(row,type,data){return (data.loop_color ? data.loop_color :"N/A")}},
-                { data: "action", name: "action", orderable: false, searchable: false,render:function(row,type,data){return "<div style='display:flex ;'>"+data?.action+"</div>";} },
+                { data: "size", name: "size" ,render:function(row,type,data){return (data.size ? data.size :"N/A")}},
+                { data: "gsm", name: "gsm",render:function(row,type,data){return (data.gsm ? data.gsm :"N/A")} },
+                { data: "roll_color", name: "roll_color" ,render:function(row,type,data){return (data.roll_color ? data.roll_color :"N/A")}},
+                { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no :"N/A")} },
+                { data: "net_weight", name: "net_weight" ,render:function(row,type,data){return (data.net_weight ? data.net_weight :"N/A")}},
+                { data: "bag_size", name: "bag_size" ,render:function(row,type,data){return (data.bag_size ? "<pre>"+data.bag_size+"</pre>" :"N/A")}},
+                { data: "bag_type", name: "bag_type" ,render:function(row,type,data){return (data.bag_type ? data.bag_type :"N/A")}},
+                { data: "client_name", name: "client_name" ,render:function(row,type,data){return (data.client_name ? data.client_name :"N/A")}},
+                { data: "bag_unit", name: "bag_unit" ,render:function(row,type,data){return (data.bag_unit ? data.bag_unit :"N/A")}},
+                { data: "hardness", name: "hardness" ,render:function(row,type,data){return (data.hardness ? data.hardness :"N/A")} },
+                { data: "roll_type", name: "roll_type",render:function(row,type,data){return (data.roll_type ? data.roll_type :"N/A")} },
+                { data : "grade", name: "grade" ,render:function(row,type,data){return (data.grade ? data.grade :"N/A")}},
+                { data: "length", name: "length",render:function(row,type,data){return (data.length ? data.length :"N/A")} },
+                { data: "gross_weight", name: "gross_weight" ,render:function(row,type,data){return (data.gross_weight ? data.gross_weight :"N/A")}},
+                { data: "gsm_variation", name: "gsm_variation" ,render:function(row,type,data){return (data.gsm_variation ? data.gsm_variation :"N/A")}},
+                { data: "action", name: "action", orderable: false, searchable: false },
             ],
             dom: 'lBfrtip', // This enables the buttons
             language: {
@@ -207,7 +253,7 @@
                 },
             ],
             createdRow: function(row, data, dataIndex) {
-                let td = $('td', row).eq(6); 
+                let td = $('td', row).eq(5); 
                 td.attr("title", data?.gsm_json);
                 // Apply the custom class to the row
                 if (data.row_color) {
@@ -228,13 +274,19 @@
                 }
             },            
             initComplete: function () {
+                hideColumn(table);
                 addFilter('postsTable',[0,flag=="history"?0:$('#postsTable thead tr:nth-child(1) th').length - 1]);
             },     
         });
-        if (flag === "history") {
-            const columnsToHide = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,$('#postsTable thead tr:nth-child(1) th').length - 1];
+
+        function hideColumn(table){
+            const columnsToHide = [14,15,16,17,18];
             columnsToHide.forEach(index => table.column(index).visible(false));
         }
+        // if (flag === "history") {
+        //     const columnsToHide = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,$('#postsTable thead tr:nth-child(1) th').length - 1];
+        //     columnsToHide.forEach(index => table.column(index).visible(false));
+        // }
 
         
 

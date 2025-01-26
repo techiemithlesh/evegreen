@@ -142,7 +142,7 @@
                 },
             ],
             createdRow: function(row, data, dataIndex) {
-                let td = $('td', row).eq(7); 
+                let td = $('td', row).eq(6); 
                 td.attr("title", data?.gsm_json); 
                 if (data.row_color) {
                     $(row).addClass(data.row_color);

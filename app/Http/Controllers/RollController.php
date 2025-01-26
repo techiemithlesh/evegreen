@@ -847,6 +847,9 @@ class RollController extends Controller
                 ->addColumn('print_color', function ($val) {                    
                     return collect(json_decode($val->printing_color,true))->implode(",");
                 })
+                ->addColumn("bag_size",function ($val) {
+                    return $val->bag_type_id ? ((float)$val->w." x ".(float)$val->l.($val->g?(" x ".(float)$val->g):"")):null;
+                })
                 ->addColumn('action', function ($val) use($flag,$user_type) {                    
                     $button = "";
                     if($val->is_cut){
