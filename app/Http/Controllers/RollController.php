@@ -3026,6 +3026,87 @@ class RollController extends Controller
             return responseMsgs(false,$e->getMessage(),"");
         }
     }
+
+    public function swapRollNo(Request $request){
+        try{
+            $rules = [
+                "roll" => "required|array",
+                "roll.firstRoll.*" => "required|exists:" . $this->_M_RollDetail->getTable() . ",roll_no,is_printed,false,is_cut,false",
+                "roll.secondRoll.*" => [
+                    "required",
+                    "exists:" . $this->_M_RollDetail->getTable() . ",roll_no,is_printed,false,is_cut,false",
+                    function ($attr, $value, $fail) use ($request) {
+                        $key = explode(".",$attr)[2];
+                        $firstRollNo = $request->input('roll.firstRoll.'.$key);
+                        $secondRollNo = $value;
+                        
+                        if($firstRollNo==$secondRollNo){
+                            $fail("firstRoll and secondRoll must be deferent");
+                            return;
+                        }
+                        // Fetch roll details for all rolls in firstRoll and secondRoll
+                        $firstRollDetails = $this->_M_RollDetail
+                            ->where('roll_no', $firstRollNo)
+                            ->first();
+                        $secondRollDetails = $this->_M_RollDetail
+                            ->where('roll_no', $secondRollNo)
+                            ->first();
+            
+                        $columnsToMatch = [
+                            'vendor_id', 'gsm', 'gsm_json', 
+                            'roll_color', 'length', 'size', 
+                            'net_weight', 'hardness', 'roll_type'
+                        ];
+                        if($firstRollDetails && $secondRollDetails){
+                            foreach ($columnsToMatch as $column) {
+                                if ($firstRollDetails->$column !== $secondRollDetails->$column) {
+                                    $fail("firstRoll and secondRoll must have the same value for the column: $column.");
+                                    return;
+                                }
+                            }
+                        }
+                    },
+                ],
+            ];
+            
+            $validate = Validator::make($request->all(), $rules);
+            
+            if ($validate->fails()) {
+                return validationError($validate);
+            }
+            DB::beginTransaction();
+            foreach($request->roll["firstRoll"] as $index=> $val){
+                $rollNo1 = $val;
+                $rollNo2 = $request->roll["secondRoll"][$index];
+                $roll1 = $this->_M_RollDetail->where("roll_no",$rollNo1)->first();
+                $roll2 = $this->_M_RollDetail->where("roll_no",$rollNo2)->first();
+                if($roll1->is_printed){
+                    throw new Exception("Roll No. ".$roll1->roll_no." is printed");
+                }
+                if($roll1->is_cut){
+                    throw new Exception("Roll No. ".$roll1->roll_no." is cut");
+                }
+                if($roll2->is_printed){
+                    throw new Exception("Roll No. ".$roll2->roll_no." is printed");
+                }
+                if($roll2->is_cut){
+                    throw new Exception("Roll No. ".$roll2->roll_no." is cut");
+                }
+                $roll1->roll_no = null;
+                $roll2->roll_no = null;
+                $roll1->update();
+                $roll2->update();
+                $roll1->roll_no = $rollNo2;
+                $roll2->roll_no = $rollNo1;
+                $roll1->update();
+                $roll2->update();
+            }
+            DB::commit();
+            return responseMsgs(true,"Roll No. Swap","");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
     
 
 }

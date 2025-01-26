@@ -17,38 +17,8 @@
     <div class="container">
         <div class="panel-heading">
             <h5 class="panel-title">Roll List</h5>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rollSwapSwapModal">Swap The Roll</button>
         </div>
-        @if($flag && $flag=='history')
-        <div class="panel-body">
-            <form id="searchForm">
-                <div class="row g-3">
-                    <!-- From Date -->
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label class="form-label" for="fromDate">From Date</label>
-                            <input type="date" name="fromDate" id="fromDate" class="form-control" max="{{date('Y-m-d')}}" />
-                        </div>
-                    </div>
-
-                    <!-- Upto Date -->
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label class="form-label" for="uptoDate">Upto Date</label>
-                            <input type="date" name="uptoDate" id="uptoDate" class="form-control" max="{{date('Y-m-d')}}" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mt-3">
-                    <div class="col-sm-3">
-                        <!-- Search Button -->
-                        <input type="button" id="btn_search" class="btn btn-primary w-100" onclick="searchData()" value="Search"/>
-                    </div>
-                </div>
-            </form>
-
-        </div>
-        @endif
         <div class="panel-body">
             <table id="postsTable" class="table table-striped table-bordered text-center table-fixed">
                 <thead>
@@ -91,6 +61,7 @@
     <!-- Modal -->
     <x-pending-order-book />
     <x-roll.edit-roll />
+    <x-roll.roll-swap />
 </main>
 <script>
     const rules = {
