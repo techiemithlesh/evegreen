@@ -90,6 +90,7 @@
                 <thead>
                     <tr>
                         <th>Client Name</th>
+                        <th>Bag Type</th>
                         <th>Bag Size</th>
                         <th>Qty</th>
                     </tr>
@@ -97,8 +98,9 @@
                 <tbody>
                     @foreach($card["data"] as $val)
                     <tr>
-                        <td>{{$val->id}}</td>
-                        <td>{{$val->bag_w}} x {{$val->bag_l}} {{$val->bag_g ? 'x'.$val->bag_g : ''}}</td>
+                        <td>{{$val->client_name}}</td>
+                        <td>{{$val->bag_type}}</td>
+                        <td>{{(float)$val->bag_w}} x {{(float)$val->bag_l}} {{$val->bag_g ? 'x '.(float)$val->bag_g : ''}}</td>
                         <td>{{$val->total_units}}</td>
                     </tr>
                     @endforeach

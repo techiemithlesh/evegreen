@@ -23,7 +23,12 @@ class NearestDispatchedOrder extends Component
                 $data = OrderPunchDetail::where("is_delivered",false)
                         ->where("lock_status",false)
                         ->where("estimate_delivery_date",$val)
-                        ->get();
+                        ->get()
+                        ->map(function($val){
+                            $val->client_name = $val->getClient()->client_name??"";
+                            $val->bag_type = $val->getBagType()->bag_type??"";
+                            return $val;
+                        });
                 return collect(["date"=>Carbon::parse($val)->format("d-m-Y"),"data"=>$data]);
             })->values();
         

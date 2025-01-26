@@ -1,6 +1,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <div>
-  <canvas id="looStockStatus"></canvas>
+  <canvas id="looStockStatus" height="300"></canvas>
 </div>
 
 <script>
@@ -19,7 +19,7 @@
       success: function(response) {
         if (response?.status && response?.data) {
           const items = response.data; // Directly access data
-
+          console.log(items);
           // Extract values for the chart
           const values = items.map(item => item.balance);
           const labels = items.map(item => item.loop_color);
@@ -27,7 +27,8 @@
 
           // Determine bar colors based on the condition
           const barColors = values.map((value, index) => {
-            const minLimit = minLimits[index]; // Get the specific min limit for each value
+            const minLimit = parseFloat(minLimits[index]); // Get the specific min limit for each value
+            value = parseFloat(value);
             if (value < minLimit) {
               return 'rgb(235, 17, 17)'; // Red for danger
             } else if (value < (minLimit + (minLimit / 2))) {
