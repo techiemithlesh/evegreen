@@ -321,6 +321,8 @@ class RollController extends Controller
                 return $list;
 
         }
+        $data["purchase_date"] = $request->purchase_date;
+        $data["vender"]        = $this->_M_VendorDetail->find($vendor_id);
         return view("Roll/transitDtl",$data);
     }
 
@@ -2540,7 +2542,8 @@ class RollController extends Controller
                     ->select(
                                 "order_punch_details.*","order_roll_bag_types.*",
                                 "client_detail_masters.client_name",  
-                                "bag_type_masters.bag_type" ,                       
+                                "bag_type_masters.bag_type" , 
+                                "grade_masters.grade" ,                       
                     )
                     ->leftJoin(
                         DB::raw("(
@@ -2567,7 +2570,8 @@ class RollController extends Controller
                         "order_roll_bag_types.order_id","order_punch_details.id"
                     )                
                     ->leftJoin("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id") 
-                    ->leftJoin("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")                   
+                    ->leftJoin("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")    
+                    ->leftJoin("grade_masters","grade_masters.id","order_punch_details.grade_id")                   
                     ->where("order_punch_details.lock_status",false)
                     ->where(function($where){
                         $where->where(DB::raw("order_punch_details.total_units"),">",DB::raw("order_punch_details.booked_units + order_punch_details.disbursed_units"));

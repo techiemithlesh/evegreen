@@ -18,7 +18,7 @@
     </div>
     <div class="container">
         <div class="panel-heading">
-            <h5 class="panel-title">List</h5>
+            <h5 class="panel-title">List  (<span style="color:aliceblue"> {{$vender->vendor_name??""}} <i style="font-size: small;">{{$purchase_date}}</i></span>) </h5>
             <div class="panel-control">
                 @if($addToRollInStock??false)
                 <button id="addRoll" type="button" class="btn btn-primary fa fa-arrow-right" onclick="transferToRollStock()">
@@ -32,10 +32,7 @@
             <table id="postsTable" class="table table-striped table-bordered table-fixed" >
                 <thead>
                     <tr>
-                        <th >#</th>
-                        <th onclick="selectAllCheck()">Select</th>
-                        <th>Purchase Date</th>
-                        <th>Vendor Name</th>
+                        <th >#</th>                    
                         <th>Quality</th>
                         <th>Roll Size</th>
                         <th>GSM</th>
@@ -46,13 +43,16 @@
                         <th>Bag Type</th>
                         <th>Client Name</th>
                         <th>Unit</th>
+                        <th>Purchase Date</th>
+                        <th>Vendor Name</th>
                         <th>Hardness</th>
                         <th>Roll Type</th>
                         <th>Grade</th>
                         <th>Length</th>
                         <th>Gross Weight</th>
-                        <th>GSM Variation</th>
+                        <th>GSM Variation</th>                        
                         <th>Action</th>
+                        <th onclick="selectAllCheck()">Select</th>    
                     </tr>                    
                 </thead>
                 <tbody>
@@ -93,10 +93,7 @@
                 },
             },
             columns: [
-                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                { data: "check", name: "check", orderable: false, searchable: false },
-                { data: "purchase_date", name: "purchase_date" ,render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")}},
-                { data: "vendor_name", name: "vendor_name",render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")} },
+                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },                      
                 { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality :"N/A")}},
                 { data: "size", name: "size" ,render:function(row,type,data){return (data.size ? data.size :"N/A")}},
                 { data: "gsm", name: "gsm",render:function(row,type,data){return (data.gsm ? data.gsm :"N/A")} },
@@ -107,6 +104,8 @@
                 { data: "bag_type", name: "bag_type" ,render:function(row,type,data){return (data.bag_type ? data.bag_type :"N/A")}},
                 { data: "client_name", name: "client_name" ,render:function(row,type,data){return (data.client_name ? data.client_name :"N/A")}},
                 { data: "bag_unit", name: "bag_unit" ,render:function(row,type,data){return (data.bag_unit ? data.bag_unit :"N/A")}},
+                { data: "purchase_date", name: "purchase_date" ,render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")}},
+                { data: "vendor_name", name: "vendor_name",render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")} },
                 { data: "hardness", name: "hardness" ,render:function(row,type,data){return (data.hardness ? data.hardness :"N/A")} },
                 { data: "roll_type", name: "roll_type",render:function(row,type,data){return (data.roll_type ? data.roll_type :"N/A")} },
                 { data : "grade", name: "grade" ,render:function(row,type,data){return (data.grade ? data.grade :"N/A")}},
@@ -114,6 +113,7 @@
                 { data: "gross_weight", name: "gross_weight" ,render:function(row,type,data){return (data.gross_weight ? data.gross_weight :"N/A")}},
                 { data: "gsm_variation", name: "gsm_variation" ,render:function(row,type,data){return (data.gsm_variation ? data.gsm_variation :"N/A")}},
                 { data: "action", name: "action", orderable: false, searchable: false },
+                { data: "check", name: "check", orderable: false, searchable: false },          
             ],
             dom: 'lBfrtip', // Updated dom configuration
             language: {
@@ -150,7 +150,7 @@
             },
             initComplete: function () {
                 hideColumn(table);
-                addFilter('postsTable',[0,1,$('#postsTable thead tr:nth-child(1) th').length - 1]);
+                addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1,$('#postsTable thead tr:nth-child(1) th').length - 2]);
             },
         }); 
                
@@ -164,7 +164,7 @@
     
         
     function hideColumn(table){
-        const columnsToHide = [14,15,16,17,18,19];
+        const columnsToHide = [11,12,13,14,15,16,17,18];
         columnsToHide.forEach(index => table.column(index).visible(false));
     }
 

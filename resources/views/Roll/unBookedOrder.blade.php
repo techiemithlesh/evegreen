@@ -34,6 +34,8 @@
                         <th>Booked Qty</th>
                         <th>Balance Qty</th>
                         <th>Bag Unit</th>
+                        <th>Gsm</th>
+                        <th>Grade</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -102,6 +104,8 @@
                 { data: "booked_units", name: "booked_units" },
                 { data: "balance_units", name: "balance_units" },
                 { data: "units", name: "units" },
+                { data: "bag_gsm", name: "bag_gsm" },
+                { data: "grade", name: "grade" },
                 // { data: "roll_no", name: "roll_no" },
                 { data: "action", name: "action" },
                 
