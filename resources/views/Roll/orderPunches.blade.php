@@ -178,8 +178,8 @@
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagColor">Bag Color </label>
                                 <div class="col-md-12">
-                                    <select name="bookingBagColor" id="bookingBagColor" class="form-select" required> 
-                                        <option value="">Select</option>                                     
+                                    <select name="bookingBagColor" id="bookingBagColor" class="form-select" > 
+                                        <option value="">All</option>                                     
                                         @foreach($rollColor as $val)
                                         <option data-color="{{$val->color}}" value="{{$val->color}}">{{$val->color}}</option>
                                         @endforeach
@@ -589,7 +589,7 @@
             { id: "#l", name: "Bag Length" },
             { id: "#w", name: "Bag Width" },
             { id: "#bagGsm", name: "Bag GSM" },
-            { id: "#bookingBagColor", name:"Bag Color"},
+            // { id: "#bookingBagColor", name:"Bag Color"},
         ];
         if($("#bookingBagTypeId").val()=="2"){
             inputs.push({ id: "#g", name: "Bag Gusset" });
