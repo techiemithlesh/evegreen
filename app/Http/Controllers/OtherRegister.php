@@ -51,7 +51,7 @@ class OtherRegister extends Controller
     }
 
     public function loopStockBook(Request $request){
-        $data = $this->_M_LoopStock->select(DB::raw(
+        $data["loop"] = $this->_M_LoopStock->select(DB::raw(
             "
             loop_stocks.loop_color,loop_stocks.balance,loop_stocks.min_limit, COALESCE(credit,0) as credit,COALESCE(debit,0) as debit,
             round(loop_stocks.balance + COALESCE(credit,0) - COALESCE(debit,0)) opening_balance,
@@ -83,6 +83,7 @@ class OtherRegister extends Controller
                 "
             ),"book.loop_stock_id","loop_stocks.id"
         )
+        ->orderBy("loop_stocks.loop_color","ASC")
         ->get();
 
         return view("Register/loop_stock_status",$data);

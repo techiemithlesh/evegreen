@@ -232,6 +232,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::controller(OtherRegister::class)->group(function(){
         Route::get("register/accept-garbage","acceptGarbage")->name("register.accept.garbage");
+        Route::get("register/loop-book-status","loopStockBook")->name("register.loop.book.status");
     });
 
 });

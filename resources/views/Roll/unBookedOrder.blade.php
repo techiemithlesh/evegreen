@@ -255,10 +255,12 @@
                 button.click();
             }
             // Create the table
-            const table = $("<table>").addClass("history-table");
+            const table = $("<table class='table table-responsive table-fixed'>").addClass("history-table");
             const thead = $("<thead>").append(
                 $("<tr>").append(
                     "<th>Sl</th>",
+                    "<th>Vender Name</th>",
+                    "<th>Quality</th>",
                     "<th>Roll No</th>",
                     "<th>GSM</th>",
                     "<th>Roll Color</th>",
@@ -280,6 +282,8 @@
                 tbody.append(                               
                     $("<tr>").append(
                         `<td>${index+1}</td>`,
+                        `<td>${item.vendor_name}</td>`,
+                        `<td>${item.quality}</td>`,
                         `<td>${item.roll_no}</td>`,
                         `<td>${item.gsm}</td>`,
                         `<td>${item.roll_color || "N/A"}</td>`,
@@ -334,10 +338,12 @@
                 button.click();
             }
             // Create the table
-            const table = $("<table>").addClass("history-table");
+            const table = $("<table class='table table-responsive table-fixed'>").addClass("history-table");
             const thead = $("<thead>").append(
                 $("<tr>").append(
                     "<th>Sl</th>",
+                    "<th>Vender Name</th>",
+                    "<th>Quality</th>",
                     "<th>Roll No</th>",
                     "<th>GSM</th>",
                     "<th>Roll Color</th>",
@@ -359,6 +365,8 @@
                 tbody.append(                               
                     $("<tr>").append(
                         `<td>${index+1}</td>`,
+                        `<td>${item.vendor_name}</td>`,
+                        `<td>${item.quality}</td>`,
                         `<td>${item.roll_no}</td>`,
                         `<td>${item.gsm}</td>`,
                         `<td>${item.roll_color || "N/A"}</td>`,

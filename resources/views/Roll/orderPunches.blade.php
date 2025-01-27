@@ -620,6 +620,8 @@
             dataType:"json",
             beforeSend:function(){
                 $("#loadingDiv").show();
+                $("#suggestionRoll").html(`<div class="loading text-center">Loading.....</div>`);
+                $("#suggestionRollTransit").html(`<div class="loading text-center">Loading.....</div>`);
             },
             success:function(response){
                 console.log(response.data.rollTransit.length);
@@ -638,10 +640,12 @@
                     }
 
                     // Create the table
-                    const table = $("<table class='table table-responsive'>").addClass("history-table");
+                    const table = $("<table class='table table-responsive table-fixed'>").addClass("history-table");
                     const thead = $("<thead>").append(
                         $("<tr>").append(
                             "<th>Sl</th>",
+                            "<th>Vender Name</th>",
+                            "<th>Quality</th>",
                             "<th>Roll No</th>",
                             "<th>GSM</th>",
                             "<th>Roll Color</th>",
@@ -664,6 +668,8 @@
                             tbody.append(                               
                                 $("<tr>").append(
                                     `<td>${index+1}</td>`,
+                                    `<td>${item.vendor_name}</td>`,
+                                    `<td>${item.quality}</td>`,
                                     `<td>${item.roll_no}</td>`,
                                     `<td>${item.gsm}</td>`,
                                     `<td>${item.roll_color || "N/A"}</td>`,
@@ -681,7 +687,7 @@
                     }else{
                         tbody.append(                               
                                 $("<tr>").append(
-                                    `<td colspan="12">No Data</td>`,
+                                    `<td colspan="14">No Data</td>`,
                                 )
                             );
                     }
@@ -725,10 +731,12 @@
                     }
 
                     // Create the table
-                    const table = $("<table class='table table-responsive'>").addClass("history-table");
+                    const table = $("<table class='table table-responsive table-fixed'>").addClass("history-table");
                     const thead = $("<thead>").append(
                         $("<tr>").append(
                             "<th>Sl</th>",
+                            "<th>Vender Name</th>",
+                            "<th>Quality</th>",
                             "<th>Roll No</th>",
                             "<th>GSM</th>",
                             "<th>Roll Color</th>",
@@ -751,6 +759,8 @@
                             tbody.append(                               
                                 $("<tr>").append(
                                     `<td>${index+1}</td>`,
+                                    `<td>${item.vendor_name}</td>`,
+                                    `<td>${item.quality}</td>`,
                                     `<td>${item.roll_no}</td>`,
                                     `<td>${item.gsm}</td>`,
                                     `<td>${item.roll_color || "N/A"}</td>`,
@@ -769,7 +779,7 @@
                     else{
                         tbody.append(                               
                                 $("<tr>").append(
-                                    `<td colspan="12">No Data</td>`,
+                                    `<td colspan="14">No Data</td>`,
                                 )
                             );
                     }
