@@ -94,6 +94,10 @@
                 <a href="#">Product Management</a>
             </div>
             <!-- Sidebar Navigation -->
+                <a id="p42" onclick="navBarMenuActive(0, 0 , 0);" href="{{url('/home')}}" class="sidebar-link show">
+                    <i class="fa fa-home"></i> 
+                    <span>Dashboard</span>
+                </a>
             <?php
 
             use Illuminate\Support\Facades\Redis;
