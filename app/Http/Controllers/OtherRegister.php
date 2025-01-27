@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GarbageAcceptRegister;
 use App\Models\GarbageNotAcceptRegister;
+use App\Models\LoopStock;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,10 +16,12 @@ class OtherRegister extends Controller
 
     protected $_M_GarbageAcceptRegister;
     protected $_M_GarbageNotAcceptRegister;
+    protected $_M_LoopStock;
     function __construct()
     {
         $this->_M_GarbageAcceptRegister = new GarbageAcceptRegister();
         $this->_M_GarbageNotAcceptRegister = new GarbageNotAcceptRegister();
+        $this->_M_LoopStock = new LoopStock();
     }
 
     public function acceptGarbage(Request $request){
@@ -45,5 +48,43 @@ class OtherRegister extends Controller
                     ->make(true);
         }
         return view("Register/accept_garbage");
+    }
+
+    public function loopStockBook(Request $request){
+        $data = $this->_M_LoopStock->select(DB::raw(
+            "
+            loop_stocks.loop_color,loop_stocks.balance,loop_stocks.min_limit, COALESCE(credit,0) as credit,COALESCE(debit,0) as debit,
+            round(loop_stocks.balance + COALESCE(credit,0) - COALESCE(debit,0)) opening_balance,
+            round(COALESCE(credit,0) - COALESCE(debit,0)) as book_loop
+            "
+        ))
+        ->leftJoin(
+            DB::raw(
+                "
+                (
+                    select sum(credit) as credit , sum(debit) as debit, loop_stock_id
+                    from loop_usage_accounts
+                    join (
+                        (
+                            select id
+                            from roll_details
+                            where is_cut = false
+                                and lock_status = false
+                        )
+                        UNION(
+                            select id
+                            from roll_details
+                            where is_cut = false
+                                and lock_status = false
+                        )
+                    )as roll on roll.id = loop_usage_accounts.roll_id
+                    group by loop_stock_id
+                ) as book
+                "
+            ),"book.loop_stock_id","loop_stocks.id"
+        )
+        ->get();
+
+        return view("Register/loop_stock_status",$data);
     }
 }

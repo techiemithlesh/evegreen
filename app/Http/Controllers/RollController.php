@@ -2081,13 +2081,13 @@ class RollController extends Controller
                     $totalPiece = ((($pieces["result"]??0)+($pieces2["result"]??0))/2); 
                     $totalLoopWeight = (($totalPiece*3.4)/1000);
                     if(in_array($bag->id,[2,4])){
-                        $loopStock = $this->_M_LoopStock->where("loop_color",$order->bag_loop_color)->first();
+                        $loopStock = $this->_M_LoopStock->where("loop_color",$orderNew->bag_loop_color)->first();
 
                         $newLoopAccRequest = new Request(
                             [
                                 "loop_stock_id"=>$loopStock->id,
                                 "roll_id"=>$roll->id,
-                                "order_id"=>$order->id,
+                                "order_id"=>$orderNew->id,
                                 "description"=>"Roll Add To Booking",
                                 "opening_balance"=>$loopStock->balance,
                                 "credit"=>$totalLoopWeight,
