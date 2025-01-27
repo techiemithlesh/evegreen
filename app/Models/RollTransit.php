@@ -75,7 +75,9 @@ class RollTransit extends Model
         ]);
     }
 
-
+    public function getRollOrm(){
+        return self::where("lock_status",false);
+    }
     public function getCuttingSchedule(){
         return $this->hasOne(CuttingScheduleDetail::class,"roll_id","id")->where("lock_status",false);
     }
