@@ -112,7 +112,7 @@
                 { data: "length", name: "length",render:function(row,type,data){return (data.length ? data.length :"N/A")} },
                 { data: "gross_weight", name: "gross_weight" ,render:function(row,type,data){return (data.gross_weight ? data.gross_weight :"N/A")}},
                 { data: "gsm_variation", name: "gsm_variation" ,render:function(row,type,data){return (data.gsm_variation ? data.gsm_variation :"N/A")}},
-                { data: "action", name: "action", orderable: false, searchable: false },
+                { data: "action", name: "action", orderable: false, searchable: false,render:function(row,type,data){return (`<span style="display:flex;">${data?.action}</span>`)}  },
                 { data: "check", name: "check", orderable: false, searchable: false },          
             ],
             dom: 'lBfrtip', // Updated dom configuration

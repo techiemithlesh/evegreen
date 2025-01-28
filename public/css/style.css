@@ -454,6 +454,10 @@ form label{
     font-weight: bolder;
 }
 
+.table-fixed td button, .table-fixed td span button{
+    margin-right: 5px;
+}
+
   
 
   /* end */
