@@ -77,7 +77,7 @@
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
-            searching:false,
+            // searching:false,
             ajax: {
                 url: "{{route('order.book.delivered')}}", // The route where you're getting data from
                 data: function(d) {
