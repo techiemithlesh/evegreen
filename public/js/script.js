@@ -199,7 +199,7 @@ function addFilter(tableName,indexNo=[]){
 
       // Build regex to match any of the selected values
       var regex = selectedValues && selectedValues.length > 0
-          ? selectedValues.join('|') // Join selected values with "|" for OR regex
+          ? selectedValues.map((value) => `^${value}$`).join('|') // Join selected values with "|" for OR regex
           : '';
 
       // Apply the filter using regex
