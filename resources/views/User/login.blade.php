@@ -18,6 +18,24 @@
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="path-to-nifty-noty.js"></script>
+    <style>
+        
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("{{ asset('assets/images/background.jpg')}}");
+            background-size: cover;
+            background-position: center;
+            z-index: -1; /* Push it behind other elements */
+            filter: blur(1.5px); 
+        }
+
+    </style>
 
 </head>
 <body class="bg-light">
