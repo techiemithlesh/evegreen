@@ -122,7 +122,7 @@
                 <div class="form-group">
                     <label class="form-label" for="bookingBagColor">Bag Color </label>
                     <div class="col-md-12">
-                        <select name="bookingBagColor" id="bookingBagColor" class="form-select" disabled>
+                        <select name="bookingBagColor" id="bookingBagColor" multiple="multiple" class="form-select" disabled>
                             <option value="">Select</option>
                             @foreach($rollColor as $val)
                             <option data-color="{{$val->color}}" value="{{$val->color}}">{{$val->color}}</option>
@@ -157,7 +157,13 @@
             <div class="col-sm-4">
                 <div class="form-group" id='singleGsm'>
                     <label class="form-label" for="bagGsm">GSM</label>
-                    <input name="bagGsm" id="bagGsm" class="form-control" onkeypress="return isNumDot(event);" readonly/>
+                    <!-- <input name="bagGsm" id="bagGsm" class="form-control" onkeypress="return isNumDot(event);" readonly/> -->
+                    <select name="bagGsm[]" id="bagGsm" class="form-select" multiple="multiple" disabled>
+                        <option value="">All</option>
+                        @foreach($gsm as $val)
+                        <option value="{{$val}}">{{$val}}</option>
+                        @endforeach
+                    </select> 
                     <span class="error-text" id="bagGsm-error"></span>
                 </div>
                 <div class="form-group" id='multipleGsm' style="display: none;">

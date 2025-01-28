@@ -178,7 +178,7 @@
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagColor">Bag Color </label>
                                 <div class="col-md-12">
-                                    <select name="bookingBagColor" id="bookingBagColor" class="form-select" > 
+                                    <select name="bookingBagColor[]" id="bookingBagColor" class="form-select" multiple="multiple" > 
                                         <option value="">All</option>                                     
                                         @foreach($rollColor as $val)
                                         <option data-color="{{$val->color}}" value="{{$val->color}}">{{$val->color}}</option>
@@ -213,7 +213,13 @@
                         <div class="col-sm-4">
                             <div class="form-group" id='singleGsm'>
                                 <label class="form-label" for="bagGsm">GSM</label>
-                                <input name="bagGsm" id="bagGsm" class="form-control" required onkeypress="return isNumDot(event);" />                                 
+                                <!-- <input name="bagGsm" id="bagGsm" class="form-control" required onkeypress="return isNumDot(event);" />  -->
+                                <select name="bagGsm[]" id="bagGsm" class="form-select" multiple="multiple">
+                                    <option value="">All</option>
+                                    @foreach($gsm as $val)
+                                    <option value="{{$val}}">{{$val}}</option>
+                                    @endforeach
+                                </select>                                
                                 <span class="error-text" id="bagGsm-error"></span>
                             </div>
                             <div class="form-group" id='multipleGsm' style="display: none;">
@@ -383,6 +389,21 @@
             templateSelection: formatOption 
         });
 
+        $("#bookingBagColor").select2({
+            placeholder: "Select tags",
+            allowClear: true,
+            maximumSelectionLength: 4,
+            dropdownCssClass: 'form-control',            
+            width:"100%",
+        });
+        $("#bagGsm").select2({
+            placeholder: "Select tags",
+            allowClear: true,
+            maximumSelectionLength: 4,
+            dropdownCssClass: 'form-control',            
+            width:"100%",
+        })
+
         $('#clientModal').on('hidden.bs.modal', function() {
             $('#rollBookingModal').css("z-index","");
         });
@@ -492,11 +513,17 @@
                         
                         // Populate the rows
                         response.data.forEach((item,index) => {
+                            const bag_gsm = JSON.parse(item?.bag_gsm || "[]").map(value => parseInt(value, 10) || 0);
+                            const bagGsmString = bag_gsm.join(",");
+                            const bag_color = JSON.parse(item?.bag_color || "[]");
+                            const bagColorString = bag_color.join(",");
+
+
                             tbody.append(                               
                                 $("<tr>").append(
                                     `<td>${parseFloat(item.bag_w) + parseFloat(item.bag_g ? item.bag_g : 0) } X ${ parseFloat(item.bag_l)}</td>`,
-                                    `<td>${item.bag_color}</td>`,
-                                    `<td>${item.bag_gsm || "N/A"}</td>`,
+                                    `<td>${bagColorString}</td>`,
+                                    `<td>${bagGsmString || "N/A"}</td>`,
                                     `<td>${item.bag_type || "N/A"}</td>`,
                                     `<td><button type="button" data-item='${JSON.stringify(item)}' id="or${index}" onclick="setOrderValue('or${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
                                     
@@ -568,11 +595,28 @@
         showHidePrintingColorDiv();
         getBalance();
         
+        try {
+            // Parse the printing_color string to an array
+            const bag_gsm = JSON.parse(item?.bag_gsm ||"[]").map(value => parseInt(value, 10) || 0);
+            $("#bagGsm").val(bag_gsm).trigger("change"); // Set the selected options
+        } catch (error) {
+            console.error("Error parsing printing_color:", error);
+            $("#bagGsm").val([]).trigger("change");; // Clear in case of error
+        }
+
+        try {
+            // Parse the printing_color string to an array
+            const bag_color = JSON.parse(item?.bag_color) || [];
+            $("#bookingBagColor").val(bag_color).trigger("change"); // Set the selected options
+        } catch (error) {
+            console.error("Error parsing printing_color:", error);
+            $("#bookingBagColor").val([]).trigger("change");; // Clear in case of error
+        }
         // Set the multi-select field for 'bookingPrintingColor'
         try {
             // Parse the printing_color string to an array
             const printingColors = JSON.parse(item?.bag_printing_color) || [];
-            $("#bookingPrintingColor").val(printingColors).trigger("change");; // Set the selected options
+            $("#bookingPrintingColor").val(printingColors).trigger("change"); // Set the selected options
         } catch (error) {
             console.error("Error parsing printing_color:", error);
             $("#bookingPrintingColor").val([]).trigger("change");; // Clear in case of error

@@ -111,6 +111,12 @@ class PackingController extends Controller
                 ->addColumn('bag_printing_color', function ($val) { 
                     return collect(json_decode($val->bag_printing_color,true))->implode(",") ;
                 })
+                ->addColumn('bag_color', function ($val) { 
+                    return collect(json_decode($val->bag_color,true))->implode(",") ;
+                })
+                ->addColumn('bag_gsm', function ($val) { 
+                    return collect(json_decode($val->bag_gsm,true))->implode(",") ;
+                })
                 ->addColumn('bag_size', function ($val) { 
                     return $val->bag_w." X ".$val->bag_l." X ".($val->bag_g ? $val->bag_g:"0.00") ;
                 })

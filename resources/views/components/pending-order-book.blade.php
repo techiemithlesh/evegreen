@@ -17,19 +17,11 @@
 
 <script>
 
+
     $(document).ready(function(){
         getBalance();
         // $('.select22').select2(); 
-        $('#bookingPrintingColor').select2({
-            placeholder: "Select tags",
-            allowClear: true,
-            maximumSelectionLength: 4,
-            dropdownCssClass: 'form-control',            
-            width: "100%"  ,   
-            dropdownParent: $('#rollBookingModal'),
-            templateResult: formatOption,
-            templateSelection: formatOption 
-        });
+        select2Init();
 
         showHideLoop();
 
@@ -48,11 +40,7 @@
             }
         });
 
-        $('#bookingForClientId').select2({
-            dropdownParent: $('#rollBookingModal'),
-            dropdownCssClass: 'form-control',
-            width: "100%"     
-        }); 
+        
         
         $('#bookingForClientId').on('change', function(event, extraData) {
             // Access the extra data passed
@@ -61,6 +49,41 @@
         
     });
    
+    function select2Init(){
+        $('#bookingPrintingColor').select2({
+            placeholder: "Select tags",
+            allowClear: true,
+            maximumSelectionLength: 4,
+            dropdownCssClass: 'form-control',            
+            width: "100%"  ,   
+            dropdownParent: $('#rollBookingModal'),
+            templateResult: formatOption,
+            templateSelection: formatOption 
+        });
+        $('#bagGsm').select2({
+            placeholder: "Select tags",
+            allowClear: true,
+            maximumSelectionLength: 4,
+            dropdownCssClass: 'form-control',            
+            width: "100%"  ,   
+            dropdownParent: $('#rollBookingModal'),
+        });
+
+        $('#bookingBagColor').select2({
+            placeholder: "Select tags",
+            allowClear: true,
+            maximumSelectionLength: 4,
+            dropdownCssClass: 'form-control',            
+            width: "100%"  ,   
+            dropdownParent: $('#rollBookingModal'),
+        });
+
+        $('#bookingForClientId').select2({
+            dropdownParent: $('#rollBookingModal'),
+            dropdownCssClass: 'form-control',
+            width: "100%"     
+        }); 
+    }
 
     function showHideLoop(){
         var bagType = $("#bookingBagTypeId").val();
@@ -91,7 +114,7 @@
         id = event.target.value;
         $("#submit").attr("disabled",true);
         if(event.target.value==""){
-            resetForm("myForm",inits);
+            resetFormBook("myForm",inits);
             return false;
         }
         let selectedOption = event.target.options[event.target.selectedIndex];
@@ -127,6 +150,24 @@
         $("#stereoTypeId").val(item?.stereo_type_id);
         showHidePrintingColorDiv();
         getBalance();
+
+        try {
+            // Parse the printing_color string to an array
+            const bag_gsm = JSON.parse(item?.bag_gsm ||"[]").map(value => parseInt(value, 10) || 0);
+            $("#bagGsm").val(bag_gsm).trigger("change"); // Set the selected options
+        } catch (error) {
+            console.error("Error parsing printing_color:", error);
+            $("#bagGsm").val([]).trigger("change");; // Clear in case of error
+        }
+
+        try {
+            // Parse the printing_color string to an array
+            const bag_color = JSON.parse(item?.bag_color) || [];
+            $("#bookingBagColor").val(bag_color).trigger("change"); // Set the selected options
+        } catch (error) {
+            console.error("Error parsing printing_color:", error);
+            $("#bookingBagColor").val([]).trigger("change");; // Clear in case of error
+        }
         
         // Set the multi-select field for 'bookingPrintingColor'
         try {
@@ -180,8 +221,8 @@
                 if(data.status){ 
                     
                     Livewire.dispatchTo('pending-order-book', 'refreshComponent');                 
-                    resetForm("myForm");
                     $("#rollBookingModal").modal("hide");
+                    resetFormBook("myForm");
                     modelInfo(data.messages);
                     $('#postsTable').DataTable().ajax.reload();
                 }else{
@@ -238,28 +279,29 @@
         console.log("gsm:",gsm);
     }
 
-    function resetForm(id,inits="0"){
+    function resetFormBook(id,inits="0"){
         $("#"+id).get(0).reset();
         $('#'+id+' select').each(function() {
-            if ($(this).data('select2')) {
+            if ($(this).data('select2')) { 
                 if(this.id=="bookingForClientId"){
                     if(inits!="1"){ 
-                        $(this).val(null).trigger('change',["1"]);
+                        // $(this).val(null).trigger('change',["1"]);
                     }
                 }else{
                     $(this).val(null).trigger('change');
                 }
             }
         });
-        $('#bookingPrintingColor').select2({
-            placeholder: "Select tags",
-            allowClear: true,
-            maximumSelectionLength: 4,
-            dropdownCssClass: 'form-control',            
-            width: "100%"  ,   
-            dropdownParent: $('#rollBookingModal'),
-            templateResult: formatOption,
-            templateSelection: formatOption 
-        });
+        select2Init();
+        // $('#bookingPrintingColor').select2({
+        //     placeholder: "Select tags",
+        //     allowClear: true,
+        //     maximumSelectionLength: 4,
+        //     dropdownCssClass: 'form-control',            
+        //     width: "100%"  ,   
+        //     dropdownParent: $('#rollBookingModal'),
+        //     templateResult: formatOption,
+        //     templateSelection: formatOption 
+        // });
     }
 </script>

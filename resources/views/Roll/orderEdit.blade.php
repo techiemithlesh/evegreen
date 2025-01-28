@@ -175,10 +175,10 @@
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagColor">Bag Color </label>
                                 <div class="col-md-12">
-                                    <select name="bookingBagColor" id="bookingBagColor" class="form-select" required> 
+                                    <select name="bookingBagColor[]" id="bookingBagColor" multiple="multiple" class="form-select" required> 
                                         <option value="">Select</option>                                     
                                         @foreach($rollColor as $val)
-                                        <option data-color="{{$val->color}}" value="{{$val->color}}" {{$order->bag_color==$val->color ? "selected" : ""}} >{{$val->color}}</option>
+                                        <option {{in_array($val->color,$order->bag_color)?"selected":""}} data-color="{{$val->color}}" value="{{$val->color}}" {{$order->bag_color==$val->color ? "selected" : ""}} >{{$val->color}}</option>
                                         @endforeach
                                     </select>
                                 </div>                                                                       
@@ -210,7 +210,12 @@
                         <div class="col-sm-4">
                             <div class="form-group" id='singleGsm'>
                                 <label class="form-label" for="bagGsm">GSM</label>
-                                <input value="{{$order->bag_gsm}}" name="bagGsm" id="bagGsm" class="form-control" required onkeypress="return isNumDot(event);" />                                 
+                                <select name="bagGsm[]" id="bagGsm" class="form-select" multiple="multiple">
+                                    <option value="">All</option>
+                                    @foreach($gsm as $val)
+                                    <option {{in_array($val,$order->bag_gsm)?"selected":""}} value="{{$val}}">{{$val}}</option>
+                                    @endforeach
+                                </select> 
                                 <span class="error-text" id="bagGsm-error"></span>
                             </div>
                             <div class="form-group" id='multipleGsm' style="display: none;">
@@ -367,6 +372,22 @@
             width:"100%",
             display:"block"
         }); 
+        $('#bagGsm').select2({
+            placeholder: "Select tags",
+            allowClear: true,
+            maximumSelectionLength: 4,
+            dropdownCssClass: 'form-control',            
+            width: "100%"  ,
+        });
+
+        $('#bookingBagColor').select2({
+            placeholder: "Select tags",
+            allowClear: true,
+            maximumSelectionLength: 4,
+            dropdownCssClass: 'form-control',            
+            width: "100%"  ,
+        });
+
         $("#orderHistory").hide();      
 
         $('#bookingPrintingColor').select2({
@@ -541,8 +562,7 @@
 
     function setOrderValue(id) {        
         const item = JSON.parse($(event.target).attr("data-item"));
-        console.log(item);
-
+        console.log("item:",item);
         // Set individual field values
         $("#bookingBagTypeId").val(item?.bag_type_id);
         $("#bookingBagUnits").val(item?.units);
@@ -564,6 +584,24 @@
         $("#looColor").val(item?.bag_loop_color);
         showHidePrintingColorDiv();
         getBalance();
+
+        try {
+            // Parse the printing_color string to an array
+            const bag_gsm = JSON.parse(item?.bag_gsm ||"[]").map(value => parseInt(value, 10) || 0);
+            $("#bagGsm").val(bag_gsm).trigger("change"); // Set the selected options
+        } catch (error) {
+            console.error("Error parsing printing_color:", error);
+            $("#bagGsm").val([]).trigger("change");; // Clear in case of error
+        }
+
+        try {
+            // Parse the printing_color string to an array
+            const bag_color = JSON.parse(item?.bag_color) || [];
+            $("#bookingBagColor").val(bag_color).trigger("change"); // Set the selected options
+        } catch (error) {
+            console.error("Error parsing printing_color:", error);
+            $("#bookingBagColor").val([]).trigger("change");; // Clear in case of error
+        }
         
         // Set the multi-select field for 'bookingPrintingColor'
         try {

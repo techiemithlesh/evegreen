@@ -9,6 +9,8 @@ use App\Models\GradeMaster;
 use App\Models\OrderPunchDetail;
 use App\Models\RateTypeMaster;
 use App\Models\RollColorMaster;
+use App\Models\RollDetail;
+use App\Models\RollTransit;
 use App\Models\StereoDetail;
 use Livewire\Component;
 
@@ -25,6 +27,7 @@ class PendingOrderBook extends Component
     public $fare;
     public $stereo;
     public $rateType;
+    public $gsm;
 
     public function mount()
     {
@@ -51,6 +54,9 @@ class PendingOrderBook extends Component
         $this->fare = (new FareDetail())->getFareListOrm()->orderBy("id")->get();
         $this->stereo = (new StereoDetail())->getStereoListOrm()->orderBy("id")->get();
         $this->rateType = (new RateTypeMaster())->getRateTypeListOrm()->orderBy("id")->get();
+        $rollStockGsm = (new RollDetail())->select('gsm')->distinct()->pluck('gsm');
+        $rollTransitGsm = (new RollTransit())->select('gsm')->where("gsm",">",2)->distinct()->pluck('gsm');
+        $this->gsm = $rollStockGsm->union($rollTransitGsm)->unique()->sort()->values();
     }
 
     

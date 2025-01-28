@@ -479,6 +479,9 @@
 
     function openModelBookingModel(id) {
         if (id) {
+            $("#rollBookingModal").on("show.bs.modal",function(){
+                resetFormBook("myForm");
+            })
             $("#id").val(id);
             $("#rollBookingModal").modal("show");
 

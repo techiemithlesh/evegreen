@@ -1727,6 +1727,9 @@ class RollController extends Controller
         $data["rateType"] = $this->_M_RateTypeMaster->getRateTypeListOrm()->orderBy("id")->get();
         $data["loopColor"] = $this->_M_LoopStock->getLoopColorOrm()->where("balance",">",0)->orderBy("id")->get();
         $data["broker"] = $this->_M_OrderBroker->getBrokerOrm()->orderBy("broker_name","ASC")->get();
+        $rollStockGsm = $this->_M_RollDetail->select('gsm')->distinct()->pluck('gsm');
+        $rollTransitGsm = $this->_M_RollTransit->select('gsm')->where("gsm",">",2)->distinct()->pluck('gsm');
+        $data["gsm"] = $rollStockGsm->union($rollTransitGsm)->unique()->sort()->values();
         return view("Roll/orderPunches",$data);
     }
 
@@ -1810,12 +1813,25 @@ class RollController extends Controller
                 $transit->where("roll_transits.roll_type",$request->bagQuality);
             }
             if($request->bagGsm){
-                $roll->where("roll_details.gsm",(int)$request->bagGsm);
-                $transit->where("roll_transits.gsm",(int)$request->bagGsm);
+                $bagGsm = $request->bagGsm;
+                if(!is_array($request->bagGsm))
+                {
+                    $bagGsm=[$request->bagGsm];
+                }
+                $bagGsm = array_map(function($val){
+                    return (int) $val;
+                },$bagGsm);
+                $roll->whereIn("roll_details.gsm",$bagGsm);
+                $transit->whereIn("roll_transits.gsm",$bagGsm);
             }
             if($request->bookingBagColor){
-                $roll->where("roll_details.roll_color",$request->bookingBagColor);
-                $transit->where("roll_transits.roll_color",$request->bookingBagColor);
+                $bag_color = $request->bookingBagColor;
+                if(!is_array($request->bookingBagColor))
+                {
+                    $bag_color=[$request->bookingBagColor];
+                }
+                $roll->whereIn("roll_details.roll_color",$bag_color);
+                $transit->whereIn("roll_transits.roll_color",$bag_color);
             }
             if($request->gradeId){
                 $quality = $this->_M_RollQualityMaster->where("grade_id",$request->gradeId)->get()->pluck("id");
@@ -1827,7 +1843,7 @@ class RollController extends Controller
                 $newRequest->merge([
                     "formula"=>$bag->roll_size_find,
                     "bookingBagUnits"=>"M",                    
-                    "gsm" => $request->bagGsm,
+                    // "gsm" => $request->bagGsm,
                     "bagL"=> $request->l,
                     "bagW"=> $request->w,
                     "bagG"=> $request->g,
@@ -2146,7 +2162,7 @@ class RollController extends Controller
                     $request->merge(["bagGsmJson"=>null]);
                 }
                 if($request->bagQuality=="BOPP"){
-                    $request->merge(["bagGsm"=>array_sum(explode("/",$request->bagGsmJson))]);
+                    $request->merge(["bagGsm"=>[array_sum(explode("/",$request->bagGsmJson))]]);
                     $request->merge(["bagGsmJson"=>(explode("/",$request->bagGsmJson))]);
                 }
                 $request->merge(["id"=>$order->id]);
@@ -2163,6 +2179,10 @@ class RollController extends Controller
         }
         $order->bag_gsm_json = $order->bag_gsm_json ? implode("/",json_decode($order->bag_gsm_json,true)) : $order->bag_gsm_json;
         $order->bag_printing_color = json_decode($order->bag_printing_color,true);
+        $order->bag_color = json_decode($order->bag_color,true);
+        $order->bag_gsm = collect(json_decode($order->bag_gsm,true))->map(function($val){
+            return (int) $val;
+        })->toArray();
         $data["prevUrl"] = url()->previous();
         $data["order"] = $order;
         $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->orderBy("client_name","ASC")->get();
@@ -2175,6 +2195,9 @@ class RollController extends Controller
         $data["rateType"] = $this->_M_RateTypeMaster->getRateTypeListOrm()->orderBy("id")->get();
         $data["loopColor"] = $this->_M_LoopStock->getLoopColorOrm()->where("balance",">",0)->orderBy("id")->get();
         $data["broker"] = $this->_M_OrderBroker->getBrokerOrm()->orderBy("broker_name","ASC")->get();
+        $rollStockGsm = $this->_M_RollDetail->select('gsm')->distinct()->pluck('gsm');
+        $rollTransitGsm = $this->_M_RollTransit->select('gsm')->where("gsm",">",2)->distinct()->pluck('gsm');
+        $data["gsm"] = $rollStockGsm->union($rollTransitGsm)->unique()->sort()->values();
         return view("Roll/orderEdit",$data);
     }
 
@@ -2345,6 +2368,12 @@ class RollController extends Controller
                 ->addColumn("bag_printing_color",function($val){
                     return $val->bag_printing_color ? collect(json_decode($val->bag_printing_color,true))->implode(",") : "";
                 })
+                ->addColumn("bag_color",function($val){
+                    return collect(json_decode($val->bag_color,true))->implode(", ") ;
+                })
+                ->addColumn("bag_gsm",function($val){
+                    return collect(json_decode($val->bag_gsm,true))->implode(", ") ;
+                })
                 ->addColumn("total_units",function($val){
                     return round($val->total_units);
                 })
@@ -2435,6 +2464,12 @@ class RollController extends Controller
                 })
                 ->addColumn("bag_color",function($val){
                     return $val->bag_color ? collect(json_decode($val->bag_color,true))->implode(",") : "";
+                })
+                ->addColumn("bag_color",function($val){
+                    return collect(json_decode($val->bag_color,true))->implode(", ") ;
+                })
+                ->addColumn("bag_gsm",function($val){
+                    return collect(json_decode($val->bag_gsm,true))->implode(", ") ;
                 })
                 ->addColumn("total_units",function($val){
                     return round($val->total_units);
@@ -2600,6 +2635,16 @@ class RollController extends Controller
                 ->addColumn("bag_size",function($val){
                     return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
                 })
+                ->addColumn("bag_printing_color",function($val){
+                    return collect(json_decode($val->bag_printing_color,true))->implode(", ") ;
+                })
+                ->addColumn("bag_color",function($val){
+                    return collect(json_decode($val->bag_color,true))->implode(", ") ;
+                })
+                ->addColumn("bag_gsm",function($val){
+                    return collect(json_decode($val->bag_gsm,true))->implode(", ") ;
+                })
+                
                 ->addColumn("total_units",function($val){
                     return round($val->total_units) ;
                 })
@@ -2655,8 +2700,8 @@ class RollController extends Controller
                 "rateTypeId"=>$order->rate_type_id,
                 "fareTypeId"=>$order->fare_type_id,
                 "stereoTypeId"=>$order->stereo_type_id,
-                "bookingBagColor"=>$order->bag_color,
-                "bagGsm"=>$order->bag_gsm,
+                "bookingBagColor"=>collect(json_decode($order->bag_color,true))->toArray(),//$order->bag_color,
+                "bagGsm"=>collect(json_decode($order->bag_gsm,true))->toArray(),//$order->bag_gsm,
                 "bagGsmJson"=>collect(json_decode($order->bag_gsm_json,true))->implode("/"),
                 "bookingBagTypeId"=>$order->bag_type_id,
                 "totalUnits"=> $order->total_units - $order->booked_units - $order->disbursed_units,
@@ -2703,8 +2748,8 @@ class RollController extends Controller
                 "rateTypeId"=>$order->rate_type_id,
                 "fareTypeId"=>$order->fare_type_id,
                 "stereoTypeId"=>$order->stereo_type_id,
-                "bookingBagColor"=>$order->bag_color,
-                "bagGsm"=>$order->bag_gsm,
+                "bookingBagColor"=>collect(json_decode($order->bag_color,true))->toArray(),//$order->bag_color,
+                "bagGsm"=>collect(json_decode($order->bag_gsm,true))->toArray(),//$order->bag_gsm,
                 "bagGsmJson"=>collect(json_decode($order->bag_gsm_json,true))->implode("/"),
                 "bookingBagTypeId"=>$order->bag_type_id,
                 "totalUnits"=> $order->total_units - $order->booked_units - $order->disbursed_units,
@@ -2982,6 +3027,16 @@ class RollController extends Controller
                 ->addColumn("bag_size",function($val){
                     return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ? (" x ".(float)$val->bag_g) : "") ;
                 })
+                ->addColumn("bag_printing_color",function($val){
+                    return collect(json_decode($val->bag_printing_color,true))->implode(", ") ;
+                })
+                ->addColumn("bag_color",function($val){
+                    return collect(json_decode($val->bag_color,true))->implode(", ") ;
+                })
+                ->addColumn("bag_gsm",function($val){
+                    return collect(json_decode($val->bag_gsm,true))->implode(", ") ;
+                })
+                
                 ->addColumn("total_units",function($val){
                     return round($val->total_units);
                 })

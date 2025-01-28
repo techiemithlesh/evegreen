@@ -231,6 +231,24 @@
         getBalance();
         testLoop();
         
+        try {
+            // Parse the printing_color string to an array
+            const bag_gsm = JSON.parse(item?.bag_gsm ||"[]").map(value => parseInt(value, 10) || 0);
+            $("#bagGsm").val(bag_gsm).trigger("change"); // Set the selected options
+        } catch (error) {
+            console.error("Error parsing printing_color:", error);
+            $("#bagGsm").val([]).trigger("change");; // Clear in case of error
+        }
+
+        try {
+            // Parse the printing_color string to an array
+            const bag_color = JSON.parse(item?.bag_color) || [];
+            $("#bookingBagColor").val(bag_color).trigger("change"); // Set the selected options
+        } catch (error) {
+            console.error("Error parsing printing_color:", error);
+            $("#bookingBagColor").val([]).trigger("change");; // Clear in case of error
+        }
+        
         // Set the multi-select field for 'bookingPrintingColor'
         try {
             // Parse the printing_color string to an array
