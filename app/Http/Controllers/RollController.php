@@ -2724,7 +2724,7 @@ class RollController extends Controller
                 "bagGsm"=>collect(json_decode($order->bag_gsm,true))->toArray(),//$order->bag_gsm,
                 "bagGsmJson"=>collect(json_decode($order->bag_gsm_json,true))->implode("/"),
                 "bookingBagTypeId"=>$order->bag_type_id,
-                "totalUnits"=> $order->total_units - $order->booked_units - $order->disbursed_units,
+                "totalUnits"=> $order->total_units -  $order->disbursed_units, //$order->booked_units -
                 "bookingBagUnits"=>$order->units,
 
                 "l"=>$order->bag_l,
