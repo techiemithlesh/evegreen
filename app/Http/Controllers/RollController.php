@@ -1926,6 +1926,7 @@ class RollController extends Controller
                         
             $data["roll"]= collect($roll->values());
             $data["rollTransit"]= collect($transit->values());
+            $data["size"] = [$fromSize,$size];
             // dd($request->all());
             return responseMsgs(true,"data Fetched",$data);
         }catch(ExcelExcel $e){

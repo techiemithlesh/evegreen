@@ -284,7 +284,7 @@
                         </div>
                         <div class="col-sm-4">
                             <div class="form-group">
-                                <label class="form-label" for="brokerId">Broker</label>
+                                <label class="form-label" for="brokerId">Agent</label>
                                 <div class="col-md-12">
                                     <select name="brokerId" id="brokerId" class="form-select select22" required> 
                                         <option value="">Select</option>                                     
