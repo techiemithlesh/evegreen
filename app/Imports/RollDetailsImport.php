@@ -31,7 +31,7 @@ class RollDetailsImport implements ToCollection,WithHeadingRow
         foreach ($rows as $row) {
             if(strtolower($file->getClientOriginalExtension())=="xlsx")
             {
-                $row["purchase_date"] = getDateColumnAttribute($row['purchase_date']);
+                $row["purchase_date"] =  is_int($row["purchase_date"])? getDateColumnAttribute($row['purchase_date']) : $row['purchase_date'];
             }
             $vendor = $_M_VendorDetail->where(DB::raw("upper(vendor_name)"),trim(strtoupper($row["vendor_name"])))->first();
             $quality = $_M_RollQualityMaster->where("vendor_id",$vendor->id)->where(DB::raw("upper(quality)"),trim(strtoupper($row["quality"])))->first();
