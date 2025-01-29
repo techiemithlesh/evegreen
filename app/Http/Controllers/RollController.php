@@ -603,7 +603,7 @@ class RollController extends Controller
                        "required" ,
                        function($attribute, $value, $fail)use ($rowData,$index ){
                             $color = $this->_M_RollColor->where(DB::raw("UPPER(color)"),strtoupper($value))->first();
-                            if($rowData["roll_size"]>2){
+                            if($rowData["roll_size"]<=2){
                                 $color = $this->_M_LoopStock->where(DB::raw("UPPER(loop_color)"),strtoupper($value))->first();
                             }
                             if(!$color){
