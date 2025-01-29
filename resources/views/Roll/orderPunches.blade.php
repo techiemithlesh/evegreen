@@ -505,6 +505,7 @@
                                 "<th>Bag Color</th>",
                                 "<th>GSM</th>",
                                 "<th>Bag Type</th>",
+                                "<th>Rate</th>",
                                 "<th>Action</th>",
                             )
                         );
@@ -525,6 +526,7 @@
                                     `<td>${bagColorString}</td>`,
                                     `<td>${bagGsmString || "N/A"}</td>`,
                                     `<td>${item.bag_type || "N/A"}</td>`,
+                                    `<td>${item.rate_per_unit || "N/A"}</td>`,
                                     `<td><button type="button" data-item='${JSON.stringify(item)}' id="or${index}" onclick="setOrderValue('or${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
                                     
                                 )

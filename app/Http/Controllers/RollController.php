@@ -555,8 +555,7 @@ class RollController extends Controller
                 $rowData = array_combine($headings, $row);
                 if(strtolower($file->getClientOriginalExtension())=="xlsx")
                 {
-                    $rowData["purchase_date"] = getDateColumnAttribute($rowData['purchase_date']);
-
+                    $rowData["purchase_date"] = is_int($rowData["purchase_date"])? getDateColumnAttribute($rowData['purchase_date']) : $rowData['purchase_date'];
                 }
                 $validator = Validator::make($rowData, [
                     'vendor_name' => 'required|exists:'.$this->_M_VendorDetail->getTable().",vendor_name",
@@ -1761,6 +1760,7 @@ class RollController extends Controller
                     ->where("order_punch_details.client_detail_id",$request->clientId)
                     ->where("order_punch_details.lock_status",false)
                     ->orderBy("order_punch_details.created_at")
+                    ->limit(10)
                     ->get();
 
             // Remove duplicates based on the specified columns
