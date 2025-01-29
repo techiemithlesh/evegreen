@@ -3140,8 +3140,12 @@ class RollController extends Controller
             
                         $columnsToMatch = [
                             'vendor_id', 'gsm', 'gsm_json', 
-                            'roll_color', 'length', 'size', 
-                            'net_weight', 'hardness', 'roll_type'
+                            'roll_color', //'length', 
+                            'size', 
+                            "quality_id",
+                            //'net_weight', 
+                            'hardness', 
+                            'roll_type'
                         ];
                         if($firstRollDetails && $secondRollDetails){
                             foreach ($columnsToMatch as $column) {
