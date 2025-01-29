@@ -1868,10 +1868,10 @@ class RollController extends Controller
                     "bagG"=> $request->g,
                 ]);
                 $result = $this->calculatePossibleProduction($newRequest);
-                $size = (int)$result["result"]??0;
-                $fromSize = $size-2;
-                $roll->whereBetween("roll_details.size",[$fromSize,$size]);
-                $transit->whereBetween("roll_transits.size",[$fromSize,$size]);
+                $fromSize = (int)($result["result"]??0);
+                $uptoSize = $fromSize+3;
+                $roll->whereBetween("roll_details.size",[$fromSize,$uptoSize]);
+                $transit->whereBetween("roll_transits.size",[$fromSize,$uptoSize]);
             }
 
             $roll= $roll->get();
@@ -1945,7 +1945,7 @@ class RollController extends Controller
                         
             $data["roll"]= collect($roll->values());
             $data["rollTransit"]= collect($transit->values());
-            $data["size"] = [$fromSize,$size];
+            $data["size"] = [$fromSize,$uptoSize];
             // dd($request->all());
             return responseMsgs(true,"data Fetched",$data);
         }catch(ExcelExcel $e){
