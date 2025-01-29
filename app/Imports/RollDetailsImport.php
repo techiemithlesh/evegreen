@@ -2,7 +2,9 @@
 
 namespace App\Imports;
 
+use App\Models\LoopStock;
 use App\Models\LoopTransit;
+use App\Models\RollColorMaster;
 use App\Models\RollDetail;
 use App\Models\RollQualityMaster;
 use App\Models\VendorDetailMaster;
@@ -27,12 +29,20 @@ class RollDetailsImport implements ToCollection,WithHeadingRow
         $_M_RollDetail = new RollDetail();
         $_M_VendorDetail = new VendorDetailMaster();
         $_M_RollQualityMaster = new RollQualityMaster();
+        
+        $_M_RollColor = new RollColorMaster();        
+        $_M_LoopStock = new LoopStock();
         $file = request()->file('csvFile'); // Assuming the file input name is 'file'
         foreach ($rows as $row) {
             if(strtolower($file->getClientOriginalExtension())=="xlsx")
             {
                 $row["purchase_date"] =  is_int($row["purchase_date"])? getDateColumnAttribute($row['purchase_date']) : $row['purchase_date'];
             }
+            $color = $_M_RollColor->where(DB::raw("UPPER(color)"),strtoupper($row["roll_color"]))->first()->color??"";
+            if($row["roll_size"]>2){
+                $color = $_M_LoopStock->where(DB::raw("UPPER(loop_color)"),strtoupper($row["roll_color"]))->first()->loop_color??"";
+            }
+            $row["roll_color"] = $color;
             $vendor = $_M_VendorDetail->where(DB::raw("upper(vendor_name)"),trim(strtoupper($row["vendor_name"])))->first();
             $quality = $_M_RollQualityMaster->where("vendor_id",$vendor->id)->where(DB::raw("upper(quality)"),trim(strtoupper($row["quality"])))->first();
             $row["vender_id"] = $vendor->id;

@@ -558,7 +558,14 @@ class RollController extends Controller
                     $rowData["purchase_date"] = is_int($rowData["purchase_date"])? getDateColumnAttribute($rowData['purchase_date']) : $rowData['purchase_date'];
                 }
                 $validator = Validator::make($rowData, [
-                    'vendor_name' => 'required|exists:'.$this->_M_VendorDetail->getTable().",vendor_name",
+                    'vendor_name' => [
+                        "required",
+                        function($attribute, $value, $fail)use ($rowData,$index ){
+                            if(!$this->_M_VendorDetail->where(DB::raw("UPPER(vendor_name)"),strtoupper($value))->first()){
+                                $fail('The '.$attribute.' is invalid.');
+                            }
+                        },
+                    ],
                     "quality"=>[
                         "required",
                         function ($attribute, $value, $fail)use ($rowData,$index )
@@ -573,10 +580,10 @@ class RollController extends Controller
                         },
                     ],
                     'purchase_date' => 'required|date',
-                    'roll_size' => 'required',
+                    'roll_size' => 'required|numeric',
                     'roll_type' => 'nullable|in:NW,BOPP',
                     "hardness" => "nullable",
-                    'roll_gsm' => 'required',
+                    'roll_gsm' => 'required|numeric',
                     'bopp' => [
                         'required_if:roll_type,BOPP',
                         function ($attribute, $value, $fail)use ($rowData,$index )
@@ -591,10 +598,22 @@ class RollController extends Controller
                         },
 
                     ],
-                    'roll_color' => 'required|exists:'.($rowData["roll_size"]>2 ? ($this->_M_RollColor->getTable().",color") : ($this->_M_LoopStock->getTable().",loop_color") ),
+                    'roll_color' => 
+                    [
+                       "required" ,
+                       function($attribute, $value, $fail)use ($rowData,$index ){
+                            $color = $this->_M_RollColor->where(DB::raw("UPPER(color)"),strtoupper($value))->first();
+                            if($rowData["roll_size"]>2){
+                                $color = $this->_M_LoopStock->where(DB::raw("UPPER(loop_color)"),strtoupper($value))->first();
+                            }
+                            if(!$color){
+                                $fail('The '.$attribute.' is invalid.');
+                            }
+                        },
+                    ],
                     'roll_length' => 'required|int',
-                    'net_weight' => 'required',
-                    'gross_weight' => 'required',
+                    'net_weight' => 'required|numeric',
+                    'gross_weight' => 'required|numeric',
                 ]);
 
                 if ($validator->fails()) {
