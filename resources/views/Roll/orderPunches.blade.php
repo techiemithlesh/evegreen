@@ -286,7 +286,7 @@
                             <div class="form-group">
                                 <label class="form-label" for="brokerId">Agent</label>
                                 <div class="col-md-12">
-                                    <select name="brokerId" id="brokerId" class="form-select select22" required> 
+                                    <select name="brokerId" id="brokerId" class="form-select" required> 
                                         <option value="">Select</option>                                     
                                         @foreach($broker as $val)
                                         <option value="{{$val->id}}">{{$val->broker_name}}</option>
@@ -380,7 +380,7 @@
 
         $('#bookingPrintingColor').select2({
             placeholder: "Select tags",
-            allowClear: true,
+            allowClear: false,
             maximumSelectionLength: 4,
             dropdownCssClass: 'form-control',
             // dropdownParent: $('#rollBookingModal'),            
@@ -391,14 +391,14 @@
 
         $("#bookingBagColor").select2({
             placeholder: "Select tags",
-            allowClear: true,
+            allowClear: false,
             maximumSelectionLength: 4,
             dropdownCssClass: 'form-control',            
             width:"100%",
         });
         $("#bagGsm").select2({
             placeholder: "Select tags",
-            allowClear: true,
+            allowClear: false,
             maximumSelectionLength: 4,
             dropdownCssClass: 'form-control',            
             width:"100%",
