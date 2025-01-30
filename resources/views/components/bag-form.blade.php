@@ -119,6 +119,10 @@
                         <label class="control-label" for="rollSizeFind">Formula To Finding Roll size By Bag <span class="text-danger">*</span></label>
                         <textarea id="rollSizeFind" name="rollSizeFind" class="form-control" placeholder="" required></textarea>
                     </div>
+                    <div class="mb-3">
+                        <label class="control-label" for="weightOfBagPerPiece">Formula To Finding Roll size By Bag <span class="text-danger">*</span></label>
+                        <textarea id="weightOfBagPerPiece" name="weightOfBagPerPiece" class="form-control" placeholder="" required></textarea>
+                    </div>
 
                     <!-- Submit Button -->
                     <div class="row mt-4">
