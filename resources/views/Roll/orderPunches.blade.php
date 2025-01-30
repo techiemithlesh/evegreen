@@ -82,7 +82,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="row mt-3" id="orderHistory" >
+                    <div class="" id="orderHistory" >
                         <div class="collapsible">                            
                             <button type="button" class="collapsible-btn"><i class="bi bi-eye-fill" class="collapsible-btn"></i></button>
                             <div class="collapsible-content content" id="history" style="overflow: scroll;">                                
@@ -300,7 +300,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="row mt-3"  id="suggestion" style="display:none;">
+                    <div   id="suggestion" style="display:none;">
                         <div class="collapsible"  id="suggestion2"> 
                             <div class="panel-title">Transit</div>                                
                             <button type="button" class="collapsible-btn"><i class="bi bi-eye-fill" class="collapsible-btn"></i></button>                            
@@ -536,6 +536,7 @@
                         // Append the table structure
                         table.append(thead).append(tbody);
                         $("#history").append(table);
+                        table.DataTable();
 
                         // Optionally, style the table
                         $(".history-table").css({
@@ -686,18 +687,18 @@
                     }
 
                     // Create the table
-                    const table = $("<table class='table table-responsive table-fixed'>").addClass("history-table");
+                    const table = $("<table id='tblStockSuggestion' class='table table-responsive table-fixed'>").addClass("history-table");
                     const thead = $("<thead>").append(
                         $("<tr>").append(
                             "<th>Sl</th>",
                             "<th>Vender Name</th>",
                             "<th>Quality</th>",
-                            "<th>Roll No</th>",
+                            "<th>Size</th>",
                             "<th>GSM</th>",
                             "<th>Roll Color</th>",
-                            "<th>Length</th>",
-                            "<th>Size</th>",
+                            "<th>Roll No</th>",
                             "<th>Net Weight</th>",
+                            "<th>Length</th>",
                             "<th>roll Type</th>",
                             "<th>Hardness</th>", 
                             "<th>Total Possible Product</th>", 
@@ -716,12 +717,12 @@
                                     `<td>${index+1}</td>`,
                                     `<td>${item.vendor_name}</td>`,
                                     `<td>${item.quality}</td>`,
-                                    `<td>${item.roll_no}</td>`,
+                                    `<td>${item.size || "N/A"}</td>`,
                                     `<td>${item.gsm}</td>`,
                                     `<td>${item.roll_color || "N/A"}</td>`,
-                                    `<td>${item.length || "N/A"}</td>`,
-                                    `<td>${item.size || "N/A"}</td>`,
+                                    `<td>${item.roll_no}</td>`,
                                     `<td>${item.net_weight || "N/A"}</td>`,
+                                    `<td>${item.length || "N/A"}</td>`,
                                     `<td>${item.roll_type || "N/A"}</td>`,
                                     `<td>${item.hardness || "N/A"}</td>`,
                                     `<td>${item?.unit || "N/A"}</td>`, 
@@ -741,7 +742,8 @@
                     // Append the table structure
                     table.append(thead).append(tbody);
                     $("#suggestionRoll").append(table);
-
+                    if(response.data.roll.length > 0)
+                    addFilter('tblStockSuggestion',[0,($('#tblStockSuggestion thead tr:nth-child(1) th').length - 1)]);
                     // Optionally, style the table
                     $(".history-table").css({
                         width: "100%",
@@ -777,22 +779,22 @@
                     }
 
                     // Create the table
-                    const table = $("<table class='table table-responsive table-fixed'>").addClass("history-table");
+                    const table = $("<table id='tblTransitSuggestion' class='table table-responsive table-fixed'>").addClass("history-table");
                     const thead = $("<thead>").append(
                         $("<tr>").append(
                             "<th>Sl</th>",
                             "<th>Vender Name</th>",
                             "<th>Quality</th>",
-                            "<th>Roll No</th>",
+                            "<th>Size</th>",
                             "<th>GSM</th>",
                             "<th>Roll Color</th>",
-                            "<th>Length</th>",
-                            "<th>Size</th>",
+                            "<th>Roll No</th>",
                             "<th>Net Weight</th>",
+                            "<th>Length</th>",
                             "<th>roll Type</th>",
-                            "<th>Hardness</th>",
-                            "<th>Total Possible Product</th>",                               
-                            "<th>Book For</th>",                          
+                            "<th>Hardness</th>", 
+                            "<th>Total Possible Product</th>", 
+                            "<th>Book For</th>",                            
                             "<th>Add To Book</th>",
                         )
                     );
@@ -807,15 +809,15 @@
                                     `<td>${index+1}</td>`,
                                     `<td>${item.vendor_name}</td>`,
                                     `<td>${item.quality}</td>`,
-                                    `<td>${item.roll_no}</td>`,
+                                    `<td>${item.size || "N/A"}</td>`,
                                     `<td>${item.gsm}</td>`,
                                     `<td>${item.roll_color || "N/A"}</td>`,
-                                    `<td>${item.length || "N/A"}</td>`,
-                                    `<td>${item.size || "N/A"}</td>`,
+                                    `<td>${item.roll_no}</td>`,
                                     `<td>${item.net_weight || "N/A"}</td>`,
+                                    `<td>${item.length || "N/A"}</td>`,
                                     `<td>${item.roll_type || "N/A"}</td>`,
-                                    `<td>${item.hardness || "N/A"}</td>`,                                
-                                    `<td>${item.unit || "N/A"}</td>`,
+                                    `<td>${item.hardness || "N/A"}</td>`,
+                                    `<td>${item?.unit || "N/A"}</td>`, 
                                     `<td>${item?.client_name || ""}</td>`,
                                     `<td><button type="button" data-item='${JSON.stringify(item)}' id="tl${index}" onclick="addToBook('tl${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
                                 )
@@ -833,7 +835,8 @@
                     // Append the table structure
                     table.append(thead).append(tbody);
                     $("#suggestionRollTransit").append(table);
-
+                    if(response.data.rollTransit.length > 0)
+                    addFilter('tblTransitSuggestion',[0,($('#tblTransitSuggestion thead tr:nth-child(1) th').length - 1)]);
                     // Optionally, style the table
                     $(".history-table").css({
                         width: "100%",

@@ -170,7 +170,7 @@ function addFilter(tableName,indexNo=[]){
       // Initialize Select2 for the dropdown
       select.select2({
           placeholder: 'Select one or more values',
-          allowClear: true,
+          allowClear: false,
           width: '100%'
       }).on('select2:open', function () {
             // Apply min-width styling dynamically when dropdown opens

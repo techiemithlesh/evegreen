@@ -400,7 +400,7 @@ a.sidebar-link:hover {
     border-bottom:2px solid #3a3838;
 }
 .content{
-    max-height: 300px;
+    max-height: 600px;
 }
 .movable .content {
     margin-top: 10px;
@@ -426,7 +426,7 @@ a.sidebar-link:hover {
 }
 
 .table-fixed {
-    font-size: x-small !important;
+    font-size: small !important;
 }
 
 .table-fixed td, .table-fixed th { /* Corrected the selector */
