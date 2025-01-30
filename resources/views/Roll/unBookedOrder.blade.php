@@ -33,6 +33,7 @@
                         <th>Order Qty</th>
                         <th>Booked Qty</th>
                         <th>Balance Qty</th>
+                        <th>Balance Qty In Kg</th>
                         <th>Bag Unit</th>
                         <th>Gsm</th>
                         <th>Grade</th>
@@ -103,6 +104,7 @@
                 { data: "total_units", name: "total_units" },
                 { data: "booked_units", name: "booked_units" },
                 { data: "balance_units", name: "balance_units" },
+                { data: "balance_units_in_kg", name: "balance_units_in_kg",render: function(item){ return Object.entries(item).map(([key, value]) => `${value?.key}=>${value?.val}`).join(", ")} },
                 { data: "units", name: "units" },
                 { data: "bag_gsm", name: "bag_gsm" },
                 { data: "grade", name: "grade" },

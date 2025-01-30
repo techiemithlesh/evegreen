@@ -2674,6 +2674,34 @@ class RollController extends Controller
                 ->addColumn("balance_units",function($val){
                     return round($val->total_units -( $val->booked_units + $val->disbursed_units));
                 })
+                ->addColumn("balance_units_in_kg",function($val){
+                    $balance = round($val->total_units -( $val->booked_units + $val->disbursed_units));
+                    $bag = $val->getBagType();
+                    $formula = $bag->weight_of_bag_per_piece??"";
+                    $size = $bag->roll_size_find;
+                    $newRequest = new Request();
+                    $newRequest->merge([
+                        "formula"=>$formula,
+                        "bagL" =>$val->bag_l,
+                        "size" =>" ( ".$size." ) ",
+                        "bagL"=>$val->bag_l,                        
+                        "bagW"=>$val->bag_w,
+                        "bagG"=>$val->bag_g,
+                    ]);                    
+                    $kg=[];
+                    $gsmArr = json_decode($val->bag_gsm,true);
+                    if($gsmArr && is_array($gsmArr) && $val->units=="Piece"){
+                        
+                        foreach($gsmArr as $gsm){
+                            $newRequest->merge([
+                                "gsm"=>$gsm
+                            ]);
+                            $result = $this->calculatePossibleProduction($newRequest);
+                            $kg[] = ["key"=>$gsm,"val"=> roundFigure(($result["result"] * $balance)/1000)];
+                        }
+                    }
+                    return $kg;
+                })
                 ->addColumn('created_at', function ($val) {                    
                     return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    
                 })
