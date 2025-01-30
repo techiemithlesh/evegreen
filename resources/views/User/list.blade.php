@@ -148,7 +148,16 @@
     }
 
     function resetModelForm(){
-        $("#id").val("");
+        $("#id").val("");       
+        $("#userForm").get(0).reset();
+        document.querySelectorAll("#userForm input, #userForm select, #userForm textarea").forEach(field => {
+            if (field.type === "checkbox" || field.type === "radio") {
+                field.checked = false;
+            } else {
+                field.value = "";
+            }
+        });
+
     }
 
 </script>

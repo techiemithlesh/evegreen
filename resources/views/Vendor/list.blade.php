@@ -14,7 +14,7 @@
         <div class="panel-heading">
             <h5 class="panel-title">Vendor List</h5>
             <div class="panel-control">
-                <button type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#vendorModal">
+                <button type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#vendorModal" onclick="resetModelForm('vendorForm')">
                     Add <ion-icon name="add-circle-outline"></ion-icon>
                 </button>
             </div>
@@ -187,6 +187,10 @@
                 $("#loadingDiv").hide();
             }
         });
+    }
+    function resetModelForm(){
+        $("#id").val("");
+        $("#vendorForm").get(0).reset();
     }
 </script>
 
