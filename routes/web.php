@@ -9,6 +9,7 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OtherRegister;
 use App\Http\Controllers\PackingController;
 use App\Http\Controllers\RollController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SectorController;
 use App\Http\Controllers\TransporterController;
 use App\Http\Controllers\UserController;
@@ -209,6 +210,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post("roll/search/printing","rollSearchPrinting")->name("roll.search.printing");
         Route::post("roll/search/cutting","rollSearchCutting")->name("roll.search.cutting");
         Route::post("roll/update/edit","rollUpdate")->name("roll.update.edit");
+    });
+
+    Route::controller(ScheduleController::class)->group(function(){
+        Route::get("schedule/printing/get","getRollForPrinting")->name("schedule.printing.get");
+        Route::post("schedule/printing/save","savePrintingSchedule")->name("schedule.printing.save");
+        Route::get("schedule/cutting/get","getRollForCutting")->name("schedule.cutting.get");
+        Route::post("schedule/cutting/save","saveCuttingSchedule")->name("schedule.cutting.save");
     });
 
     Route::controller(PackingController::class)->group(function(){

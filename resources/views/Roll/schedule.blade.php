@@ -99,6 +99,54 @@ tr.selected {
         </div>
     </div>
 
+
+    <div class="modal fade" id="setScheduleModal" tabindex="-1" aria-labelledby="setScheduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">                
+                <table id="setSchedule" class="table table-striped table-bordered move table-fixed">
+                    <thead>
+                        <tr>
+                            <th>Purchase Date</th>
+                            <th>Vendor Name</th>
+                            <th>Hardness</th>
+                            <th>Roll Type</th>
+                            <th>Roll Size</th>
+                            <th>GSM</th>
+                            <th>Roll Color</th>
+                            <th>Length</th>
+                            <th>Roll No</th>
+                            <th>Gross Weight</th>
+                            <th>Net Weight</th>
+                            <th>GSM Variation</th>
+
+                            <th>W</th>
+                            <th>L</th>
+                            <th>G</th>
+                            <th>Bag Type</th>
+                            <th>Unit</th>
+                            <th>Customer</th>
+                            <th>Delivery Date</th>
+                            <th>Printing Color</th>
+                            <th>Loop Color</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submitSchedule">Save</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
     <x-printing-schedule-form />
     <x-printing-update-form />
     <x-cutting-schedule-form />
@@ -198,6 +246,7 @@ tr.selected {
                 td.attr("title", data?.gsm_json);
                 // Apply the custom class to the row
                 $(row).attr('data-id', data.id);
+                $(row).attr('data-item', JSON.stringify(data));
                 if (data.row_color) {
                     $(row).addClass(data.row_color);
                     if(data.row_color=="tr-client"){
@@ -601,7 +650,8 @@ tr.selected {
                     order.push({
                         id: $(element).data('id'),
                         position: index + 1,
-                        roll_no: $(element).find('td:eq(9)').text() // Adjust index for `roll_no`
+                        roll_no: $(element).find('td:eq(9)').text(), // Adjust index for `roll_no`
+                        rowData : $(element).data('item'),
                     });
                 }
             });
@@ -613,7 +663,44 @@ tr.selected {
             modelInfo("Pleas select a date","info");
             return;
         }
-
+        console.log("orderSelected:",order);
+        
+        const table = $("#setSchedule");
+        const data = "";
+        const tbody = $("#setSchedule tbody");
+        $("#postsTable tbody tr").each(function(index, element) {
+                let checkbox = $(element).find('input.row-select');
+                if (checkbox.is(':checked')) {
+                    item = $(element).data('item');
+                    tbody.append(                               
+                    $("<tr>").append(
+                        `<td>${item.purchase_date}</td>`,
+                        `<td>${item.vendor_name}</td>`,
+                        `<td>${item.hardness || "N/A"}</td>`,
+                        `<td>${item.roll_type}</td>`,
+                        `<td>${item.size || "N/A"}</td>`,
+                        `<td>${item.gsm}</td>`,
+                        `<td>${item.roll_color || "N/A"}</td>`,
+                        `<td>${item.length || "N/A"}</td>`,
+                        `<td>${item.roll_no || "N/A"}</td>`,
+                        `<td>${item.gross_weight || "N/A"}</td>`,
+                        `<td>${item?.net_weight || "N/A"}</td>`, 
+                        `<td>${item?.gsm_variation || ""}</td>`,  
+                        `<td>${item?.w || ""}</td>`,
+                        `<td>${item?.l || ""}</td>`,
+                        `<td>${item?.g || ""}</td>`,
+                        `<td>${item?.bag_type || ""}</td>`,
+                        `<td>${item?.bag_unit || ""}</td>`,
+                        `<td>${item?.client_name || ""}</td>`,
+                        `<td>${item?.estimate_delivery_date || ""}</td>`,
+                        `<td>${item?.print_color || ""}</td>`,
+                        `<td>${item?.loop_color || ""}</td>`,  
+                    )
+                );
+                }
+        });
+        $("#setScheduleModal").modal("show");
+        return;
         $.ajax({
             url: "{{route('roll.schedule.set',':flag')}}".replace(':flag', flag),
             type:"post",
