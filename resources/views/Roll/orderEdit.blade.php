@@ -311,32 +311,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="row mt-3" style="text-align:right">
-                        <!-- <div > Balance <span id="balance" style="color: red;"> </span> </div> -->
-                    </div>
-                    <div class="row mt-3">
-                        <table class="table table-bordered  table-responsive " id="orderRoll">
-                            <thead>
-                                <tr>
-                                    <th>Roll No</th>
-                                    <th>GSM</th>
-                                    <th>Roll Color</th>
-                                    <th>Length</th>
-                                    <th>Size</th>
-                                    <th>Net Weight</th>
-                                    <th>roll Type</th>
-                                    <th>Hardness</th>
-                                    <th>Possible Production</th>
-                                    <th>Remove</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                
                 <div class="col-12">
                     <!-- <button type="button" class="btn btn-primary" onclick="showRollSuggestion()">Check</button> -->
                     <button type="submit" class="btn btn-primary" onclick="setHintCollapse();">Edit</button>

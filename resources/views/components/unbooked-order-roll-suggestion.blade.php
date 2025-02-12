@@ -184,6 +184,25 @@
                             
                         </div>
                     </div>
+                    
+                    <div class="row">
+                        <div class="row mt-3">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="altBagColor">Alternate Bag Color</label>
+                                    <input name="altBagColor" id="altBagColor" class="form-control" readonly />                                                                                                                                             
+                                    <span class="error-text" id="altBagColor-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="altBagGsm">Alternate Gsm</label>
+                                    <input name="altBagGsm" id="altBagGsm" class="form-control" readonly />                                                                                                                                            
+                                    <span class="error-text" id="altBagGsm-error"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="row mt-3"  id="suggestion" style="display:none;">
                             <div class="collapsible"  id="suggestion2"> 

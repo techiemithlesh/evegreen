@@ -45,6 +45,8 @@ class OrderPunchDetail extends Model
         "user_id",
         "disbursed_by",
         "deceived_by",
+        "alt_bag_color",
+        "alt_bag_gsm"
     ];
 
     public function store($request){        

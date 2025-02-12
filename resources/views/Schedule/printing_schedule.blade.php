@@ -115,6 +115,7 @@ tr.selected {
 </main>
 <script>
     let selectAll = false;
+    let checkedTr = [];
     $(document).ready(function() {        
         const table = $('#postsTable').DataTable({
             processing: true,
@@ -148,7 +149,14 @@ tr.selected {
             columns: [
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false ,
                     render: function(data, type, row, meta) {
-                            return `${meta.row + 1} <input type="checkbox" name="checkbox[]" class="row-select" ${row?.sl ? 'checked':''}>`;
+                        const rowDataEncoded = base64Encode(JSON.stringify(row));
+                    
+                        if (!checkedTr.find(item => item.id === row.id) && row?.sl) {
+                            checkedTr.push({ id: row.id, data: row });
+                        }
+
+
+                            return `${meta.row + 1} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' onclick='updateCheckTr(event)' class="row-select" ${row?.sl ? 'checked':''}>`;
                         }
                 },
                 { data: "purchase_date", name: "purchase_date" },
@@ -275,18 +283,41 @@ tr.selected {
 
     });
 
-    function selectAllCheck(){
-        if(selectAll)
-        {
-            $('input[name="checkbox[]"]').prop("checked",false);             
-            selectAll = false;
-        }
-        else
-        {
-            $('input[name="checkbox[]"]').prop("checked",true);
-            selectAll = true;
+
+    function updateCheckTr(event) {
+        const checkbox = event.target;
+        const rowDataEncoded = checkbox.getAttribute('data-row');
+
+        try {
+            const rowDataDecoded = base64Decode(rowDataEncoded);
+            const row = JSON.parse(rowDataDecoded); // Parse the decoded string into a JSON object
+            const isChecked = checkbox.checked;
+
+            console.log(`Checkbox for row ID ${row.id} is ${isChecked ? "checked" : "unchecked"}`);
+
+            if (isChecked) {
+                if (!checkedTr.find(item => item.id === row.id)) {
+                    checkedTr.push({ id: row.id, data: row });
+                }
+            } else {
+                checkedTr = checkedTr.filter(item => item.id !== row.id);
+            }
+        } catch (error) {
+            console.error("Error parsing row data:", error);
         }
     }
+
+
+
+
+
+    function selectAllCheck() {
+        $('input[name="checkbox[]"]').each(function () {
+            $(this).prop("checked", selectAll).click();  // Set the checkbox state and trigger change event
+        });
+        selectAll = !selectAll;  // Toggle the selectAll flag
+    }
+
 
     $(function() {        
         $("#setSchedule tbody").sortable({
@@ -320,16 +351,13 @@ tr.selected {
     function saveTheOrder(){
         let scheduleDate = $("#selectedDate").val();
         let order = [];
-        $("#postsTable tbody tr").each(function(index, element) {
-            let checkbox = $(element).find('input.row-select');
-            if (checkbox.is(':checked')) {
-                order.push({
-                    id: $(element).data('id'),
-                    position: index + 1,
-                    roll_no: $(element).find('td:eq(9)').text(), // Adjust index for `roll_no`
-                    rowData : $(element).data('item'),
-                });
-            }
+        checkedTr.forEach(function (item, index) {
+            order.push({
+                id: item?.id,
+                position: index + 1,
+                roll_no: item?.roll_no || "N/A",
+                rowData: item,
+            });
         });
         if(order.length === 0){
             modelInfo("Pleas select attlist on roll","info");
@@ -345,10 +373,8 @@ tr.selected {
         const data = "";
         const tbody = $("#setSchedule tbody");
         tbody.empty();
-        $("#postsTable tbody tr").each(function(index, element) {
-            let checkbox = $(element).find('input.row-select');
-            if (checkbox.is(':checked')) {
-                item = $(element).data('item');
+        order.forEach(function (item, index) {
+            item = item?.rowData?.data;
                 tbody.append(                              
                     $("<tr>")
                     .attr('data-id', item.id)
@@ -376,8 +402,7 @@ tr.selected {
                         `<td>${item?.loop_color || ""}</td>`,  
                     )
                 );
-            }
-        });        
+        });
         setOrderRollDivShow();
     }
 

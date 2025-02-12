@@ -36,6 +36,7 @@ use App\Models\User;
 use App\Models\VendorDetail;
 use App\Models\VendorDetailMaster;
 use App\Traits\Formula;
+use App\Traits\Rolls;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -55,6 +56,7 @@ use Yajra\DataTables\Facades\DataTables;
 class RollController extends Controller
 {
     use Formula;
+    use Rolls;
 
     private $_M_RollDetail;
     private $_M_VendorDetail;
@@ -1748,7 +1750,143 @@ class RollController extends Controller
         $rollStockGsm = $this->_M_RollDetail->select('gsm')->distinct()->pluck('gsm');
         $rollTransitGsm = $this->_M_RollTransit->select('gsm')->where("gsm",">",2)->distinct()->pluck('gsm');
         $data["gsm"] = $rollStockGsm->union($rollTransitGsm)->unique()->sort()->values();
+        $data["altRollColor"]=$data["rollColor"];
+        $data["altGsm"]=$data["gsm"];
         return view("Roll/orderPunches",$data);
+    }
+
+    public function alternateOptionsColor(Request $request){
+        try{  
+            if($request->bagQuality=="BOPP"){
+                $request->merge(["bagGsm"=>array_sum(explode("/",$request->bagGsmJson))]);
+            }         
+
+            $roll= $this->getRollStockORM();
+                
+            $transit = $this->getRollTransitORM();
+            if($request->bagQuality){
+                $roll->where("roll_details.roll_type",$request->bagQuality);
+                $transit->where("roll_transits.roll_type",$request->bagQuality);
+            }
+            if($request->gradeId){
+                $quality = $this->_M_RollQualityMaster->where("grade_id",$request->gradeId)->get()->pluck("id");
+                $roll->whereIn("roll_details.quality_id",$quality);
+                $transit->whereIn("roll_transits.quality_id",$quality);
+            }
+            if($request->bookingBagColor){
+                $bag_color = $request->bookingBagColor;
+                if(!is_array($request->bookingBagColor))
+                {
+                    $bag_color=[$request->bookingBagColor];
+                }
+                $roll->whereNotIn("roll_details.roll_color",$bag_color);
+                $transit->whereNotIn("roll_transits.roll_color",$bag_color);
+            }
+            if($request->bagGsm){
+                $bagGsm = $request->bagGsm;
+                if(!is_array($request->bagGsm))
+                {
+                    $bagGsm=[$request->bagGsm];
+                }
+                $bagGsm = array_map(function($val){
+                    return (int) $val;
+                },$bagGsm);
+                $roll->whereNotIn("roll_details.gsm",$bagGsm);
+                $transit->whereNotIn("roll_transits.gsm",$bagGsm);
+            }
+            
+            $bag = $this->_M_BagType->find($request->bookingBagTypeId);
+            if($bag){
+                $newRequest = new Request();
+                $newRequest->merge([
+                    "formula"=>$bag->roll_size_find,
+                    "bookingBagUnits"=>"M", 
+                    "bagL"=> $request->l,
+                    "bagW"=> $request->w,
+                    "bagG"=> $request->g,
+                ]);
+                $result = $this->calculatePossibleProduction($newRequest);
+                $fromSize = (int)($result["result"]??0);
+                $uptoSize = $fromSize+3;
+                $roll->whereBetween("roll_details.size",[$fromSize,$uptoSize]);
+                $transit->whereBetween("roll_transits.size",[$fromSize,$uptoSize]);
+            }
+            $rolls = collect($roll->get())->union($transit->get());
+            $data["altBagColor"] = collect($rolls->pluck("roll_color")->unique())->sort()->values();
+            // $data["altGsm"] = collect($rolls->pluck("gsm")->unique())->sort()->values();
+            return responseMsgs(true,"",$data);
+
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function alternateOptionsGsm(Request $request){
+        try{  
+            if($request->bagQuality=="BOPP"){
+                $request->merge(["bagGsm"=>array_sum(explode("/",$request->bagGsmJson))]);
+            }         
+
+            $roll= $this->getRollStockORM();
+                
+            $transit = $this->getRollTransitORM();
+            if($request->bagQuality){
+                $roll->where("roll_details.roll_type",$request->bagQuality);
+                $transit->where("roll_transits.roll_type",$request->bagQuality);
+            }
+            if($request->gradeId){
+                $quality = $this->_M_RollQualityMaster->where("grade_id",$request->gradeId)->get()->pluck("id");
+                $roll->whereIn("roll_details.quality_id",$quality);
+                $transit->whereIn("roll_transits.quality_id",$quality);
+            }
+            if($request->bookingBagColor){
+                $bag_color = $request->bookingBagColor;
+                if(!is_array($request->bookingBagColor))
+                {
+                    $bag_color=[$request->bookingBagColor];
+                }
+                if($request->altBagColor){
+                    $bag_color = array_merge($bag_color,$request->altBagColor);
+                }
+                $roll->whereIn("roll_details.roll_color",$bag_color);
+                $transit->whereIn("roll_transits.roll_color",$bag_color);
+            }
+            if($request->bagGsm){
+                $bagGsm = $request->bagGsm;
+                if(!is_array($request->bagGsm))
+                {
+                    $bagGsm=[$request->bagGsm];
+                }
+                $bagGsm = array_map(function($val){
+                    return (int) $val;
+                },$bagGsm);
+                $roll->whereNotIn("roll_details.gsm",$bagGsm);
+                $transit->whereNotIn("roll_transits.gsm",$bagGsm);
+            }
+            
+            $bag = $this->_M_BagType->find($request->bookingBagTypeId);
+            if($bag){
+                $newRequest = new Request();
+                $newRequest->merge([
+                    "formula"=>$bag->roll_size_find,
+                    "bookingBagUnits"=>"M", 
+                    "bagL"=> $request->l,
+                    "bagW"=> $request->w,
+                    "bagG"=> $request->g,
+                ]);
+                $result = $this->calculatePossibleProduction($newRequest);
+                $fromSize = (int)($result["result"]??0);
+                $uptoSize = $fromSize+3;
+                $roll->whereBetween("roll_details.size",[$fromSize,$uptoSize]);
+                $transit->whereBetween("roll_transits.size",[$fromSize,$uptoSize]);
+            }
+            $rolls = collect($roll->get())->union($transit->get());
+            $data["altGsm"] = collect($rolls->pluck("gsm")->unique())->sort()->values();
+            return responseMsgs(true,"",$data);
+
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
     }
 
     public function oldOrderOfClient(Request $request){
@@ -1836,6 +1974,9 @@ class RollController extends Controller
                 {
                     $bagGsm=[$request->bagGsm];
                 }
+                if($request->altBagGsm){
+                    $bagGsm = array_merge($bagGsm,$request->altBagGsm);
+                }
                 $bagGsm = array_map(function($val){
                     return (int) $val;
                 },$bagGsm);
@@ -1847,6 +1988,9 @@ class RollController extends Controller
                 if(!is_array($request->bookingBagColor))
                 {
                     $bag_color=[$request->bookingBagColor];
+                }
+                if($request->altBagColor){
+                    $bag_color = array_merge($bag_color,$request->altBagColor);
                 }
                 $roll->whereIn("roll_details.roll_color",$bag_color);
                 $transit->whereIn("roll_transits.roll_color",$bag_color);
@@ -2663,6 +2807,12 @@ class RollController extends Controller
                 ->addColumn("bag_gsm",function($val){
                     return collect(json_decode($val->bag_gsm,true))->implode(", ") ;
                 })
+                ->addColumn("alt_bag_color",function($val){
+                    return collect(json_decode($val->alt_bag_color,true))->implode(", ") ;
+                })
+                ->addColumn("alt_bag_gsm",function($val){
+                    return collect(json_decode($val->alt_bag_gsm,true))->implode(", ") ;
+                })
                 
                 ->addColumn("total_units",function($val){
                     return round($val->total_units) ;
@@ -2753,6 +2903,8 @@ class RollController extends Controller
                 "bookingBagTypeId"=>$order->bag_type_id,
                 "totalUnits"=> $order->total_units -  $order->disbursed_units, //$order->booked_units -
                 "bookingBagUnits"=>$order->units,
+                "altBagGsm"=> collect(json_decode($order->alt_bag_gsm,true))->toArray(),
+                "altBagColor"=>collect(json_decode($order->alt_bag_color,true))->toArray(),
 
                 "l"=>$order->bag_l,
                 "w"=>$order->bag_w,
@@ -2801,6 +2953,8 @@ class RollController extends Controller
                 "bookingBagTypeId"=>$order->bag_type_id,
                 "totalUnits"=> $order->total_units - $order->booked_units - $order->disbursed_units,
                 "bookingBagUnits"=>$order->units,
+                "altBagGsm"=> collect(json_decode($order->alt_bag_gsm,true))->toArray(),
+                "altBagColor"=>collect(json_decode($order->alt_bag_color,true))->toArray(),
 
                 "l"=>$order->bag_l,
                 "w"=>$order->bag_w,

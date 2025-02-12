@@ -83,6 +83,12 @@
             dropdownCssClass: 'form-control',
             width: "100%"     
         }); 
+        
+        $('.select22').select2({
+            dropdownParent: $('#rollBookingModal'),
+            dropdownCssClass: 'form-control',
+            width: "100%"
+        }); 
     }
 
     function showHideLoop(){
@@ -158,6 +164,24 @@
         } catch (error) {
             console.error("Error parsing printing_color:", error);
             $("#bagGsm").val([]).trigger("change");; // Clear in case of error
+        }
+
+        try {
+            // Parse the printing_color string to an array
+            const altBagColor = JSON.parse(item?.alt_bag_color) || [];
+            $("#altBagColor").val(altBagColor).trigger("change"); // Set the selected options
+        } catch (error) {
+            console.error("Error parsing printing_color:", error);
+            $("#altBagColor").val([]).trigger("change");; // Clear in case of error
+        }
+
+        try {
+            // Parse the printing_color string to an array
+            const altBagGsm = JSON.parse(item?.alt_bag_gsm) || [];
+            $("#altBagGsm").val(altBagGsm).trigger("change"); // Set the selected options
+        } catch (error) {
+            console.error("Error parsing printing_color:", error);
+            $("#altBagGsm").val([]).trigger("change");; // Clear in case of error
         }
 
         try {

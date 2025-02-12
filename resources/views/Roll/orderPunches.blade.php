@@ -95,7 +95,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bagQuality">Bag Quality </label>
-                                <select name="bagQuality" id="bagQuality" class="form-select" required onchange="showHidePrintingColorDiv()">
+                                <select name="bagQuality" id="bagQuality" class="form-select" required onchange="showHidePrintingColorDiv();showAlternativeOption()">
                                     <option value="">Select</option>                                    
                                     <option value="NW">NW</option>
                                     <option value="BOPP">BOPP</option>
@@ -106,7 +106,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="gradeId">Roll Grade</label>
-                                <select name="gradeId" id="gradeId" class="form-select" required >
+                                <select name="gradeId" id="gradeId" class="form-select" required onchange="showAlternativeOption()" >
                                     <option value="">Select</option>
                                     @foreach($grade as $val)
                                     <option value="{{$val->id}}">{{$val->grade}}</option>
@@ -165,7 +165,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagTypeId">Bag Type </label>
-                                <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop()">
+                                <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop();showAlternativeOption()">
                                     <option value="">Select</option>
                                     @foreach ($bagType as $val)
                                         <option value="{{ $val->id }}">{{ $val->bag_type }}</option>
@@ -178,7 +178,7 @@
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagColor">Bag Color </label>
                                 <div class="col-md-12">
-                                    <select name="bookingBagColor[]" id="bookingBagColor" class="form-select" multiple="multiple" > 
+                                    <select name="bookingBagColor[]" id="bookingBagColor" class="form-select" multiple="multiple" onchange="showAlternativeOption()" > 
                                         <option value="">All</option>                                     
                                         @foreach($rollColor as $val)
                                         <option data-color="{{$val->color}}" value="{{$val->color}}">{{$val->color}}</option>
@@ -214,7 +214,7 @@
                             <div class="form-group" id='singleGsm'>
                                 <label class="form-label" for="bagGsm">GSM</label>
                                 <!-- <input name="bagGsm" id="bagGsm" class="form-control" required onkeypress="return isNumDot(event);" />  -->
-                                <select name="bagGsm[]" id="bagGsm" class="form-select" multiple="multiple">
+                                <select name="bagGsm[]" id="bagGsm" class="form-select" multiple="multiple" onchange="showAlternativeOption()">
                                     <option value="">All</option>
                                     @foreach($gsm as $val)
                                     <option value="{{$val}}">{{$val}}</option>
@@ -232,14 +232,14 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="w">W</label>
-                                <input name="w" id="w" class="form-control" onkeypress="return isNumDot(event);" required />                                
+                                <input name="w" id="w" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                
                                 <span class="error-text" id="w-error"></span>
                             </div>
                         </div>
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="l">L </label>
-                                <input name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required />                                                                    
+                                <input name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()"/>                                                                    
                                 <span class="error-text" id="l-error"></span>
                             </div>
                         </div>
@@ -262,7 +262,7 @@
                         <div class="col-sm-4" id="gussetDiv">
                             <div class="form-group">
                                 <label class="form-label" for="g">G </label>
-                                <input name="g" id="g" class="form-control" onkeypress="return isNumDot(event);" required />                                                                    
+                                <input name="g" id="g" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                                                    
                                 <span class="error-text" id="g-error"></span>
                             </div>
                         </div>
@@ -297,6 +297,38 @@
                             </div>
                         </div>
                         
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="row mt-3">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="form-label" for="altBagColor">Alternate Bag Color</label>
+                                <div class="col-md-12">
+                                    <select name="altBagColor[]" id="altBagColor" class="form-select select22" multiple="multiple" onchange="showAlternativeOptionGsm()"> 
+                                        <option value="">Select</option> 
+                                        @foreach($altRollColor as $val)
+                                        <option value="{{$val->color}}">{{$val->color}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>                                                                                                          
+                                <span class="error-text" id="altBagColor-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="form-label" for="altBagGsm">Alternate Gsm</label>
+                                <div class="col-md-12">
+                                    <select name="altBagGsm[]" id="altBagGsm" class="form-select select22" multiple="multiple" > 
+                                        <option value="">Select</option>                                        
+                                        @foreach($altGsm as $val)
+                                        <option value="{{$val}}">{{$val}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>                                                                                                          
+                                <span class="error-text" id="altBagGsm-error"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -865,6 +897,73 @@
                 $("#loadingDiv").hide();
                 $("#suggestion1").hide();
                 $("#suggestion2").hide();
+            }
+        });
+    }
+
+    function showAlternativeOption(){
+        showAlternativeOptionGsm();
+        selectedAlternateBagColor = $("#altBagColor").val();
+        $.ajax({
+            url:"{{route('roll.order.alternate.options.color')}}",
+            type:"post",
+            data:$("#myForm").serialize(),
+            dataType:"json",
+            beforeSend:function(){
+                $("#altBagColor").empty().append('<option>Loading...</option>');  // Show temporary loading option
+                $("#altBagColor").trigger('change');  // Trigger change for Select2 to refresh
+                // $("#loadingDiv").show();
+            },
+            success:function(response){;
+                $("#loadingDiv").hide();
+                if (response.status) {
+                    $("#altBagColor").empty();
+                    let option =`<option value=''> Select </option>`;
+                    response?.data?.altBagColor.forEach((val)=>{
+                        option+=`<option value='${val}'>${val}</option>`;
+                    });
+                    $("#altBagColor").append(option);
+                    if(selectedAlternateBagColor.length>0){
+                        $("#altBagColor").val(selectedAlternateBagColor);
+                    }
+                }
+            },
+            error:function(errors){
+                console.log(errors);
+                $("#loadingDiv").hide();
+            }
+        });
+    }
+
+    function showAlternativeOptionGsm(){
+        selectedAlternateBagGsm = $("#altBagGsm").val();
+        $.ajax({
+            url:"{{route('roll.order.alternate.options.gsm')}}",
+            type:"post",
+            data:$("#myForm").serialize(),
+            dataType:"json",
+            beforeSend:function(){
+                // $("#loadingDiv").show();
+                $("#altBagGsm").empty().append('<option>Loading...</option>');  // Show temporary loading option
+                $("#altBagGsm").trigger('change');  // Trigger change for Select2 to refresh
+            },
+            success:function(response){;
+                $("#loadingDiv").hide();
+                if (response.status) {
+                    $("#altBagGsm").empty();
+                    let option =`<option value=''> Select </option>`;                    
+                    response?.data?.altGsm.forEach((val)=>{
+                        option+=`<option value='${val}'>${val}</option>`;
+                    });
+                    $("#altBagGsm").append(option);                    
+                    if(selectedAlternateBagGsm.length>0){
+                        $("#altBagGsm").val(selectedAlternateBagGsm);
+                    }
+                }
+            },
+            error:function(errors){
+                console.log(errors);
+                $("#loadingDiv").hide();
             }
         });
     }

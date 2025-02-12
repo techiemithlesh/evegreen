@@ -121,7 +121,7 @@ class ScheduleController extends Controller
             }
             DB::beginTransaction();
             if($request->rolls){
-                $this->_M_PrintingScheduleDetail->where("printing_date",Carbon::now()->format("Y-m-d"))->update(["lock_status"=>true]);
+                $this->_M_PrintingScheduleDetail->where("lock_status",false)->update(["lock_status"=>true]);
                 foreach($request->rolls as $roll){
                     $newRequest = new Request($roll);
                     $newRequest->merge([
@@ -129,6 +129,7 @@ class ScheduleController extends Controller
                         "printing_date"=>Carbon::now()->format("Y-m-d"),
                         "sl"=> $roll["position"],
                     ]);
+                    $this->_M_PrintingScheduleDetail->where("roll_id",$newRequest->roll_id)->where("lock_status",false)->update(["lock_status"=>true]);
                     $this->_M_PrintingScheduleDetail->store($newRequest);
                 }
             }
@@ -236,7 +237,7 @@ class ScheduleController extends Controller
             }
             DB::beginTransaction();
             if($request->rolls){
-                $this->_M_CuttingScheduleDetail->where("cutting_date",Carbon::now()->format("Y-m-d"))->update(["lock_status"=>true]);
+                $this->_M_CuttingScheduleDetail->where("lock_status",false)->update(["lock_status"=>true]);
                 foreach($request->rolls as $roll){
                     $newRequest = new Request($roll);
                     $newRequest->merge([
@@ -244,6 +245,7 @@ class ScheduleController extends Controller
                         "cutting_date"=>Carbon::now()->format("Y-m-d"),
                         "sl"=> $roll["position"],
                     ]);
+                    $this->_M_CuttingScheduleDetail->where("roll_id",$newRequest->roll_id)->where("lock_status",false)->update(["lock_status"=>true]);
                     $this->_M_CuttingScheduleDetail->store($newRequest);
                 }
             }

@@ -162,6 +162,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::controller(RollController::class)->group(function(){
         Route::get("roll/order/punches","orderPunches")->name("order.punches");
+        Route::match(['get','post'],"roll/orders/alternateOptionsColor","alternateOptionsColor")->name("roll.order.alternate.options.color");
+        Route::match(['get','post'],"roll/orders/alternateOptionsGsm","alternateOptionsGsm")->name("roll.order.alternate.options.gsm");
         Route::post("roll/order/punches/save","orderPunchesSave")->name("order.punches.save");        
         Route::match(["get","post"],"roll/order/edit/{orderId}","orderPunchesEdit")->name("order.punches.edit");
         Route::post("roll/client/old/order","oldOrderOfClient")->name("client.old.order");

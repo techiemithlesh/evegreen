@@ -222,6 +222,37 @@
             </div>
 
         </div>
+
+        <div class="row mt-3">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label class="form-label" for="altBagColor">Alternate Bag Color</label>
+                    <div class="col-md-12">
+                        <select name="altBagColor[]" id="altBagColor" class="form-select select22" multiple="multiple" disabled > 
+                            <option value="">Select</option> 
+                            @foreach($altRollColor as $val)
+                            <option value="{{$val->color}}">{{$val->color}}</option>
+                            @endforeach
+                        </select>
+                    </div>                                                                                                          
+                    <span class="error-text" id="altBagColor-error"></span>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label class="form-label" for="altBagGsm">Alternate Gsm</label>
+                    <div class="col-md-12">
+                        <select name="altBagGsm[]" id="altBagGsm" class="form-select select22" disabled multiple="multiple" > 
+                            <option value="">Select</option>                                        
+                            @foreach($altGsm as $val)
+                            <option value="{{$val}}">{{$val}}</option>
+                            @endforeach
+                        </select>
+                    </div>                                                                                                          
+                    <span class="error-text" id="altBagGsm-error"></span>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="col-12">
         <button type="submit" class="btn btn-primary" id="submit" disabled >Submit</button>

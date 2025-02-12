@@ -207,3 +207,11 @@ function addFilter(tableName,indexNo=[]){
   });
 
 }
+
+function base64Encode(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+}
+
+function base64Decode(str) {
+    return decodeURIComponent(escape(atob(str)));
+}

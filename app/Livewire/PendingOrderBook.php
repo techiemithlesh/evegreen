@@ -28,6 +28,8 @@ class PendingOrderBook extends Component
     public $stereo;
     public $rateType;
     public $gsm;
+    public $altRollColor;
+    public $altGsm;
 
     public function mount()
     {
@@ -57,6 +59,9 @@ class PendingOrderBook extends Component
         $rollStockGsm = (new RollDetail())->select('gsm')->distinct()->pluck('gsm');
         $rollTransitGsm = (new RollTransit())->select('gsm')->where("gsm",">",2)->distinct()->pluck('gsm');
         $this->gsm = $rollStockGsm->union($rollTransitGsm)->unique()->sort()->values();
+
+        $this->altRollColor = $this->rollColor;
+        $this->altGsm = $this->gsm;
     }
 
     
