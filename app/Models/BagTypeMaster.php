@@ -18,6 +18,7 @@ class BagTypeMaster extends Model
         "roll_find_as_weight",
         "roll_size_find",
         "weight_of_bag_per_piece",
+        "cylinder_size",
         'lock_status',
     ];
 

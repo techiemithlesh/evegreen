@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BagTypeMaster;
 use App\Models\CuttingScheduleDetail;
 use App\Models\MachineMater;
 use App\Models\PrintingScheduleDetail;
 use App\Models\RollDetail;
+use App\Traits\Formula;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -15,11 +17,13 @@ use Yajra\DataTables\Facades\DataTables;
 
 class ScheduleController extends Controller
 {
+    use Formula;
     //
     protected $_M_RollDetail;
     protected $_M_Machine;
     protected $_M_PrintingScheduleDetail;
     protected $_M_CuttingScheduleDetail;
+    protected $_M_BagTypeMaster;
 
     function __construct()
     {
@@ -27,13 +31,16 @@ class ScheduleController extends Controller
         $this->_M_Machine = new MachineMater();
         $this->_M_PrintingScheduleDetail = new PrintingScheduleDetail();
         $this->_M_CuttingScheduleDetail = new CuttingScheduleDetail();
+        $this->_M_BagTypeMaster = new BagTypeMaster();
     }
     public function getRollForPrinting(Request $request){
         try{
 
-            $flag= $request->flag;            
+            $flag= $request->flag;
+            $machineId = $request->machineId;            
             if($request->ajax())
             {
+                $bags = $this->_M_BagTypeMaster->get();
                 $data = $this->_M_RollDetail->select("roll_details.*","vendor_detail_masters.vendor_name",
                                     "client_detail_masters.client_name",
                                     "printing_schedule_details.sl",
@@ -50,10 +57,37 @@ class ScheduleController extends Controller
                         ->whereNotNull("roll_details.client_detail_id")
                         ->where("roll_details.lock_status",false)
                         ->where("roll_details.is_printed",false)
-                        ->orderBy("printing_schedule_details.sl","ASC")
-                        ->orderBy("roll_details.estimate_delivery_date","ASC")
-                        ->orderBy("roll_details.client_detail_id","ASC");
-                $list = DataTables::of($data)
+                        // ->orderBy("printing_schedule_details.sl","ASC")
+                        ->orderBy("roll_details.estimate_delivery_date","ASC");
+                        // ->orderBy("roll_details.client_detail_id","ASC");
+                if($machineId){
+                    $data->where(function($where)use($machineId){
+                        $where->where("printing_schedule_details.machine_id",$machineId)
+                        ->orWhereNull("printing_schedule_details.id");
+                    });
+                }
+                $data = $data->get()->map(function($val) use($bags){
+                    $bag = $bags->where("id",$val->bag_type_id)->first();
+                    $cylinder = $bag->cylinder_size??"";
+                    $newReq = new Request($val->toArray());
+                    $newReq->merge(["formula"=>$cylinder]);
+                    $result = $this->getCylinderSize($newReq);
+                    $val->cylinder_size = $result["result"]??"";
+                    return $val;
+                });
+                if($machineId==1){  
+                    $data = $data->filter(function($val){
+                        $count = sizeof(json_decode($val->printing_color,true));
+                        return $count<=2;
+                    });
+                }
+                $flattenedData = $data->groupBy("estimate_delivery_date")
+                ->flatMap(function ($groupByDate) {
+                    return $groupByDate->groupBy("cylinder_size")
+                        ->sortBy(fn($group) => $group->count())
+                        ->flatMap(fn($group) => $group);
+                });
+                $list = DataTables::of($flattenedData)
                     ->addIndexColumn()
                     ->addColumn('row_color', function ($val) use($flag) {
                         $color = "";
@@ -101,6 +135,12 @@ class ScheduleController extends Controller
                 return $list;
     
             }
+            if(!in_array($machineId,[1,2])){
+                flashToast("message","This is not Printing Machine");
+                return redirect()->back();
+            }
+            $data["machine"]=$this->_M_Machine->find($machineId);
+            $data["machineId"] = $machineId;
             $data["flag"]=$flag;
             return view("Schedule/printing_schedule",$data);
         }catch(Exception $e){
@@ -119,17 +159,19 @@ class ScheduleController extends Controller
             if($validate->fails()){
                 return validationError($validate);
             }
+            $machineId = $request->machineId;   
             DB::beginTransaction();
             if($request->rolls){
-                $this->_M_PrintingScheduleDetail->where("lock_status",false)->update(["lock_status"=>true]);
+                $this->_M_PrintingScheduleDetail->where("lock_status",false)->where("machine_id",$machineId)->update(["lock_status"=>true]);
                 foreach($request->rolls as $roll){
                     $newRequest = new Request($roll);
                     $newRequest->merge([
+                        "machine_id"=>$machineId,
                         "roll_id"=>$roll["id"],
                         "printing_date"=>Carbon::now()->format("Y-m-d"),
                         "sl"=> $roll["position"],
                     ]);
-                    $this->_M_PrintingScheduleDetail->where("roll_id",$newRequest->roll_id)->where("lock_status",false)->update(["lock_status"=>true]);
+                    $this->_M_PrintingScheduleDetail->where("roll_id",$newRequest->roll_id)->where("machine_id",$machineId)->where("lock_status",false)->update(["lock_status"=>true]);
                     $this->_M_PrintingScheduleDetail->store($newRequest);
                 }
             }
@@ -143,7 +185,8 @@ class ScheduleController extends Controller
     public function getRollForCutting(Request $request){
         try{
 
-            $flag= $request->flag;            
+            $flag= $request->flag;    
+            $machineId = $request->machineId;           
             if($request->ajax())
             {
                 $data = $this->_M_RollDetail->select("roll_details.*","vendor_detail_masters.vendor_name",
@@ -165,11 +208,27 @@ class ScheduleController extends Controller
                         })
                         ->whereNotNull("roll_details.client_detail_id")
                         ->where("roll_details.lock_status",false)
-                        ->orderBy("cutting_schedule_details.sl","ASC")
-                        ->orderBy("roll_details.estimate_delivery_date","ASC")
-                        ->orderBy("roll_details.client_detail_id","ASC");
-                        
-                $list = DataTables::of($data)
+                        // ->orderBy("cutting_schedule_details.sl","ASC")
+                        ->orderBy("roll_details.estimate_delivery_date","ASC");
+                        // ->orderBy("roll_details.client_detail_id","ASC");
+
+                if($machineId){
+                    $data->where(function($where)use($machineId){
+                        $where->where("cutting_schedule_details.machine_id",$machineId)
+                        ->orWhereNull("cutting_schedule_details.id");
+                    });
+                }
+                $flattenedData = $data->get()->groupBy("estimate_delivery_date")
+                    ->flatMap(function ($groupByDate) {
+                        return $groupByDate->groupBy("bag_type_id")
+                            ->sortBy(fn($group) => $group->count())
+                            ->flatMap(function($val){
+                                return $val->groupBy("size")
+                                ->sortBy(fn($val)=>$val->count())
+                                ->flatMap(fn($val) => $val);
+                            });
+                    });
+                $list = DataTables::of($flattenedData)
                     ->addIndexColumn()
                     ->addColumn('row_color', function ($val) use($flag) {
                         $color = "";
@@ -217,6 +276,12 @@ class ScheduleController extends Controller
                 return $list;
     
             }
+            if(!in_array($machineId,[3,4])){
+                flashToast("message","This is not Cutting Machine");
+                return redirect()->back();
+            }
+            $data["machine"]=$this->_M_Machine->find($machineId);
+            $data["machineId"] = $machineId;
             $data["flag"]=$flag;
             return view("Schedule/cutting_schedule",$data);
         }catch(Exception $e){
@@ -235,17 +300,19 @@ class ScheduleController extends Controller
             if($validate->fails()){
                 return validationError($validate);
             }
+            $machineId = $request->machineId;  
             DB::beginTransaction();
             if($request->rolls){
-                $this->_M_CuttingScheduleDetail->where("lock_status",false)->update(["lock_status"=>true]);
+                $this->_M_CuttingScheduleDetail->where("lock_status",false)->where("machine_id",$machineId)->update(["lock_status"=>true]);
                 foreach($request->rolls as $roll){
                     $newRequest = new Request($roll);
                     $newRequest->merge([
+                        "machine_id"=>$machineId,
                         "roll_id"=>$roll["id"],
                         "cutting_date"=>Carbon::now()->format("Y-m-d"),
                         "sl"=> $roll["position"],
                     ]);
-                    $this->_M_CuttingScheduleDetail->where("roll_id",$newRequest->roll_id)->where("lock_status",false)->update(["lock_status"=>true]);
+                    $this->_M_CuttingScheduleDetail->where("roll_id",$newRequest->roll_id)->where("machine_id",$machineId)->where("lock_status",false)->update(["lock_status"=>true]);
                     $this->_M_CuttingScheduleDetail->store($newRequest);
                 }
             }

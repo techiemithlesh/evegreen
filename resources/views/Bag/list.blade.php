@@ -21,7 +21,7 @@
         </div>
     </div>
     <div class="container">
-        <table id="postsTable" class="table table-striped">
+        <table id="postsTable" class="table table-striped table-bordered table-fixed">
             <thead>
                 <tr>
                     <th>#</th>
@@ -31,6 +31,7 @@
                     <th>Finding Roll By Weight</th>
                     <th>Finding Roll size</th>
                     <th>Bag Weight</th>
+                    <th>cylinder size</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -79,6 +80,10 @@
                 {
                     data: "weight_of_bag_per_piece",
                     name: "weight_of_bag_per_piece"
+                },
+                {
+                    data: "cylinder_size",
+                    name: "cylinder_size"
                 },
                 {
                     data: "action",

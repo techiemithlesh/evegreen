@@ -25,6 +25,9 @@ tr.selected {
             <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
                 <ol class="breadcrumb fs-6">
                     <li class="breadcrumb-item fs-6"><a href="#">Schedule</a></li>
+                    @if($machine)
+                    <li class="breadcrumb-item fs-6"><a href="#">{{$machine->name}}</a></li>
+                    @endif
                     <li class="breadcrumb-item active fs-6" aria-current="page">Printing</li>
                 </ol>
             </nav>
@@ -70,6 +73,7 @@ tr.selected {
                         <th>Delivery Date</th>
                         <th>Printing Color</th>
                         <th>Loop Color</th>
+                        <th>Cylinder Size</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,6 +107,7 @@ tr.selected {
                         <th>Delivery Date</th>
                         <th>Printing Color</th>
                         <th>Loop Color</th>
+                        <th>Cylinder Size</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,6 +119,7 @@ tr.selected {
     </div>
 </main>
 <script>
+    let machineId = {{$machineId}};
     let selectAll = false;
     let checkedTr = [];
     $(document).ready(function() {        
@@ -127,7 +133,7 @@ tr.selected {
 
 
             ajax: {
-                url: "{{route('schedule.printing.get')}}", // The route where you're getting data from
+                url: "{{route('schedule.printing.get',':machineId')}}".replace(':machineId', machineId), // The route where you're getting data from
                 data: function(d) {
 
                     // Add custom form data to the AJAX request
@@ -180,6 +186,7 @@ tr.selected {
                 { data : "estimate_delivery_date", name: "estimate_delivery_date" },
                 { data : "print_color", name: "print_color" },
                 { data : "loop_color", name: "loop_color" },
+                { data : "cylinder_size", name: "cylinder_size" },
             ],
             dom: 'lBfrtip', // This enables the buttons
             language: {
@@ -233,7 +240,7 @@ tr.selected {
                 }
             },            
             initComplete: function () {
-                addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1]);
+                addFilter('postsTable',[0]);
             },
 
         });
@@ -399,7 +406,8 @@ tr.selected {
                         `<td>${item?.client_name || ""}</td>`,
                         `<td>${item?.estimate_delivery_date || ""}</td>`,
                         `<td>${item?.print_color || ""}</td>`,
-                        `<td>${item?.loop_color || ""}</td>`,  
+                        `<td>${item?.loop_color || ""}</td>`,
+                        `<td>${item?.cylinder_size||""}</td>`,  
                     )
                 );
         });
@@ -430,7 +438,7 @@ tr.selected {
         });
         if(order.length>0){
             $.ajax({
-                url:"{{route('schedule.printing.save')}}",
+                url:"{{route('schedule.printing.save',':machineId')}}".replace(':machineId', machineId),
                 type:"post",
                 data:{"rolls":order},
                 beforeSend:function(){

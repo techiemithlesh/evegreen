@@ -215,10 +215,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::controller(ScheduleController::class)->group(function(){
-        Route::get("schedule/printing/get","getRollForPrinting")->name("schedule.printing.get");
-        Route::post("schedule/printing/save","savePrintingSchedule")->name("schedule.printing.save");
-        Route::get("schedule/cutting/get","getRollForCutting")->name("schedule.cutting.get");
-        Route::post("schedule/cutting/save","saveCuttingSchedule")->name("schedule.cutting.save");
+        Route::get("schedule/printing/get/{machineId?}","getRollForPrinting")->name("schedule.printing.get");
+        Route::post("schedule/printing/save/{machineId?}","savePrintingSchedule")->name("schedule.printing.save");
+        Route::get("schedule/cutting/get/{machineId?}","getRollForCutting")->name("schedule.cutting.get");
+        Route::post("schedule/cutting/save/{machineId?}","saveCuttingSchedule")->name("schedule.cutting.save");
     });
 
     Route::controller(PackingController::class)->group(function(){
