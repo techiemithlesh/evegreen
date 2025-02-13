@@ -12,6 +12,9 @@ services:
       - .env:/var/www/.env
     networks:
       - app_network
+    depends_on:
+      - db
+      - redis
 
   nginx:
     image: nginx:latest
@@ -41,9 +44,18 @@ services:
     networks:
       - app_network
 
+  redis:
+    image: redis:latest
+    container_name: redis_server
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - app_network
+
 networks:
   app_network:
     driver: bridge
 
 volumes:
-  postgres_data:
+  postgres_data: {} 
