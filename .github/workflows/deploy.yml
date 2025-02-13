@@ -24,7 +24,7 @@ jobs:
         run: |
           docker push techiemithlesh/evegreen-app:latest
 
-      - name: Deploy to Server (Optional)
+      - name: Deploy to Server
         if: success()
         uses: appleboy/ssh-action@master
         with:
@@ -32,8 +32,15 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            echo "Pulling latest Docker image..."
             docker pull techiemithlesh/evegreen-app:latest
+            
+            echo "Stopping existing container (if running)..."
             docker stop evegreen-app || true
             docker rm evegreen-app || true
-            docker run -d --name evegreen-app -p 80:80 techiemithlesh/evegreen-app:latest
-
+            
+            echo "Cleaning up old Docker images..."
+            docker system prune -af --volumes
+            
+            echo "Starting new container..."
+            docker run -d --name evegreen-app --restart=always -p 80:80 techiemithlesh/evegreen-app:latest
