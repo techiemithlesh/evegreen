@@ -447,7 +447,8 @@ tr.selected {
                 success:function(response){
                     $("#loadingDiv").hide();
                     if(response?.status){
-                        exportSchedule();
+                        // exportSchedule();
+                        exportSchedulePdf();
                         modelInfo(response?.message);
                         searchData();
                         reSetOrderRollDivShow();
@@ -480,6 +481,76 @@ tr.selected {
         XLSX.utils.book_append_sheet(wb, ws, "Sheet 1");
         XLSX.writeFile(wb, "PrintingSchedule.xlsx");
 
+    }
+
+    function exportSchedulePdf() {
+        let table = document.getElementById("setSchedule");
+        if (!table) {
+            console.error("Table element not found!");
+            return;
+        }
+
+        // Define the column indexes you want to include in the PDF (0-based index)
+        let columnsToPrint = [1, 2, 3, 4, 5,6,8,10,12,13,14,15,16,17,19,21];
+
+        let body = [];
+
+        // Get table headers for specified columns
+        let headers = [];
+        let headerCells = table.rows[0].cells;
+        columnsToPrint.forEach(index => {
+            headers.push({ text: headerCells[index].innerText.trim(), bold: true, fillColor: '#f3f3f3' });
+        });
+        body.push(headers);
+
+        // Get table rows for specified columns
+        for (let i = 1; i < table.rows.length; i++) {  // Skip header row
+            let row = table.rows[i];
+            let rowData = [];
+            columnsToPrint.forEach(index => {
+                rowData.push(row.cells[index].innerText.trim());
+            });
+            body.push(rowData);
+        }
+
+        // Create PDF document definition
+        let docDefinition = {
+            content: [
+                { text: 'Printing Schedule Report', style: 'header' },
+                { text: `Generated on: ${new Date().toLocaleString()}`, style: 'subheader' },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: Array(columnsToPrint.length).fill('auto'),  // Auto width for each column
+                        body: body
+                    },
+                    layout: 'lightHorizontalLines'
+                }
+            ],
+            styles: {
+                header: {
+                    fontSize: 18,
+                    bold: true,
+                    alignment: 'center',
+                    margin: [0, 0, 0, 10]
+                },
+                subheader: {
+                    fontSize: 12,
+                    italics: true,
+                    alignment: 'right',
+                    margin: [0, 0, 0, 10]
+                }
+            },
+            defaultStyle: {
+                fontSize: 10
+            },
+            pageSize: 'A4',
+            pageOrientation: 'landscape',  // Use 'portrait' if you prefer
+            pageMargins: [20, 20, 20, 20]  // Margins for better spacing
+        };
+
+        // Generate and download the PDF
+        pdfMake.createPdf(docDefinition).download(`PrintingSchedule.pdf`);
     }
 
     

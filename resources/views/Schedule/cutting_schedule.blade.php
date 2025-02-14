@@ -437,7 +437,8 @@ tr.selected {
                 success:function(response){
                     $("#loadingDiv").hide();
                     if(response?.status){
-                        exportSchedule();
+                        // exportSchedule();
+                        exportSchedulePdf();
                         modelInfo(response?.message);
                         searchData();
                         reSetOrderRollDivShow();
@@ -480,7 +481,7 @@ tr.selected {
         }
 
         // Define the column indexes you want to include in the PDF (0-based index)
-        let columnsToPrint = [1, 2, 3, 4, 5, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19,20];
+        let columnsToPrint = [1, 2, 3, 4, 5,6,8,10,12,13,14,15,16,17,19,20];
 
         let body = [];
 
@@ -505,7 +506,7 @@ tr.selected {
         // Create PDF document definition
         let docDefinition = {
             content: [
-                { text: 'Schedule Report', style: 'header' },
+                { text: 'Cutting Schedule Report', style: 'header' },
                 { text: `Generated on: ${new Date().toLocaleString()}`, style: 'subheader' },
                 {
                     table: {
@@ -541,7 +542,6 @@ tr.selected {
         // Generate and download the PDF
         pdfMake.createPdf(docDefinition).download(`CuttingSchedule.pdf`);
     }
-
 
 
 
