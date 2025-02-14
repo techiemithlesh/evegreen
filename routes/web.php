@@ -248,6 +248,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::controller(ImportOldRecords::class)->group(function(){
         Route::match(["get","post"],"import/order","importOrders")->name("import.order");
+        Route::match(["get","post"],"import/order1","importOrders")->name("import.order1");
     });
 
 });
