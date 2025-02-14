@@ -3,12 +3,12 @@ name: Deploy Evergreen App
 on:
   push:
     branches:
-      - main  # Change to 'master' if needed
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -22,7 +22,7 @@ jobs:
           docker push techiemithlesh/evergreen-app:latest
 
       - name: Deploy to Server
-        uses: appleboy/ssh-action@master  # ✅ Corrected Indentation
+        uses: appleboy/ssh-action@master
         if: success()
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -31,20 +31,29 @@ jobs:
           script: |
             echo "Switching to project directory..."
             cd ~/evegreen || { echo "Directory not found!"; exit 1; }
-
+            
+            echo "Setting production port..."
+            export PORT=80
+            
             echo "Checking for docker-compose.yml..."
             ls -l docker-compose.yml || { echo "docker-compose.yml missing!"; exit 1; }
-
+            
             echo "Stopping existing containers..."
             docker-compose down
-
+            
             echo "Cleaning up unused images and volumes..."
             docker system prune -af --volumes
-
+            
             echo "Pulling latest image..."
             docker pull techiemithlesh/evergreen-app:latest
-
+            
             echo "Starting Docker Compose..."
             docker-compose up -d --build
-
+            
+            echo "Clearing Laravel cache..."
+            docker-compose exec -T app php artisan cache:clear
+            docker-compose exec -T app php artisan config:clear
+            docker-compose exec -T app php artisan view:clear
+            docker-compose exec -T app php artisan route:clear
+            
             echo "Deployment complete! Your app is live at http://${{ secrets.SERVER_HOST }}"
