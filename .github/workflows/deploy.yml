@@ -51,7 +51,6 @@ jobs:
             docker-compose exec -T app php artisan config:clear
             docker-compose exec -T app php artisan route:clear
             docker-compose exec -T app php artisan view:clear
-            docker-compose exec -T app php artisan migrate --force
             docker-compose exec -T app php artisan optimize
 
             echo "🎉 Deployment Successful! App is live at http://${{ secrets.SERVER_HOST }}"
