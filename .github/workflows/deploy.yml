@@ -3,7 +3,7 @@ name: Deploy Evergreen App
 on:
   push:
     branches:
-      - main  # Change this if you use a different branch for deployment
+      - main  # Triggers deployment when code is pushed to main branch
 
 jobs:
   deploy:
@@ -18,7 +18,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t techiemithlesh/evergreen-app:latest .
+          docker build --no-cache -t techiemithlesh/evergreen-app:latest .
           docker push techiemithlesh/evergreen-app:latest
 
       - name: Deploy to Server
@@ -29,27 +29,29 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "Switching to project directory..."
-            cd ~/evegreen || { echo "Directory not found!"; exit 1; }
+            echo "🚀 Starting Deployment on Server..."
 
-            echo "Stopping existing containers..."
+            # Move to project directory
+            cd ~/evegreen || { echo "❌ Directory not found!"; exit 1; }
+
+            echo "🛑 Stopping existing containers..."
             docker-compose down
 
-            echo "Cleaning up old images..."
+            echo "🧹 Cleaning up old Docker images..."
             docker system prune -af --volumes
 
-            echo "Pulling latest image..."
+            echo "📥 Pulling the latest image..."
             docker pull techiemithlesh/evergreen-app:latest
 
-            echo "Starting Docker Compose..."
+            echo "🔄 Restarting services..."
             docker-compose up -d --build
 
-            echo "Running Laravel optimizations..."
+            echo "🛠 Running Laravel Optimizations..."
             docker-compose exec -T app php artisan cache:clear
             docker-compose exec -T app php artisan config:clear
-            docker-compose exec -T app php artisan view:clear
             docker-compose exec -T app php artisan route:clear
-            docker-compose exec -T app php artisan optimize
+            docker-compose exec -T app php artisan view:clear
             docker-compose exec -T app php artisan migrate --force
+            docker-compose exec -T app php artisan optimize
 
-            echo "Deployment complete! Your app is live at http://${{ secrets.SERVER_HOST }}"
+            echo "🎉 Deployment Successful! App is live at http://${{ secrets.SERVER_HOST }}"
