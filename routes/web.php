@@ -4,6 +4,7 @@ use App\Http\Controllers\BagController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\Dashboard;
+use App\Http\Controllers\ImportOldRecords;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OtherRegister;
@@ -243,6 +244,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(OtherRegister::class)->group(function(){
         Route::get("register/accept-garbage","acceptGarbage")->name("register.accept.garbage");
         Route::get("register/loop-book-status","loopStockBook")->name("register.loop.book.status");
+    });
+
+    Route::controller(ImportOldRecords::class)->group(function(){
+        Route::match(["get","post"],"import/order","importOrders")->name("import.order");
     });
 
 });
