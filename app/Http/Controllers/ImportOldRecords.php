@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\OrderImport;
 use App\Models\ClientDetailMaster;
 use App\Models\FareDetail;
 use App\Models\GradeMaster;
@@ -61,6 +62,7 @@ class ImportOldRecords extends Controller
                     $rowData["estimate_delivery_date"] = is_int($rowData["estimate_delivery_date"])? getDateColumnAttribute($rowData['estimate_delivery_date']) : $rowData['estimate_delivery_date'];
                 }
                 $validator = Validator::make($rowData, [
+                    "order_no"=>"required",
                     'client_name' => "required",                   
                     'order_date' => 'required|date',
                     'estimate_delivery_date' => 'required|date',
@@ -84,18 +86,34 @@ class ImportOldRecords extends Controller
                 if ($validator->fails()) {
                     $validationErrors[$index] = $validator->errors()->all();
                 }
+                $dataWithHeadings[] = $rowData; 
             }
 
+            $group = collect($dataWithHeadings)->groupBy("order_no")->filter(function($val){
+                return $val->count()>1;
+            });
+            
+            if($group->count()>0){
+                foreach($group as $index=>$val){
+                    $validationErrors[$index] = ["Order no is repeated ".sizeof($val)." time"];
+                }
+            }
             if (!empty($validationErrors)) {
                 return responseMsgs(false,"Validation Error",$validationErrors);
-            }
-
+            }   
+            $clineName = collect($dataWithHeadings)->pluck("client_name")->unique();     
+            
             // Import the CSV file using the RollDetailsImport class
             DB::beginTransaction();
-            Excel::import(new RollDetailsImport, $file);
+            foreach($clineName as $val){
+                if(!$this->_M_ClientDetail->where("client_name",$val)->first()){
+                    $clientRequest = new Request(["client_name"=>$val]);
+                    $this->_M_ClientDetail->store($clientRequest);
+                }
+            }            
+            Excel::import(new OrderImport, $file);
             DB::commit();
             return responseMsgs(true,"data import","");
-            dd($request->all(),$headings);
         }
         return view("import/order");
     }

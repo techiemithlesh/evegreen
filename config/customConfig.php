@@ -20,7 +20,7 @@ return[
                             "roll_length",
                             "net_weight",
                             "gross_weight"
-                        ],
+    ],
 
     "orderImportCsvHeader"=>[
                         "order_no",
@@ -47,5 +47,11 @@ return[
                         "alt_bag_color",
                         "alt_bag_gsm",
                         "is_delivered"      
-                        ],
+    ],
+    "bagTypeIdByShortName"=>[
+        "D"=>1,
+        "B"=>2,
+        "U"=>3,
+        "L"=>4
+    ],
 ];

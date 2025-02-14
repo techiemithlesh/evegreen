@@ -13,7 +13,7 @@
         </div>
         <div class="container">            
             <div class="panel-body">
-                <form id="importForm" method="post" enctype="multipart/form-data">
+                <form id="importForm" enctype="multipart/form-data">
                     @csrf
                     <!-- Hidden field for roll ID -->
 
@@ -75,6 +75,7 @@
                         if (data.status) {
                             document.getElementById("importForm").reset();
                             modelInfo(data.messages);
+                            $("#errorExcelLog").html("");
                             window.location.reload();
                         } else if (!data.status && data?.data) {
                             let errors = data?.data;
