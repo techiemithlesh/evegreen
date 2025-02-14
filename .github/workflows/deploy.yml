@@ -30,7 +30,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "Switching to project directory..."
-            cd ~/evergreen || { echo "Directory not found!"; exit 1; }
+            cd ~/evegreen || { echo "Directory not found!"; exit 1; }
 
             echo "Pulling latest changes..."
             git pull origin main
