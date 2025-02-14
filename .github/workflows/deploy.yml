@@ -1,4 +1,4 @@
-name: Deploy Evergreen App
+name: Deploy Evergreen App On server
 
 on:
   push:
