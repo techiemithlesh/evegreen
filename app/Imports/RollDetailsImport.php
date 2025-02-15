@@ -38,9 +38,9 @@ class RollDetailsImport implements ToCollection,WithHeadingRow
             {
                 $row["purchase_date"] =  is_int($row["purchase_date"])? getDateColumnAttribute($row['purchase_date']) : $row['purchase_date'];
             }
-            $color = $_M_RollColor->where(DB::raw("UPPER(color)"),strtoupper($row["roll_color"]))->first()->color??"";
+            $color = $_M_RollColor->where(DB::raw("UPPER(color)"),strtoupper(trim($row["roll_color"])))->first()->color??"";
             if($row["roll_size"]<=2){
-                $color = $_M_LoopStock->where(DB::raw("UPPER(loop_color)"),strtoupper($row["roll_color"]))->first()->loop_color??"";
+                $color = $_M_LoopStock->where(DB::raw("UPPER(loop_color)"),strtoupper(trim($row["roll_color"])))->first()->loop_color??"";
             }
             $row["roll_color"] = $color;
             $vendor = $_M_VendorDetail->where(DB::raw("upper(vendor_name)"),trim(strtoupper($row["vendor_name"])))->first();

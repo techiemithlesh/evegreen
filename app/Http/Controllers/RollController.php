@@ -563,7 +563,7 @@ class RollController extends Controller
                     'vendor_name' => [
                         "required",
                         function($attribute, $value, $fail)use ($rowData,$index ){
-                            if(!$this->_M_VendorDetail->where(DB::raw("UPPER(vendor_name)"),strtoupper($value))->first()){
+                            if(!$this->_M_VendorDetail->where(DB::raw("UPPER(vendor_name)"),trim(strtoupper($value)))->first()){
                                 $fail('The '.$attribute.' is invalid.');
                             }
                         },
@@ -604,9 +604,9 @@ class RollController extends Controller
                     [
                        "required" ,
                        function($attribute, $value, $fail)use ($rowData,$index ){
-                            $color = $this->_M_RollColor->where(DB::raw("UPPER(color)"),strtoupper($value))->first();
+                            $color = $this->_M_RollColor->where(DB::raw("UPPER(color)"),strtoupper(trim($value)))->first();
                             if($rowData["roll_size"]<=2){
-                                $color = $this->_M_LoopStock->where(DB::raw("UPPER(loop_color)"),strtoupper($value))->first();
+                                $color = $this->_M_LoopStock->where(DB::raw("UPPER(loop_color)"),strtoupper(trim($value)))->first();
                             }
                             if(!$color){
                                 $fail('The '.$attribute.' is invalid.');
