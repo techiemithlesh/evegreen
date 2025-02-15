@@ -6,7 +6,7 @@ return[
         "For Godown"=>3,
     ],
     "rollImportCsvHeader"=>['vendor_name',
-                            // "roll_no",
+                             "roll_no",
                             'vehicle_no',
                             "vendor_roll_no", 
                             'purchase_date',
