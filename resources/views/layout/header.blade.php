@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asset Management</title>
+    <link rel="icon" type="image/png"  href="{{ asset('assets/images/title.png') }}">
     <!-- CSS Section -->
     <!-- Line Icons CSS (General Icons) -->
     <!-- <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" /> -->
@@ -81,6 +82,31 @@
 
     <!-- Custom JS -->
     <script src="{{asset('js/common.js')}}"></script>
+    <style>
+        /* Thin, rounded scrollbar */
+        #sidebar::-webkit-scrollbar {
+            width: 8px; /* Adjust scrollbar width */
+        }
+
+        /* Scrollbar track (background) */
+        #sidebar::-webkit-scrollbar-track {
+            background: transparent; /* Fully transparent */
+            border-radius: 10px;
+        }
+
+        /* Scrollbar handle (thumb) */
+        #sidebar::-webkit-scrollbar-thumb {
+            background: rgba(136, 136, 136, 0.5); /* Semi-transparent */
+            border-radius: 10px; /* Rounded corners */
+            transition: background 0.3s ease-in-out; /* Smooth animation */
+        }
+
+        /* Scrollbar handle on hover */
+        #sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(85, 85, 85, 0.8); /* Darker on hover */
+        }
+
+    </style>
  
 </head>
 <x-confirmation />
@@ -89,7 +115,7 @@
 
     <div class="d-flex">
         <!-- Sidebar -->
-        <aside id="sidebar" class="sidebar-toggle text-sm">
+        <aside id="sidebar" class="sidebar-toggle text-sm" style="overflow-y: scroll;max-height:100vh;">
             <div class="sidebar-logo" style="border-bottom: 3px solid white;">
                 <a href="#">Product Management</a>
             </div>
@@ -116,7 +142,7 @@
             </div>
         </aside>
         <!-- Sidebar Ends -->
-        <div class="main">
+        <div class="main" style="overflow-y: scroll;max-height:100vh;">
             <nav class="navbar navbar-expand">
                 <button class="toggler-btn" type="button">
                     <i class="bi bi-justify"></i>

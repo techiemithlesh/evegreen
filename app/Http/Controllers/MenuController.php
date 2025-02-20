@@ -294,7 +294,7 @@ class MenuController extends Controller
                     unset($tree[$key]);
             }
         } 
-        return $tree->values();
+        return $tree->sortBy("order_no")->values();
     }
     
 

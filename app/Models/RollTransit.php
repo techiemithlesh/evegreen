@@ -97,4 +97,16 @@ class RollTransit extends Model
     public function getVendor(){
         return $this->belongsTo(VendorDetailMaster::class,"vender_id","id");
     }
+
+    public function getClient(){
+        return $this->belongsTo(ClientDetailMaster::class,"client_detail_id","id");
+    }
+
+    public function getBagType(){
+        return $this->belongsTo(BagTypeMaster::class,"bag_type_id","id");
+    }
+
+    public function getQualityType(){
+        return $this->belongsTo(RollQualityMaster::class,"quality_id","id");
+    }
 }
