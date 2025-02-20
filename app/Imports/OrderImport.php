@@ -42,13 +42,16 @@ class OrderImport implements ToCollection,WithChunkReading,WithHeadingRow
                 $row["estimate_delivery_date"] = is_int($row["estimate_delivery_date"])? getDateColumnAttribute($row['estimate_delivery_date']) : $row['estimate_delivery_date'];
             }
             $row["client_detail_id"] = $clientList->where("client_name",$row["client_name"])->first()->id;
+            $row["is_delivered"] = trim($row["is_delivered"]) ? TRUE:FALSE;
+            $row["booked_units"] = $row["booked_units"]? $row["booked_units"] : 0;
             $row["bag_type_id"] = Config::get("customConfig.bagTypeIdByShortName.".$row["bag_type"]);
             $row["bag_gsm"] = $row['bag_gsm'] ? explode(",",$row['bag_gsm']):null;
             $row["bag_printing_color"] = $row['bag_printing_color'] ? explode(",",$row['bag_printing_color']):null;    
             $row["bag_color"] = $row['bag_color'] ? explode(",",$row['bag_color']):null;           
             $row["order_date"] = $row["order_date"]?Carbon::parse($row["order_date"])->format("Y-m-d"):null;
             $row["estimate_delivery_date"] = $row["estimate_delivery_date"]?Carbon::parse($row["estimate_delivery_date"])->format("Y-m-d"):null;
-            $request = new Request($row->toArray());            
+            $request = new Request($row->toArray());     
+            $_M_OrderPunch->store($request);   
             
         }
     }

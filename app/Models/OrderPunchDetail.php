@@ -15,6 +15,7 @@ class OrderPunchDetail extends Model
     use HasFactory;
 
     protected $fillable = [
+        "order_no",
         "order_date",
         "broker_id",
         'client_detail_id',

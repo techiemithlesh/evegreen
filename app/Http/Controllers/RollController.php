@@ -533,6 +533,7 @@ class RollController extends Controller
 
     public function importRoll(Request $request){
         try{
+            $dataWithHeadings=[];
             ini_set('max_execution_time', 600);
             $validate = Validator::make($request->all(),["csvFile"=>"required|mimes:csv,xlsx"]);
             if($validate->fails()){
@@ -621,6 +622,20 @@ class RollController extends Controller
                 if ($validator->fails()) {
                     $validationErrors[$index] = $validator->errors()->all();
                 }
+                $dataWithHeadings[] = $rowData; 
+            }
+
+            if($dataWithHeadings && isset($dataWithHeadings[0]["roll_no"])){
+                $group = collect($dataWithHeadings)->groupBy("roll_no")->filter(function($val,$index){                    
+                    return $index && $val->count()>1;
+                });
+                
+                if($group->count()>0){
+                    foreach($group as $index=>$val){                        
+                        $validationErrors[] = ["Roll no $index is repeated ".sizeof($val)." time"];
+                    }
+                }
+
             }
 
             if (!empty($validationErrors)) {

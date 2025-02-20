@@ -9,6 +9,7 @@ use App\Http\Controllers\MasterController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OtherRegister;
 use App\Http\Controllers\PackingController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RollController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SectorController;
@@ -248,7 +249,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::controller(ImportOldRecords::class)->group(function(){
         Route::match(["get","post"],"import/order","importOrders")->name("import.order");
-        Route::match(["get","post"],"import/order1","importOrders")->name("import.order1");
+        Route::match(["get","post"],"import/order/roll/map","orderRollMap")->name("import.order.roll.map");
+    });
+
+    Route::prefix('report')->group(function(){
+        Route::controller(ReportController::class)->group(function(){
+            Route::match(["get","post"],"/daily/production","dailyProduction")->name("report.daily.production");
+        });
     });
 
 });
