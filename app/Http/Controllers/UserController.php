@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\MenuController;
 use App\Models\MenuMaster;
 use App\Models\User;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -89,6 +90,7 @@ class UserController extends Controller
                             $tree = (new MenuController())->generateMenuTree($menus); 
                             Redis::set("menu_list_".$user["user_type_id"],$tree);
                         }
+                        session(['last_activity' => Carbon::now()]);
                         flashToast("message","Login");
                         return redirect()->to('/home');
                     }

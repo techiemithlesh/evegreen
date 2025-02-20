@@ -16,6 +16,8 @@ use App\Http\Controllers\SectorController;
 use App\Http\Controllers\TransporterController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VendorController;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,7 +26,26 @@ Route::get('/', function () {
 Route::get("/test",function(){
     return view("Layout/test");
 });
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum','activity'])->group(function () {
+    Route::match(["get","post"],"/loginCheck",function(){
+        if (Auth::check()) {
+            $lastActivity = session('last_activity');
+            $timeout = 0.010 * 60; // 30  seconds
+            if ($lastActivity && (Carbon::now()->diffInMinutes($lastActivity)) > $timeout && env('LAST_ACTIVITY_NOT_LOG', false)!=true) {  
+                              
+                session()->forget('last_activity');
+                if(Request()->ajax()){
+                    return responseMsg(false,"ideal","");
+                }
+                Auth::logout();
+                return redirect('/login')->with('message', 'You have been logged out due to inactivity.');
+            }
+            if(Request()->ajax()){
+                return responseMsg(true,"active",[$lastActivity,(Carbon::now()->diffInMinutes($lastActivity)) > $timeout,$timeout]);
+            }
+        }
+
+    })->name("activity.test")->withoutMiddleware("activity");
     Route::controller(Dashboard::class)->group(function(){
         Route::get('/home',"home")->name("home");
         Route::get("dashboard/loop-status","loopStatus")->name("dashboard.loop.status");

@@ -107,6 +107,26 @@
         }
 
     </style>
+    <script>
+        function resetTimer() {
+            $.ajax({
+                method:"post",
+                url:"{{route('activity.test')}}",
+                success:function(response){
+                    if(!response.status){
+                        window.location.href = "{{ route('logout') }}"; 
+                    }
+                },
+                error:function(errors){
+                    console.log(errors);
+                }
+
+            })
+        }
+        $(document).ready(function() {
+            setInterval(resetTimer, 60000);
+        })
+    </script>
  
 </head>
 <x-confirmation />
