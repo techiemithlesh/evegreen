@@ -131,7 +131,6 @@
 </head>
 <x-confirmation />
 <body>
-    <div id="loadingDiv" style="background: url('{{ asset('assets/loaders/d.gif') }}') no-repeat center center; position: absolute; top: 0; left: 0; height: 100%; width: 100%; z-index: 999999999999;"></div>
 
     <div class="d-flex">
         <!-- Sidebar -->
@@ -162,7 +161,9 @@
             </div>
         </aside>
         <!-- Sidebar Ends -->
+         
         <div class="main" style="overflow-y: scroll;max-height:100vh;">
+            <div id="loadingDiv" style="background: url('{{ asset('assets/loaders/d.gif') }}') no-repeat center center; position: absolute; top: 10%;  height: 90vh; width: 80vw; z-index: 999999999999;"></div>
             <nav class="navbar navbar-expand">
                 <button class="toggler-btn" type="button">
                     <i class="bi bi-justify"></i>

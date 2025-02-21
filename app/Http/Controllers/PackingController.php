@@ -586,6 +586,28 @@ class PackingController extends Controller
                     ->leftJoin("transporter_details","transporter_details.id","bag_packing_transports.transporter_id")
                     ->where("bag_packing_transports.lock_status",false)
                     ->orderBy("bag_packing_transports.id","DESC");
+
+            if($request->fromDate && $request->uptoDate){
+                $data->WhereBetween("bag_packing_transports.transport_date",[$request->fromDate,$request->uptoDate]);
+            }elseif($request->fromDate){
+                $data->Where("bag_packing_transports.transport_date",$request->fromDate);
+            }elseif($request->uptoDate){
+                $data->Where("bag_packing_transports.transport_date",$request->uptoDate);
+            }
+
+            if($request->autoId){
+                $data->where("bag_packing_transports.auto_id",$request->autoId);
+            }
+
+            if($request->transporterId){
+                $data->where("bag_packing_transports.transporter_id",$request->transporterId);
+            }
+            if($request->billNo){
+                $data->where("bag_packing_transports.bill_no",$request->billNo);
+            }
+            if($request->invoiceNo){
+                $data->where("bag_packing_transports.invoice_no",$request->invoiceNo);
+            }
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn("transition_type",function($val){
