@@ -28,9 +28,9 @@ Route::get("/test",function(){
 });
 Route::middleware(['auth:sanctum','activity'])->group(function () {
     Route::match(["get","post"],"/loginCheck",function(){
+        $lastActivity = session('last_activity');
+        $timeout = 10 * 60; // 10  minutes
         if (Auth::check()) {
-            $lastActivity = session('last_activity');
-            $timeout = 0.010 * 60; // 30  seconds
             if ($lastActivity && (Carbon::now()->diffInMinutes($lastActivity)) > $timeout && env('LAST_ACTIVITY_NOT_LOG', false)!=true) {  
                               
                 session()->forget('last_activity');
@@ -43,6 +43,11 @@ Route::middleware(['auth:sanctum','activity'])->group(function () {
             if(Request()->ajax()){
                 return responseMsg(true,"active",[$lastActivity,(Carbon::now()->diffInMinutes($lastActivity)) > $timeout,$timeout]);
             }
+        }else{
+            if(Request()->ajax()){
+                return responseMsg(true,"active",[$lastActivity,(Carbon::now()->diffInMinutes($lastActivity)) > $timeout,$timeout]);
+            }
+            return redirect('/login')->with('message', 'You have been logged out due to inactivity.');
         }
 
     })->name("activity.test")->withoutMiddleware("activity");
