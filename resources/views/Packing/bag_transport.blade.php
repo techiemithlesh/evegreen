@@ -45,15 +45,15 @@
                                                 
                         <div class="col-sm-3">
                             <div class="form-group">
-                                    <label class="form-label" for="transporterId">Transporter</label>
-                                    <select type="text" id="transporterId" name="transporterId" class="form-select">
-                                        <option value="">Select</option>
-                                        @foreach($transporterList as $val)
-                                            <option value="{{$val->id}}">{{$val->transporter_name}}</option>
-                                        @endforeach
-                                    </select>
-                                    <span class="error-text" id="transporterId-error"></span>
-                                </div>
+                                <label class="form-label" for="transporterId">Transporter</label>
+                                <select type="text" id="transporterId" name="transporterId" class="form-select">
+                                    <option value="">Select</option>
+                                    @foreach($transporterList as $val)
+                                        <option value="{{$val->id}}">{{$val->transporter_name}}</option>
+                                    @endforeach
+                                </select>
+                                <span class="error-text" id="transporterId-error"></span>
+                            </div>
                         </div>
                     </div>
                     <div class="row mt-3">
@@ -70,7 +70,19 @@
                                 <input type="text" name="invoiceNo" id="invoiceNo" class="form-control"  />
                                 <span class="error-text" id="invoiceNo-error"></span>
                             </div>
-                        </div>                         
+                        </div> 
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label class="form-label" for="transportTypeId">Transport Type</label>
+                                <select type="text" id="transportTypeId" name="transportTypeId" class="form-select">
+                                    <option value="">Select</option>
+                                    @foreach($transportType as $val)
+                                        <option value="{{$val->id}}">{{$val->type}}</option>
+                                    @endforeach
+                                </select>
+                                <span class="error-text" id="transporterId-error"></span>
+                            </div>
+                        </div>                        
                     </div>                    
                     <!-- Submit Button -->
                     <div class="row mt-4">
@@ -87,7 +99,7 @@
                     <tr>
                         <th>#</th>
                         <th>Transition Type</th>
-                        <th>Delivery Date</th>
+                        <th>Transport Date</th>
                         <th>Auto Name</th>
                         <th>Transporter Name</th>
                         <th>Chalan No</th>

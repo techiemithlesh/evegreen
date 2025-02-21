@@ -118,7 +118,7 @@ class PackingController extends Controller
                     return collect(json_decode($val->bag_gsm,true))->implode(",") ;
                 })
                 ->addColumn('bag_size', function ($val) { 
-                    return $val->bag_w." X ".$val->bag_l." X ".($val->bag_g ? $val->bag_g:"0.00") ;
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
                 })
                 ->addColumn('action', function ($val) {                    
                     $button = "";                    
@@ -268,7 +268,7 @@ class PackingController extends Controller
                     return collect(json_decode($val->bag_color,true))->implode(",") ;
                 })
                 ->addColumn('bag_size', function ($val) { 
-                    return $val->bag_w +($val->bag_g ? $val->bag_g :0) ." X ". $val->bag_l;
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
                 })
                 ->addColumn('action', function ($val) {                    
                     $button = "";                    
@@ -304,7 +304,7 @@ class PackingController extends Controller
                     return collect(json_decode($val->printing_color,true))->implode(",") ;
                 })
                 ->addColumn('bag_size', function ($val) { 
-                    return $val->bag_w +($val->bag_g ? $val->bag_g :0) ." X ". $val->bag_l;
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
                 })
                 ->addColumn('action', function ($val) {                    
                     $button = "";                    
@@ -608,6 +608,9 @@ class PackingController extends Controller
             if($request->invoiceNo){
                 $data->where("bag_packing_transports.invoice_no",$request->invoiceNo);
             }
+            if($request->transportTypeId){
+                $data->where("bag_packing_transports.transport_status",$request->transportTypeId);
+            }
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn("transition_type",function($val){
@@ -646,6 +649,59 @@ class PackingController extends Controller
         }
         $data["autoList"] = $this->_M_Auto->getAutoListOrm()->orderBy("id","ASC")->get();
         $data["transporterList"] = $this->_M_Transporter->getAutoListOrm()->orderBy("id","ASC")->get();
+        $data["transportType"] = collect(flipConstants(Config::get("customConfig.transportType")))->map(function($val,$index){
+            return json_decode(json_encode(["id"=>$index,"type"=>$val]));
+        });
         return view("Packing/bag_transport",$data);
+    }
+
+    public function bagHistory(Request $request){
+        if($request->ajax())
+        {
+            $data = $this->_M_BagPacking
+                    ->select("bag_packings.*","order_punch_details.estimate_delivery_date","order_punch_details.order_date","bag_w","bag_l","bag_g","client_detail_masters.client_name")
+                    ->join("order_punch_details","order_punch_details.id","bag_packings.order_id")
+                    ->join("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")
+                    ->where("bag_packings.lock_status",false)
+                    ->orderBy("bag_packings.id","DESC");
+
+            if($request->fromDate && $request->uptoDate){
+                $data->WhereBetween("bag_packings.packing_date",[$request->fromDate,$request->uptoDate]);
+            }elseif($request->fromDate){
+                $data->Where("bag_packings.packing_date",$request->fromDate);
+            }elseif($request->uptoDate){
+                $data->Where("bag_packings.packing_date",$request->uptoDate);
+            }
+
+            if($request->bagStatusId){
+                $data->where("bag_packings.packing_status",$request->bagStatusId);
+            }
+            $list = DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn("packing_date",function($val){
+                    return $val->packing_date ? Carbon::parse($val->packing_date)->format("d-m-Y"): "" ;
+                })
+                ->addColumn("estimate_delivery_date",function($val){
+                    return $val->estimate_delivery_date ? Carbon::parse($val->estimate_delivery_date)->format("d-m-Y"): "" ;
+                })
+                ->addColumn("order_date",function($val){
+                    return $val->order_date ? Carbon::parse($val->order_date)->format("d-m-Y"): "" ;
+                })
+                ->addColumn('bag_size', function ($val) { 
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
+                })
+                ->addColumn('bag_status', function ($val) { 
+                    return Config::get("customConfig.bagStatus.".$val->packing_status);
+                })
+                ->rawColumns(['row_color', 'action'])
+                ->make(true);
+            return $list;
+
+        }
+
+        $data["bagStatus"]= collect(Config::get("customConfig.bagStatus"))->map(function($val,$index){
+            return json_decode(json_encode(["id"=>$index,"type"=>$val]));
+        });
+        return view("packing/bag_history",$data);
     }
 }

@@ -5,6 +5,12 @@ return[
         "For Delivery"=>4,
         "For Godown"=>3,
     ],
+    "bagStatus"=>[
+        1=>"in factory",
+        2=>"in godown",
+        3=>"in transport",
+        4=>"dispatched",
+    ],
     "rollImportCsvHeader"=>['vendor_name',
                              "roll_no",
                             'vehicle_no',

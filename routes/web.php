@@ -266,6 +266,7 @@ Route::middleware(['auth:sanctum','activity'])->group(function () {
         Route::post("packing/godown/transport","reivingTransport")->name("packing.godown.transport");
         Route::post("packing/godown/add","addInGodown")->name("packing.godown.add");
         Route::get("packing/transport/register","transportRegister")->name("packing.transport.register");
+        Route::get("packing/bag/history","bagHistory")->name("packing.bag.history");
     });
 
     Route::controller(OtherRegister::class)->group(function(){
