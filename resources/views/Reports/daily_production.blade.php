@@ -1,38 +1,38 @@
 @include("layout.header")
 <style>
     .tabs {
-    display: flex;
-    border-bottom: 2px solid #ccc;
-}
+        display: flex;
+        border-bottom: 2px solid #ccc;
+    }
 
-.tab-link {
-    background: #f1f1f1;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.3s;
-}
+    .tab-link {
+        background: #f1f1f1;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s;
+    }
 
-.tab-link.active {
-    background: #007bff;
-    color: white;
-    border-bottom: 3px solid #0056b3;
-}
+    .tab-link.active {
+        background: #007bff;
+        color: white;
+        border-bottom: 3px solid #0056b3;
+    }
 
-.tab-link:hover {
-    background: #ddd;
-}
+    .tab-link:hover {
+        background: #ddd;
+    }
 
-.tab-content {
-    display: none;
-    padding: 20px;
-    border: 1px solid #ddd;
-}
+    .tab-content {
+        display: none;
+        padding: 20px;
+        border: 1px solid #ddd;
+    }
 
-.tab-content.active {
-    display: block;
-}
+    .tab-content.active {
+        display: block;
+    }
 
 </style>
     <main class="p-3">

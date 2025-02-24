@@ -41,7 +41,7 @@ Route::middleware(['auth:sanctum','activity'])->group(function () {
                 return redirect('/login')->with('message', 'You have been logged out due to inactivity.');
             }
             if(Request()->ajax()){
-                return responseMsg(true,"active",[$lastActivity,(Carbon::now()->diffInMinutes($lastActivity)) > $timeout,$timeout]);
+                return responseMsg(true,"active",[$lastActivity,(Carbon::now()->diffInMinutes($lastActivity)) > $timeout,(Carbon::now()->diffInMinutes($lastActivity))]);
             }
         }else{
             if(Request()->ajax()){
@@ -282,6 +282,8 @@ Route::middleware(['auth:sanctum','activity'])->group(function () {
     Route::prefix('report')->group(function(){
         Route::controller(ReportController::class)->group(function(){
             Route::match(["get","post"],"/daily/production","dailyProduction")->name("report.daily.production");
+            Route::match(["get","post"],"/repeated/order","orderRepitition")->name("report.repeated.order");
+            Route::match(["get","post"],"/agent/order","agentOrder")->name("report.agent.order");
         });
     });
 
