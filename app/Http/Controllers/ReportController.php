@@ -109,7 +109,7 @@ class ReportController extends Controller
                 return $list;
         }
         $data=[];
-        return view("reports/orderRepitition",$data);
+        return view("Reports/orderRepitition",$data);
     }
 
     public function agentOrder(Request $request){
@@ -163,7 +163,7 @@ class ReportController extends Controller
         }
         $data=[];
         $data["agentList"] = $this->_M_Brokers->getBrokerOrm()->get();
-        return view("reports/agentOrder",$data);
+        return view("Reports/agentOrder",$data);
     }
 
     public function agentOrderDtl(Request $request){
@@ -207,6 +207,6 @@ class ReportController extends Controller
         }
         $data = $request->all();        
         $data["agentList"] = $this->_M_Brokers->getBrokerOrm()->get();
-        return view("reports/agentOrderDtl",$data);
+        return view("Reports/agentOrderDtl",$data);
     }
 }
