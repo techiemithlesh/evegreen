@@ -70,10 +70,6 @@ class ReportController extends Controller
         return view("Reports/daily_production",$data);
     }
 
-    public function agentBookingOrder(Request $request){
-
-    }
-
     public function orderRepitition(Request $request){
         if($request->ajax()){
             $currentDate = Carbon::now();
@@ -123,7 +119,6 @@ class ReportController extends Controller
             $fromDate = $request->fromDate;
             $uptoDate = $request->uptoDate;
             $agentIds = $request->agentId;
-            DB::enableQueryLog();
             $data = $this->_M_Brokers->select("order_brokers.broker_name","order_brokers.id",
                         DB::raw("
                                 count(order_punch_details.id) as total_order,
@@ -150,12 +145,6 @@ class ReportController extends Controller
             if($agentIds){
                 $data->where("order_brokers.id",$agentIds);
             }
-            $requestData="";
-            foreach($request->all() as $index=>$val){
-                if($index=="csrf-token") continue;
-                $requestData .= $index."=".$val."&";
-            }
-            $requestData = trim($requestData,"&");
             $list = DataTables::of($data)
                     ->addIndexColumn()
                     ->addColumn('action', function ($val){
@@ -175,5 +164,49 @@ class ReportController extends Controller
         $data=[];
         $data["agentList"] = $this->_M_Brokers->getBrokerOrm()->get();
         return view("reports/agentOrder",$data);
+    }
+
+    public function agentOrderDtl(Request $request){
+        if($request->ajax()){
+            $fromDate = $request->fromDate;
+            $uptoDate = $request->uptoDate;
+            $agentIds = $request->agentId;
+            DB::enableQueryLog();
+            $data = $this->_M_OrderPunches->select("order_punch_details.*","order_brokers.broker_name","client_detail_masters.client_name")
+                    ->Join("order_brokers","order_brokers.id","order_punch_details.broker_id")
+                    ->join("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")
+                    ->where("order_punch_details.lock_status",false)
+                    ->orderBy("order_punch_details.id","DESC");
+            if($fromDate && $uptoDate){
+                $data->whereBetween("order_punch_details.order_date",[$fromDate,$uptoDate]);
+            }
+            elseif($fromDate){
+                $data->where("order_punch_details.order_date",$fromDate);
+            }
+            elseif($uptoDate){
+                $data->where("order_punch_details.order_date",$uptoDate);
+            }
+            if($agentIds){
+                $data->where("order_punch_details.broker_id",$agentIds);
+            }
+            $data = $data->get();
+            $list = DataTables::of($data)
+                    ->addIndexColumn()
+                    ->addColumn("order_date",function($val){
+                        return $val->order_date ? Carbon::parse($val->order_date)->format("d-m-Y"):"";
+                    })
+                    ->addColumn('bag_size', function ($val) { 
+                        return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
+                    })
+                    ->addColumn('action', function ($val){
+                        return "";
+                    })
+                    ->rawColumns(['action'])
+                    ->make(true);
+            return $list;
+        }
+        $data = $request->all();        
+        $data["agentList"] = $this->_M_Brokers->getBrokerOrm()->get();
+        return view("reports/agentOrderDtl",$data);
     }
 }
