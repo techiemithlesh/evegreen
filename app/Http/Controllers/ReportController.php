@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MachineMater;
+use App\Models\OrderBroker;
 use App\Models\OrderPunchDetail;
 use App\Models\RollDetail;
 use Carbon\Carbon;
@@ -17,12 +18,14 @@ class ReportController extends Controller
     protected $_M_Machine;
     protected $_RollDetails;
     protected $_M_OrderPunches;
+    protected $_M_Brokers;
 
     function __construct()
     {
         $this->_M_Machine = new MachineMater();
         $this->_RollDetails = new RollDetail();
         $this->_M_OrderPunches = new OrderPunchDetail();
+        $this->_M_Brokers = new OrderBroker();
     }
 
     public function dailyProduction(Request $request){
@@ -111,8 +114,66 @@ class ReportController extends Controller
         }
         $data=[];
         return view("reports/orderRepitition",$data);
-        
-                
-        dd(DB::getQueryLog(),$data);
+    }
+
+    public function agentOrder(Request $request){
+
+        if($request->ajax())
+        {
+            $fromDate = $request->fromDate;
+            $uptoDate = $request->uptoDate;
+            $agentIds = $request->agentId;
+            DB::enableQueryLog();
+            $data = $this->_M_Brokers->select("order_brokers.broker_name","order_brokers.id",
+                        DB::raw("
+                                count(order_punch_details.id) as total_order,
+                                count(case when order_punch_details.is_delivered then order_punch_details.id end) as order_delivered
+                            "
+                        )
+                    )
+                    ->leftJoin("order_punch_details",function($join) use($fromDate,$uptoDate){
+                        $join->on("order_punch_details.broker_id","order_brokers.id")
+                        ->where("order_punch_details.lock_status",false);
+                        if($fromDate && $uptoDate){
+                            $join->whereBetween("order_punch_details.order_date",[$fromDate,$uptoDate]);
+                        }
+                        elseif($fromDate){
+                            $join->where("order_punch_details.order_date",$fromDate);
+                        }
+                        elseif($uptoDate){
+                            $join->where("order_punch_details.order_date",$uptoDate);
+                        }
+                    })
+                    ->where("order_brokers.lock_status",false)
+                    ->groupBy("order_brokers.id","order_brokers.broker_name")
+                    ->orderBy(DB::raw("total_order"),"DESC");
+            if($agentIds){
+                $data->where("order_brokers.id",$agentIds);
+            }
+            $requestData="";
+            foreach($request->all() as $index=>$val){
+                if($index=="csrf-token") continue;
+                $requestData .= $index."=".$val."&";
+            }
+            $requestData = trim($requestData,"&");
+            $list = DataTables::of($data)
+                    ->addIndexColumn()
+                    ->addColumn('action', function ($val){
+
+                        $route = route('report.agent.order.dtl');
+                        $queryParams = http_build_query(request()->all()); // Convert array to query string
+
+                        return $url = <<<EOD
+                        <a href="{$route}?agentId={$val->id}&{$queryParams}">View</a>
+                        EOD;
+                    })
+                    ->rawColumns(['action'])
+                    ->make(true);
+            return $list;
+            
+        }
+        $data=[];
+        $data["agentList"] = $this->_M_Brokers->getBrokerOrm()->get();
+        return view("reports/agentOrder",$data);
     }
 }

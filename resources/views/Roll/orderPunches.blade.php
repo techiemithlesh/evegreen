@@ -609,7 +609,7 @@
         console.log(item);
 
         // Set individual field values
-        $("#bookingBagTypeId").val(item?.bag_type_id);
+        $("#bookingBagTypeId").val(item?.bag_type_id).trigger("change");
         $("#bookingBagUnits").val(item?.units);
         $("#l").val(item?.bag_l);
         $("#g").val(item?.bag_g);

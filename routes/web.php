@@ -29,7 +29,7 @@ Route::get("/test",function(){
 Route::middleware(['auth:sanctum','activity'])->group(function () {
     Route::match(["get","post"],"/loginCheck",function(){
         $lastActivity = session('last_activity');
-        $timeout = 10 * 60; // 10  minutes
+        $timeout = 10 ; // 10  minutes
         if (Auth::check()) {
             if ($lastActivity && (Carbon::now()->diffInMinutes($lastActivity)) > $timeout && env('LAST_ACTIVITY_NOT_LOG', false)!=true) {  
                               
@@ -284,6 +284,7 @@ Route::middleware(['auth:sanctum','activity'])->group(function () {
             Route::match(["get","post"],"/daily/production","dailyProduction")->name("report.daily.production");
             Route::match(["get","post"],"/repeated/order","orderRepitition")->name("report.repeated.order");
             Route::match(["get","post"],"/agent/order","agentOrder")->name("report.agent.order");
+            Route::get("/agent/order/dtl","agentOrderDtl")->name("report.agent.order.dtl");
         });
     });
 
