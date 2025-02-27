@@ -74,13 +74,18 @@ class ImportOldRecords extends Controller
                     'order_date' => 'required|date',
                     'estimate_delivery_date' => 'nullable|date',
                     'bag_type' => 'required|in:D,U,L,B',
-                    'bag_quality' => 'nullable|in:NW,BOPP',
+                    'bag_quality' => 'nullable|in:NW,BOPP,LAM',
                     "bag_gsm"=>[
                         "required",
                         function($attribute, $value, $fail) use ($rowData) {
                             if (isset($rowData['bag_quality']) && $rowData['bag_quality'] === 'BOPP') {
                                 if (!preg_match('/^\d+\+\d+\+\d+$/', $value)) {
                                     $fail("The $attribute format must be '35+13+12' (three numbers separated by '+').");
+                                }
+                            }
+                            if (isset($rowData['bag_quality']) && $rowData['bag_quality'] === 'LAM') {
+                                if (!preg_match('/^\d+\+\d+$/', $value)) {
+                                    $fail("The $attribute format must be '35+13' (three numbers separated by '+').");
                                 }
                             }
                             if ($rowData['bag_quality'] === 'NW') {

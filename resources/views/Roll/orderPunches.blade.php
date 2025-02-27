@@ -99,6 +99,7 @@
                                     <option value="">Select</option>                                    
                                     <option value="NW">NW</option>
                                     <option value="BOPP">BOPP</option>
+                                    <option value="LAM">LAM</option>
                                 </select>                                                                       
                                 <span class="error-text" id="bagQuality-error"></span>
                             </div>

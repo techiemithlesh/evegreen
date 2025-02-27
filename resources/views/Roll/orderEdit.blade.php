@@ -96,6 +96,7 @@
                                     <option value="">Select</option>                                    
                                     <option value="NW" {{$order->bag_quality=="NW"?"selected" : ""}}>NW</option>
                                     <option value="BOPP" {{$order->bag_quality=="BOPP"?"selected" : ""}}>BOPP</option>
+                                    <option value="LAM" {{$order->bag_quality=="LAM"?"selected" : ""}}>LAM</option>
                                 </select>                                                                       
                                 <span class="error-text" id="bagQuality-error"></span>
                             </div>
