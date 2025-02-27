@@ -58,7 +58,8 @@ return[
         "D"=>1,
         "B"=>2,
         "U"=>3,
-        "L"=>4
+        "L"=>4,
+        "LBB"=>5
     ],
 
     "orderRollMapCsvHeader"=>[

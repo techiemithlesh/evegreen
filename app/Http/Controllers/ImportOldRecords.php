@@ -47,6 +47,7 @@ class ImportOldRecords extends Controller
 
     public function importOrders(Request $request){
         if($request->post()){
+            ini_set('max_execution_time', 600);
             $validate = Validator::make($request->all(),["csvFile"=>"required|mimes:csv,xlsx"]);
             if($validate->fails()){
                 return validationError($validate);
@@ -76,7 +77,7 @@ class ImportOldRecords extends Controller
                     'client_name' => "required",                   
                     'order_date' => 'required|date',
                     'estimate_delivery_date' => 'nullable|date',
-                    'bag_type' => 'required|in:D,U,L,B',
+                    'bag_type' => 'required|in:D,U,L,B,LBB',
                     'bag_quality' => 'nullable|in:NW,BOPP,LAM',
                     "bag_gsm"=>[
                         "required",

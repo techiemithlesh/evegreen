@@ -171,6 +171,7 @@
                     $("#rollFindAsWeight").val(bagDtl?.roll_find_as_weight);
                     $("#rollSizeFind").val(bagDtl?.roll_size_find);
                     $("#weightOfBagPerPiece").val(bagDtl?.weight_of_bag_per_piece);
+                    $("#cylinderSize").val(bagDtl?.cylinder_size);
                     $("#bagModal").modal("show");
                 
                 } 

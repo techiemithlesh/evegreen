@@ -16,6 +16,7 @@ class RollShortageLimit extends Model
         "roll_size",
         "roll_gsm",
         "quality_type_id",
+        "min_limit",
         "user_id",
         'lock_status',
     ];

@@ -722,7 +722,7 @@ class MasterController extends Controller
 
     public function rollShortageLimitList(Request $request){
         if($request->ajax()){
-
+            $data =[];
         }
         return view("Master/rollShortageLimitList");
     }
