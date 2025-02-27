@@ -11,6 +11,7 @@ use App\Models\OrderBroker;
 use App\Models\RateTypeMaster;
 use App\Models\RollQualityGradeMap;
 use App\Models\RollQualityMaster;
+use App\Models\RollShortageLimit;
 use App\Models\StateMaster;
 use App\Models\StereoDetail;
 use App\Models\UserTypeMaster;
@@ -38,6 +39,7 @@ class MasterController extends Controller
     protected $_M_broker;
     protected $_M_Sate;
     protected $_M_CityStateMap;
+    protected $_M_RollShortageLimit;
 
     function __construct()
     {
@@ -54,6 +56,7 @@ class MasterController extends Controller
         $this->_M_broker = new OrderBroker();
         $this->_M_Sate = new StateMaster();
         $this->_M_CityStateMap = new CityStateMap();
+        $this->_M_RollShortageLimit = new RollShortageLimit();
     }
 
 
@@ -708,6 +711,34 @@ class MasterController extends Controller
         try{
             $data = $this->_M_CityStateMap->getCityOrm()->where("state_id",$request->id)->orderBy("city_name","ASC")->get();
             return responseMsgs(true,"data",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    /**
+     * rollShortageLimit
+     */
+
+    public function rollShortageLimitList(Request $request){
+        if($request->ajax()){
+
+        }
+        return view("Master/rollShortageLimitList");
+    }
+
+    public function rollLimitAddEdit(Request $request){
+        try{
+            DB::beginTransaction();
+            $message = "New State Add";
+            if($request->id){
+                $this->_M_CityStateMap->edit($request);
+                $message = "State Update";
+            }else{
+                $this->_M_CityStateMap->store($request);
+            }
+            DB::commit();
+            return responseMsgs(true,$message,"");
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
         }

@@ -584,11 +584,11 @@ class RollController extends Controller
                     ],
                     'purchase_date' => 'required|date',
                     'roll_size' => 'required|numeric',
-                    'roll_type' => 'nullable|in:NW,BOPP',
+                    'roll_type' => 'nullable|in:NW,BOPP,LAM',
                     "hardness" => "nullable",
                     'roll_gsm' => 'required|numeric',
                     'bopp' => [
-                        'required_if:roll_type,BOPP',
+                        'required_if:roll_type,BOPP,LAM',
                         function ($attribute, $value, $fail)use ($rowData,$index )
                         {
                             $sumJson = $value ? array_sum(explode("/",$value)):null;
@@ -596,6 +596,12 @@ class RollController extends Controller
                             if($sumJson && $sumJson!=$gsm)
                             {
                                 $fail('The '.$attribute.' thickness is invalid.');
+                            }
+                            if($rowData["roll_type"]=="BOPP" && sizeof(explode("/",$value))!=3){
+                                $fail('The '.$attribute.' thickness is invalid. like(GSM/lamination/BOPP)');
+                            }
+                            if($rowData["roll_type"]=="LAM" && sizeof(explode("/",$value))!=2){
+                                $fail('The '.$attribute.' thickness is invalid. like(GSM/lamination)');
                             }
 
                         },

@@ -286,6 +286,7 @@ Route::middleware(['auth:sanctum','activity'])->group(function () {
             Route::match(["get","post"],"/agent/order","agentOrder")->name("report.agent.order");
             Route::get("/agent/order/dtl","agentOrderDtl")->name("report.agent.order.dtl");
             Route::get("/legacy/client/order","legacyClientOrder")->name("legacy.client.order");
+            Route::get("/roll/shortage","rollShortage")->name("roll.shortage");
         });
     });
 

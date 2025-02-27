@@ -249,4 +249,12 @@ class ReportController extends Controller
         }
         return view("Reports/legacyClientOrder");
     }
+
+    public function rollShortage(Request $request){
+        if($request->ajax()){
+
+        }
+        $data=[];
+        return view("Reports/rollShortage",$data);
+    }
 }
