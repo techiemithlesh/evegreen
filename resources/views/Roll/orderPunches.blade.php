@@ -1059,7 +1059,7 @@
     }
 
     function showHidePrintingColorDiv(){
-        if($("#bagQuality").val()=="BOPP"){
+        if($("#bagQuality").val()=="BOPP" || $("#bagQuality").val()=="LAM"){
             $("#bookingPrintingColorDiv").hide();
             $("#singleGsm").hide();
             $("#multipleGsm").show();
