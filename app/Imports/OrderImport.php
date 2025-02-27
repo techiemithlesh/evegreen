@@ -5,6 +5,7 @@ namespace App\Imports;
 use App\Models\BagTypeMaster;
 use App\Models\ClientDetailMaster;
 use App\Models\FareDetail;
+use App\Models\OrderBroker;
 use App\Models\OrderPunchDetail;
 use App\Models\RateTypeMaster;
 use App\Models\StereoDetail;
@@ -32,6 +33,7 @@ class OrderImport implements ToCollection,WithChunkReading,WithHeadingRow
         $_M_BagType = new BagTypeMaster();
         $clientList = $_M_ClientDetail->all();
         $bagTypeList = $_M_BagType->all();
+        $broker = new OrderBroker();
         
         $file = request()->file('csvFile'); // Assuming the file input name is 'file'
         
@@ -41,13 +43,17 @@ class OrderImport implements ToCollection,WithChunkReading,WithHeadingRow
                 $row["order_date"] = is_int($row["order_date"])? getDateColumnAttribute($row['order_date']) : $row['order_date'];
                 $row["estimate_delivery_date"] = is_int($row["estimate_delivery_date"])? getDateColumnAttribute($row['estimate_delivery_date']) : $row['estimate_delivery_date'];
             }
-            if($row["bag_quality"]=="BOPP"){
+            if($row["bag_quality"]=="BOPP" || $row["bag_quality"]=="LAM"){
                 $row["bag_gsm_json"] = explode("+",$row["bag_gsm"]);
                 $row["bag_gsm"] = array_sum(explode("+",$row["bag_gsm"]));
             }
             if($row["bag_type"]!="B"){
                 $row["bag_g"]=null;
             }
+            if($row["agent_name"]){
+                $row["broker_id"] = $broker->where("broker_name",$row["agent_name"])->first()->id??null;
+            }
+
             $row["client_detail_id"] = $clientList->where("client_name",$row["client_name"])->first()->id;
             $row["is_delivered"] = trim($row["is_delivered"]) ? TRUE:FALSE;
             $row["booked_units"] = $row["booked_units"]? $row["booked_units"] : 0;

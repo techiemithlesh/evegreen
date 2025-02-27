@@ -7,6 +7,7 @@ use App\Imports\OrderRollMapImport;
 use App\Models\ClientDetailMaster;
 use App\Models\FareDetail;
 use App\Models\GradeMaster;
+use App\Models\OrderBroker;
 use App\Models\OrderPunchDetail;
 use App\Models\RateTypeMaster;
 use App\Models\RollDetail;
@@ -30,6 +31,7 @@ class ImportOldRecords extends Controller
     protected $_M_RateTypeMaster;
     protected $_M_RollDetail;
     protected $_M_RollTransit;
+    protected $_M_Broker;
     function __construct()
     {
         $this->_M_OrderPunchDetail = new OrderPunchDetail();
@@ -40,6 +42,7 @@ class ImportOldRecords extends Controller
         $this->_M_RateTypeMaster = new RateTypeMaster();
         $this->_M_RollDetail = new RollDetail();
         $this->_M_RollTransit = new RollTransit();
+        $this->_M_Broker = new OrderBroker();
     }
 
     public function importOrders(Request $request){
@@ -107,7 +110,7 @@ class ImportOldRecords extends Controller
                     'fare_type' => "nullable|exists:".$this->_M_FareDetail->getTable().",fare_type",
                     'stereo_type' => "nullable|exists:".$this->_M_StereoDetail->getTable().",stereo_type",                    
                     "bag_printing_color"=>"nullable",
-                    "agent_name"=>"nullable",
+                    "agent_name"=>"nullable|exists:".$this->_M_Broker->getTable().",broker_name",
                     "is_delivered"=>"nullable|bool",
                 ]);
 

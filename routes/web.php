@@ -29,7 +29,7 @@ Route::get("/test",function(){
 Route::middleware(['auth:sanctum','activity'])->group(function () {
     Route::match(["get","post"],"/loginCheck",function(){
         $lastActivity = session('last_activity');
-        $timeout = 10 ; // 10  minutes
+        $timeout = 10000000 ; // 10  minutes
         if (Auth::check()) {
             if ($lastActivity && (Carbon::now()->diffInMinutes($lastActivity)) > $timeout && env('LAST_ACTIVITY_NOT_LOG', false)!=true) {  
                               
