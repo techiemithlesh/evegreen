@@ -702,6 +702,6 @@ class PackingController extends Controller
         $data["bagStatus"]= collect(Config::get("customConfig.bagStatus"))->map(function($val,$index){
             return json_decode(json_encode(["id"=>$index,"type"=>$val]));
         });
-        return view("packing/bag_history",$data);
+        return view("Packing/bag_history",$data);
     }
 }
