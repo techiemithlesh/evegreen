@@ -746,6 +746,7 @@ class MasterController extends Controller
                             and rsl.roll_size = rolls.size
                             and rsl.roll_gsm = rolls.gsm
                             and rsl.quality_type_id = rolls.quality_id
+                            ".($request->dashboardData ? " and rsl.lock_status=false ":"")."
                         left join(
                             select sum(net_weight) as total_net_weight,count(id) as total_roll,sum(length) as total_length,
                                 size,roll_color,gsm,quality_id
@@ -769,6 +770,9 @@ class MasterController extends Controller
                             and transit.quality_id = rolls.quality_id
                         order by rolls.size,rolls.roll_color,rolls.gsm,rolls.quality_id
             ");
+            if($request->dashboardData){
+                return responseMsgs(true,"data Fetched",$data);
+            }
             return DataTables::of($data)
                 ->addIndexColumn()             
                 

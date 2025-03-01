@@ -52,28 +52,36 @@
 <!-- Main Component -->
 <main class="p-3">
     <div class="container">
-        <div class="panel-body" style="overflow: hidden; height: 100vh;">
-            <div class="row g-3">
-                <!-- Stock Status Card -->
-                <div class="col-md-4 d-flex flex-column">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h6 class="card-body-title">Loop Stock</h6>
+        <div class="panel-body" style="text-align: center;">
+            <div class="row">
+                <div class="card text-center col-md-4" style=" box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);">
+                    <h5 class="card-header">Loop Stock</h5>
+                    <div class="card-body">
+                        <p class="card-text">
                             <x-dashboard.loop-stock-status />
-                        </div>
+                        </p>
                     </div>
                 </div>
-
-                <!-- Nearest Dispatched Order Card -->
-                <div class="col-md-4 d-flex flex-column">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h6 class="card-body-title">Nearest Dispatched Order</h6>
+                <div class="card text-center col-md-8" style=" box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);">
+                    <h5 class="card-header">Nearest Dispatched Order</h5>
+                    <div class="card-body">
+                        <p class="card-text">
                             @livewireStyles
                             @livewire('dashboard.nearest-dispatched-order')
                             @livewireScripts
-                            @stack('scripts') <!-- Include the custom scripts -->
-                        </div>
+                            @stack('scripts') 
+                            <!-- Include the custom scripts -->
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="card text-center col-md-12" style=" box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);">
+                    <h5 class="card-header">Roll Stock</h5>
+                    <div class="card-body">
+                        <p class="card-text">
+                            <x-dashboard.roll-stock-status />
+                        </p>
                     </div>
                 </div>
             </div>

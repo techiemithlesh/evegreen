@@ -8,6 +8,7 @@ use App\Models\RollDetail;
 use App\Models\RollTransit;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class Dashboard extends Controller
 {
@@ -38,5 +39,11 @@ class Dashboard extends Controller
 
     public function nearOrderDispatched(){
         
+    }
+
+    public function rollStatus(Request $request){
+        $request->merge(["dashboardData"=>true]);
+        $controller = App::makeWith(MasterController::class); 
+        return $controller->rollShortageLimitList($request);
     }
 }

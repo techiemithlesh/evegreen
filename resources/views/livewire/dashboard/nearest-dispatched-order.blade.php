@@ -7,6 +7,7 @@
         width: 300px;
         /* Adjust the width as needed */
         height: 300px;
+        margin-top: 45px;
         /* Adjust the height as needed */
     }
 
@@ -41,32 +42,32 @@
     }
 
     .chart-card:nth-child(2) {
-        transform: translate(20px, 20px);
+        transform: translate(5px, -20px);
         z-index: 6;
     }
 
     .chart-card:nth-child(3) {
-        transform: translate(40px, 40px);
+        transform: translate(10px, -40px);
         z-index: 5;
     }
 
     .chart-card:nth-child(4) {
-        transform: translate(60px, 60px);
+        transform: translate(15px, -60px);
         z-index: 4;
     }
 
     .chart-card:nth-child(5) {
-        transform: translate(80px, 80px);
+        transform: translate(20px, -80px);
         z-index: 3;
     }
 
     .chart-card:nth-child(6) {
-        transform: translate(60px, 60px);
+        transform: translate(25px, -100px);
         z-index: 2;
     }
 
     .chart-card:nth-child(7) {
-        transform: translate(80px, 80px);
+        transform: translate(30px, -120px);
         z-index: 1;
     }
 
@@ -84,7 +85,7 @@
     <div class="chart-container">
         <!-- Cards -->
         @foreach($cards as $index=>$card)
-        <div class="chart-card" data-order="{{$index+1}}">
+        <div class="chart-card" data-order="n_{{$index+1}}">
             <p class="chart-title">{{ $card['date'] }} <span style="float:right;">[{{$index+1}}]</span></p>
             <table class="table table-striped table-responsive" style="font-size: xx-small;">
                 <thead>

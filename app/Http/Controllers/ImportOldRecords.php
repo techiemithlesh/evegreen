@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\ImportDispatchHistory;
 use App\Imports\OrderImport;
 use App\Imports\OrderRollMapImport;
 use App\Models\ClientDetailMaster;
@@ -218,5 +219,19 @@ class ImportOldRecords extends Controller
             return responseMsgs(true,"data import","");
         }
         return view("import/orderRollMap");
+    }
+
+    public function importDespatchHistory(Request $request){
+        if($request->post()){
+            ini_set('max_execution_time', 600);
+            $validate = Validator::make($request->all(),["csvFile"=>"required|mimes:csv,xlsx"]);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            $file = $request->file('csvFile');
+            $headings = (new HeadingRowImport())->toArray($file)[0][0];
+            Excel::import(new ImportDispatchHistory,$file);
+        }
+        return view("import/importExcelToDb");
     }
 }
