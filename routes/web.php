@@ -29,7 +29,7 @@ Route::get("/test",function(){
 Route::middleware(['auth:sanctum','activity'])->group(function () {
     Route::match(["get","post"],"/loginCheck",function(){
         $lastActivity = session('last_activity');
-        $timeout = 10000000 ; // 10  minutes
+        $timeout = 60 ; // 10  minutes
         if (Auth::check()) {
             if ($lastActivity && (Carbon::now()->diffInMinutes($lastActivity)) > $timeout && env('LAST_ACTIVITY_NOT_LOG', false)!=true) {  
                               
@@ -111,6 +111,13 @@ Route::middleware(['auth:sanctum','activity'])->group(function () {
         Route::post("master/city/deactivateLoopStock/{id}","activeDeactivateCity")->name("master.city.deactivate");
         Route::get("master/city-by-state/{id}","getCityListByState")->name("master.city.by.state");
 
+        /**
+         * roll shortage
+         */
+
+        Route::get("master/roll/shortage/list","rollShortageLimitList")->name("master.roll.shortage.list");
+        Route::post("master/roll/shortage/add-edit","rollShortageLimitAddEdit")->name("master.roll.shortage.add.edit");
+        Route::post("master/roll/shortage/deactivateLoopStock/{id}","rollShortageLimitActiveDeactivate")->name("master.roll.shortage.deactivate");
         
     });
 

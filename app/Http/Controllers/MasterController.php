@@ -722,21 +722,82 @@ class MasterController extends Controller
 
     public function rollShortageLimitList(Request $request){
         if($request->ajax()){
-            $data =[];
+            $data =DB::select("                        
+                        select rolls.*,qtm.quality,COALESCE(rsl.min_limit,0) as min_limit,rsl.lock_status,rsl.id,
+                            stock.total_net_weight,stock.total_roll,stock.total_length,
+                            transit.total_net_weight as transit_total_net_weight,transit.total_roll as transit_total_roll,transit.total_length as transit_total_length
+                        from (
+                                (
+                            
+                                    select size,roll_color,gsm,quality_id  
+                                    from roll_details
+                                    group by size,roll_color,gsm,quality_id  
+                                )
+                                UNION(
+                                    select size,roll_color,gsm,quality_id 
+                                    from roll_transits
+                                    where size>2
+                                    group by size,roll_color,gsm,quality_id  
+                                )
+                            
+                        )rolls
+                        left join roll_quality_masters qtm on qtm.id = rolls.quality_id
+                        left join roll_shortage_limits rsl on rsl.roll_color = rolls.roll_color
+                            and rsl.roll_size = rolls.size
+                            and rsl.roll_gsm = rolls.gsm
+                            and rsl.quality_type_id = rolls.quality_id
+                        left join(
+                            select sum(net_weight) as total_net_weight,count(id) as total_roll,sum(length) as total_length,
+                                size,roll_color,gsm,quality_id
+                            from roll_details
+                            where is_cut=false
+                            group by size,roll_color,gsm,quality_id 
+                        ) as stock on stock.roll_color = rolls.roll_color
+                            and stock.size = rolls.size
+                            and stock.gsm = rolls.gsm
+                            and stock.quality_id = rolls.quality_id
+                        left join(
+                            select sum(net_weight) as total_net_weight,count(id) as total_roll,sum(length) as total_length,
+                                size,roll_color,gsm,quality_id
+                            from roll_transits
+                            where is_cut=false
+                                AND size>2
+                            group by size,roll_color,gsm,quality_id 
+                        )as transit on transit.roll_color = rolls.roll_color
+                            and transit.size = rolls.size
+                            and transit.gsm = rolls.gsm
+                            and transit.quality_id = rolls.quality_id
+                        order by rolls.size,rolls.roll_color,rolls.gsm,rolls.quality_id
+            ");
+            return DataTables::of($data)
+                ->addIndexColumn()             
+                
+                ->rawColumns(['action'])
+                ->make(true);
         }
         return view("Master/rollShortageLimitList");
     }
 
-    public function rollLimitAddEdit(Request $request){
+    public function rollShortageLimitAddEdit(Request $request){
         try{
             DB::beginTransaction();
-            $message = "New State Add";
-            if($request->id){
-                $this->_M_CityStateMap->edit($request);
-                $message = "State Update";
-            }else{
-                $this->_M_CityStateMap->store($request);
+            $message = "Limit Update";
+            $this->_M_RollShortageLimit->store($request);
+            DB::commit();
+            return responseMsgs(true,$message,"");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function rollShortageLimitActiveDeactivate(Request $request){
+        try{
+            DB::beginTransaction();
+            $message = "Limit Lock";
+            if(!$request->lock_status){
+                $message="Limit Unlock";
             }
+            $this->_M_RollShortageLimit->edit($request);
             DB::commit();
             return responseMsgs(true,$message,"");
         }catch(Exception $e){
