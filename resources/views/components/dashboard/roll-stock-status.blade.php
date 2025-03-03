@@ -1,83 +1,80 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<div>
-  <canvas id="rollStockStatus" height="300"></canvas>
-</div>
+  <canvas id="rollStockStatus"></canvas>
 
 <script>
-  $(document).ready(function() {
-    // Initial call to fetch data
-    getTheRollStatus();
-
-    // Set interval to update chart every 1 minutes (60000 milliseconds)
-    setInterval(getTheRollStatus, 60000); // 1 minutes = 60000ms
+  $(document).ready(function () {
+    getTheRollStatus(); // Initial fetch
+    setInterval(getTheRollStatus, 60000); // Refresh every minute
   });
 
   function getTheRollStatus() {
     $.ajax({
       url: "{{route('dashboard.roll.status')}}",
       type: "get",
-      success: function(response) {
+      success: function (response) {
         if (response?.status && response?.data) {
-          const items = response.data; // Directly access data
+          const items = response.data;
           console.log(items);
-          // Extract values for the chart
-          const values = items.map(item => item.balance);
-          const labels = items.map(item => item.loop_color);
-          const minLimits = items.map(item => item.min_limit);
 
-          // Determine bar colors based on the condition
-          const barColors = values.map((value, index) => {
-            const minLimit = parseFloat(minLimits[index]); // Get the specific min limit for each value
-            value = parseFloat(value);
-            if (value < minLimit) {
-              return 'rgb(235, 17, 17)'; // Red for danger
-            } else if (value < (minLimit + (minLimit / 2))) {
-              return 'rgb(255, 160, 0)'; // Yellow for warning
-            } else {
-              return 'rgb(47, 222, 61)'; // Green for success
-            }
+          // Labels with details
+          const labels = items.map(item => `Size: ${item.size}, Color: ${item.roll_color}, GSM: ${item.gsm}, Q: ${item.quality}`);
+
+          // Extracting values
+          const stockValues = items.map(item => parseFloat(item.total_net_weight) || 0);
+          const inTransitValues = items.map(item => parseFloat(item.transit_total_net_weight) || 0);
+          const minLimits = items.map(item => parseFloat(item.min_limit) || 0);
+
+          // Determine dynamic colors based on stock levels
+          const barColors = stockValues.map((stock, index) => {
+            const minLimit = minLimits[index];
+            if (stock < minLimit) return 'rgb(235, 17, 17)'; // Red - Below limit
+            else if (stock < (minLimit + minLimit / 2)) return 'rgb(255, 160, 0)'; // Orange - Near limit
+            return 'rgb(47, 222, 61)'; // Green - Above limit
           });
 
-          // Chart configuration
+          // Chart data
           const data = {
             labels: labels,
-            datasets: [{
-              label: 'Roll Stock',
-              data: values,
-              backgroundColor: barColors, // Dynamic bar colors
-              borderColor: barColors.map(color => color.replace('0.8', '1')), // Border colors matching the bar
-              borderWidth: 1,
-            }]
+            datasets: [
+              {
+                label: "Stock",
+                data: stockValues,
+                backgroundColor: barColors, // Dynamic colors
+                borderColor: barColors.map(color => color.replace('0.8', '1')), 
+                borderWidth: 1
+              },
+              {
+                label: "In Transit",
+                data: inTransitValues,
+                backgroundColor: "rgba(54, 162, 235, 0.7)", // Blue
+                borderColor: "rgba(54, 162, 235, 1)",
+                borderWidth: 1
+              }
+            ]
           };
 
           const config = {
             type: 'bar',
             data: data,
             options: {
+              responsive: true,
               scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Stock'
-                  }
-                }
+                x: { stacked: false },
+                y: { beginAtZero: true, title: { display: true, text: 'Quantity (kg)' } }
               },
               plugins: {
-                legend: {
-                  display: true
-                },
+                legend: { display: true },
                 tooltip: {
                   callbacks: {
-                    label: function(tooltipItem) {
-                      const value = tooltipItem.raw;
+                    label: function (tooltipItem) {
                       const index = tooltipItem.dataIndex;
-                      const minLimit = minLimits[index]; // Get specific min limit for this bar
+                      const minLimit = minLimits[index];
+                      const value = tooltipItem.raw;
                       return [
-                        `Value: ${value}`,
+                        `${tooltipItem.dataset.label}: ${value}`,
                         `Min Limit: ${minLimit}`,
                         value < minLimit ? 'Status: Below Limit' : 
-                          (value < (minLimit + (minLimit / 2)) ? "Status: Near Limit" : 'Status: Above Limit')
+                        (value < (minLimit + minLimit / 2) ? "Status: Near Limit" : 'Status: Above Limit')
                       ];
                     }
                   }
@@ -86,12 +83,11 @@
             }
           };
 
-          // If chart already exists, update it, else create a new chart
+          // Update or create the chart
           if (window.rollStockBar) {
-            window.rollStockBar.data = data; // Update data
-            window.rollStockBar.update(); // Update the chart
+            window.rollStockBar.data = data;
+            window.rollStockBar.update();
           } else {
-            // Render the chart for the first time
             window.rollStockBar = new Chart(
               document.getElementById('rollStockStatus'),
               config

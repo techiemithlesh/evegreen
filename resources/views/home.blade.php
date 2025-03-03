@@ -79,9 +79,9 @@
                 <div class="card text-center col-md-12" style=" box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);">
                     <h5 class="card-header">Roll Stock</h5>
                     <div class="card-body">
-                        <p class="card-text">
-                            <x-dashboard.roll-stock-status />
-                        </p>
+                        <x-dashboard.roll-stock-status />
+                        <!-- <p class="card-text">
+                        </p> -->
                     </div>
                 </div>
             </div>

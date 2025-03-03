@@ -724,7 +724,7 @@ class MasterController extends Controller
         if($request->ajax()){
             $data =DB::select("                        
                         select rolls.*,qtm.quality,COALESCE(rsl.min_limit,0) as min_limit,rsl.lock_status,rsl.id,
-                            stock.total_net_weight,stock.total_roll,stock.total_length,
+                            COALESCE(stock.total_net_weight,0) as total_net_weight,stock.total_roll,stock.total_length,
                             transit.total_net_weight as transit_total_net_weight,transit.total_roll as transit_total_roll,transit.total_length as transit_total_length
                         from (
                                 (
@@ -742,7 +742,7 @@ class MasterController extends Controller
                             
                         )rolls
                         left join roll_quality_masters qtm on qtm.id = rolls.quality_id
-                        left join roll_shortage_limits rsl on rsl.roll_color = rolls.roll_color
+                        ".($request->dashboardData ? "":" LEFT ")." join roll_shortage_limits rsl on rsl.roll_color = rolls.roll_color
                             and rsl.roll_size = rolls.size
                             and rsl.roll_gsm = rolls.gsm
                             and rsl.quality_type_id = rolls.quality_id
@@ -768,7 +768,7 @@ class MasterController extends Controller
                             and transit.size = rolls.size
                             and transit.gsm = rolls.gsm
                             and transit.quality_id = rolls.quality_id
-                        order by rolls.size,rolls.roll_color,rolls.gsm,rolls.quality_id
+                        order by rolls.size,rolls.roll_color,rolls.gsm,rolls.quality_id,rsl.id
             ");
             if($request->dashboardData){
                 return responseMsgs(true,"data Fetched",$data);

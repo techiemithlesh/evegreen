@@ -295,4 +295,10 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
             Route::get("/roll/shortage", "rollShortage")->name("roll.shortage");
         });
     });
+    // Route::get("test/test",function(){
+    //     if(request()->ajax()){
+    //         dd(request()->all());
+    //     }
+    //     return view("testFom");
+    // });
 });
