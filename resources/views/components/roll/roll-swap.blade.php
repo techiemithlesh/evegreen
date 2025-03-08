@@ -99,7 +99,7 @@
                 if(response.status){
                     $("#rollSwapSwapModal").modal("hide");
                     $("#swap_tbl tbody").empty();
-                    $("#postsTable").DataTable().ajax.reload();
+                    searchData();
                 }else if (response?.errors) {
                     let errors = response?.errors;
                     console.log(response?.errors);
@@ -119,5 +119,11 @@
                 modelInfo("server error","error");
             }
         })
+    }
+    function searchData(){
+        $('#postsTable').DataTable().ajax.reload(function(){
+            addFilter('postsTable',[0]);
+        },false);
+        
     }
 </script>

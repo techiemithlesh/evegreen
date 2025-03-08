@@ -248,7 +248,7 @@
                     $("#rollBookingModal").modal("hide");
                     resetFormBook("myForm");
                     modelInfo(data.messages);
-                    $('#postsTable').DataTable().ajax.reload();
+                    searchData();
                 }else{
                     console.log(data);
                     modelInfo("Internal Server Error","warning");
@@ -327,5 +327,12 @@
         //     templateResult: formatOption,
         //     templateSelection: formatOption 
         // });
+    }
+
+    function searchData(){
+        $('#postsTable').DataTable().ajax.reload(function(){
+            addFilter('postsTable',[0]);
+        },false);
+        
     }
 </script>

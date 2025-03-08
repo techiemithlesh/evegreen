@@ -152,7 +152,9 @@
         $("#" + id).remove();
         if ($("#transportDtl tbody tr").length === 0) { // Check if there are no rows in the tbody
             $("#receivingModel").modal("hide");
-            $("#postsTable").DataTable().ajax.reload(); // Reload the DataTable
+            $("#postsTable").DataTable().ajax.reload(function(){
+                addFilter('postsTable',[0]);
+            },false); // Reload the DataTable
         }
 
     }

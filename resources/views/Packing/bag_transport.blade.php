@@ -183,7 +183,9 @@
     });
 
     function searchData(){
-        $('#postTable').DataTable().ajax.reload();
+        $('#postTable').DataTable().ajax.reload(function(){
+            addFilter('postTable',[0]);
+        },false);
     }
 </script>
 @include("layout.footer")

@@ -126,7 +126,7 @@
                     modelInfo(response.message);
                     resetModelForm("garbageUpdateForm");
                     $("#garbageUpdateModal").modal("hide");
-                    $('#postsTable').DataTable().ajax.reload();
+                    searchData();
                 }
                 else{
                     modelInfo("Server Error!!","error");
@@ -144,6 +144,13 @@
     function resetModelForm(id){
         $("#id").val("");
         $("#"+id).get(0).reset();
+    }
+
+    function searchData(){
+        $('#postsTable').DataTable().ajax.reload(function(){
+            addFilter('postsTable',[0]);
+        },false);
+        
     }
 
 </script>

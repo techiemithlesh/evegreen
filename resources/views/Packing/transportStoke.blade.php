@@ -249,7 +249,9 @@
                     $("#transportForm").get(0).reset();
                     $("#transport").hide();
                     $("#transPortType").attr("disabled",true);
-                    $("#transportTable").DataTable().ajax.reload();
+                    $("#transportTable").DataTable().ajax.reload(function(){
+                        addFilter('transportTable',[0]);
+                    },false);
                     modelInfo(data.messages);
                     setHintDefault();
                 }else{
