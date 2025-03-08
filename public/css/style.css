@@ -449,7 +449,7 @@ a.sidebar-link:hover {
     /* min-width: 50% */
 }
 
-.table-nowrap td, .table-nowrap th {
+.table-fixed td {
     white-space: nowrap;
     text-overflow: ellipsis; /* Adds "..." if text is too long */
     

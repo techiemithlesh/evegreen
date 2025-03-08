@@ -82,8 +82,10 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="rollNo">Roll No</label>
-                                <input type="text" id="rollNo" name="rollNo" class="form-control" onkeyup="getUnprintedRollNo()">
+                                <!-- <input type="text" id="rollNo" name="rollNo" class="form-control" onkeyup="getUnprintedRollNo()"> -->
+                                <select name="rollNo" id="rollNo" class="form-control" onchange="setRollNo(event)">
                                 
+                                </select>
                                 <div class="col-md-12" id="rollSuggestionList"></div>
                                 <span class="error-text" id="rollNo-error"></span>
                             </div>
@@ -134,6 +136,38 @@
     let sl = 0;
     var machineId = window.location.pathname.split('/').pop();
     $(document).ready(function () {
+        $("#rollNo").select2({
+            placeholder: "Search and select...",
+            allowClear: true,
+            width: "100%",
+            ajax: {
+                url: "{{ route('roll.search.printing.list') }}",
+                type: "POST",
+                dataType: "json",
+                delay: 250, // Delay to reduce requests
+                data: function (params) {
+                    return {
+                        rollNo: params.term, // Send search term to the server
+                        machineId:machineId
+                    };
+                },
+                processResults: function (response) {
+                    if (response.status && response.data) {
+                        return {
+                            results: response.data.map(item => ({
+                                id: item.roll_no, // Unique ID for each option
+                                text: item.roll_no // Show roll_no as option text
+                            }))
+                        };
+                    } else {
+                        return { results: [] }; // Return empty if no data
+                    }
+                },
+                cache: true
+            },
+            minimumInputLength: 1 // Fetch results after typing at least 1 character
+        });
+        
         $("#id").val(machineId);
         // Handle Search Button Click
         $("#search").on("click", function () {

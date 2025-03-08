@@ -45,7 +45,7 @@
 
         </div>
         <div class="panel-body">
-            <table id="postsTable" class="table table-striped table-bordered table-fixed">
+            <table id="postsTable" class="table table-striped table-bordered table-fixed table-nowrap">
                 <thead>
                     <tr>
                         <th >#</th>
@@ -71,6 +71,7 @@
                         <th>Printing Color</th>
                         <th>Loop Color</th>
                         <th>Printing Date</th>
+                        <th>Wt After Print</th>
                         <th>Cutting Date</th>
                     </tr>
                 </thead>
@@ -137,6 +138,7 @@
                 { data : "print_color", name: "print_color" },
                 { data : "loop_color", name: "loop_color" },
                 { data : "printing_date", name: "printing_date" },
+                { data : "weight_after_print", name: "weight_after_print" },
                 { data : "cutting_date", name: "cutting_date" },
             ],
             dom: 'lBfrtip', // This enables the buttons

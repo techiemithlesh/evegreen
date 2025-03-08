@@ -1117,7 +1117,6 @@ class RollController extends Controller
                 })
                 ->rawColumns(['row_color', 'action'])
                 ->make(true);
-                // dd(DB::getQueryLog());
             return $list;
 
         }
