@@ -203,7 +203,14 @@
                 success: function (data) {
                     $("#loadingDiv").hide();
                     if (data.status && data.data) {
-                        $("#rollNo").val("");
+                        $("#rollNo").empty().trigger("change").select2("open");
+                        setTimeout(() => {
+                            let searchField = document.querySelector(".select2-container--open .select2-search__field");
+                            if (searchField) {
+                                searchField.focus(); // Ensure the input gets focus
+                                searchField.click(); // Simulate a click to activate it
+                            }
+                        }, 100);
                         let roll = data.data;
                         const rowId = `row${sl}`;
                         const colors = roll.printing_color.split(",");
