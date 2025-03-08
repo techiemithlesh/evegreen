@@ -12,11 +12,14 @@ class GarbageEntry extends Model
     use Loggable;
     protected $fillable =[
         "order_id",
+        "cutting_date",
+        "machine_id",
         "operator_id",
         "helper_id",
         "shift",
         "client_id",
         "user_id",
+        "roll_weight",
         "garbage",
         "is_verify",
         "verify_by",
@@ -31,5 +34,18 @@ class GarbageEntry extends Model
         }
         $id= self::create($inputs->all())->id;
         return $id;
+    }
+
+    public function edit($request){
+        $inputs = snakeCase($request)->filter(function($val,$index){
+            return (in_array($index,$this->fillable));
+        });
+        $data = self::find($request->id);
+        if($data){
+            $data->fill($inputs->all());
+            $data->update();
+            return true;
+        }
+        return false;
     }
 }

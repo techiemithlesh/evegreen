@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\BagController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ColorController;
@@ -299,6 +300,14 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
             Route::get("/roll/shortage", "rollShortage")->name("roll.shortage");
         });
     });
+
+    Route::prefix("accounting")->group(function(){
+        Route::controller(AccountingController::class)->group(function(){
+            Route::get("/garbage/verification","garbageVerification")->name("accounting.garbage.verification");
+            Route::post("/close/garbage","garbageClose")->name("accounting.close.garbage");
+        });
+    });
+
     Route::get("test/test",function(){
         if(request()->ajax()){
             dd(request()->all());

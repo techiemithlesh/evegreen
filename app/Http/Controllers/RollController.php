@@ -1692,12 +1692,15 @@ class RollController extends Controller
                     });
                 $garbagePercent = (($val["garbage"]/$rolls->sum("weight"))/100);
                 $newRequest->merge([
+                    "machine_id"=>$request->id,
+                    "cutting_date"=>$request->cuttingUpdate,
                     "operator_id" => $request->operatorId,
                     "helper_id" => $request->helperId,
                     "shift" => $request->shift,
                     "client_id" => $val["clientId"],
                     "user_id" => Auth()->user()->id,
                     "garbage" => $val["garbage"],
+                    "roll_weight"=>$rolls->sum("weight"),
                     "is_verify" => is_between($garbagePercent,-2,2) ? false : true,
                 ]);
                 $garbageId = $this->_M_GarbageEntry->store($newRequest);
