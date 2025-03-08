@@ -81,7 +81,10 @@
                     <div class="row mt-3">                    
                         <div class="col-md-4">
                             <label class="form-label" for="rollNo">Roll No</label>
-                            <input type="text" id="rollNo" name="rollNo" class="form-control" onkeyup="getNotCuteRollNo()">
+                            <!-- <input type="text" id="rollNo" name="rollNo" class="form-control" onkeyup="getNotCuteRollNo()"> -->
+                             <select name="rollNo" id="rollNo" class="form-control" onchange="setRollNo(event)">
+                                
+                             </select>
                             <div class="col-md-12" id="rollSuggestionList"></div>
                             <span class="error-text" id="rollNo-error"></span>
                             <div class="form-group">
@@ -106,7 +109,7 @@
                                     <th>Roll Color</th>
                                     <th>Client Name</th>
                                     <th>Printing Color</th>
-                                    <th>Garbage In Kg</th>                        
+                                    <!-- <th>Garbage In Kg</th>                         -->
                                     <th>Remove</th>
                                 </thead>
                                 <tbody id="rollTableBody">
@@ -128,10 +131,61 @@
     </div>
 
     <!-- Modal -->
+    <div class="modal fade" id="garbageModal" tabindex="-1" aria-labelledby="garbageModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="garbageModalLabel">Total Garbage</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="" id="garbageModalForm">
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" id="submitGarbageModalForm" class="btn btn-primary">Save</button>
+            </div>
+            </div>
+        </div>
+    </div>
 </main>
 <script>
     let sl = 0;
-    $(document).ready(function () {
+    $(document).ready(function () {        
+        $("#rollNo").select2({
+            placeholder: "Search and select...",
+            allowClear: true,
+            width: "100%",
+            ajax: {
+                url: "{{ route('roll.search.cutting.list') }}",
+                type: "POST",
+                dataType: "json",
+                delay: 250, // Delay to reduce requests
+                data: function (params) {
+                    return {
+                        rollNo: params.term // Send search term to the server
+                    };
+                },
+                processResults: function (response) {
+                    if (response.status && response.data) {
+                        return {
+                            results: response.data.map(item => ({
+                                id: item.roll_no, // Unique ID for each option
+                                text: item.roll_no // Show roll_no as option text
+                            }))
+                        };
+                    } else {
+                        return { results: [] }; // Return empty if no data
+                    }
+                },
+                cache: true
+            },
+            minimumInputLength: 1 // Fetch results after typing at least 1 character
+        });
+
+
         // Handle Search Button Click
         $("#search").on("click", function () {
             searchCutting();
@@ -151,14 +205,33 @@
                     alert("Please add at least one roll before submitting.");
                     return false;
                 }
-                updateRollCutting();
+                openGarbageModel();
+                // updateRollCutting();
+            }
+        });
+
+        $("#submitGarbageModalForm").on("click",function(event){
+            $("#garbageModalForm").submit();
+        });
+
+        $("#garbageModalForm").validate({
+            ignore: [],
+            rules: {
+                id: { required: true },
+                "client[][clientId]": { required: true },
+                "client[][rollId]": { required: true },
+                "client[][garbage]": { required: true },
+            },
+            submitHandler: function (form) {  
+                showConfirmDialog("Are sure want to submit?",updateRollCutting);
+                // updateRollCutting();
             }
         });
     });
 
     function searchCutting(){
         let rollNo = $("#rollNo").val();
-        if (rollNo != "") {
+        if (rollNo != "" && rollNo!=null) {
             $.ajax({
                 url: "{{ route('roll.search.cutting') }}",
                 type: "POST",
@@ -170,12 +243,19 @@
                 success: function (data) {
                     $("#loadingDiv").hide();
                     if (data.status && data.data) {
-                        $("#rollNo").val("");
+                        $("#rollNo").empty().trigger("change").select2("open");
+                        setTimeout(() => {
+                            let searchField = document.querySelector(".select2-container--open .select2-search__field");
+                            if (searchField) {
+                                searchField.focus(); // Ensure the input gets focus
+                                searchField.click(); // Simulate a click to activate it
+                            }
+                        }, 100); 
                         let roll = data.data;
                         const rowId = `row${sl}`;
                         const colors = roll.printing_color.split(",");
                         let row = `
-                            <tr id='${rowId}'>
+                            <tr id='${rowId}' data-id='tr_${rowId}' data-item='${JSON.stringify(roll)}'>
                                 <td>
                                     <input type='hidden' name='roll[${sl}][id]' value='${roll.id}' />${roll.roll_no}
                                 </td>
@@ -184,9 +264,9 @@
                                 <td>${roll.roll_color}</td>
                                 <td>${roll.client_name}</td>
                                 <td>${roll.printing_color}</td>
-                                <td>
+                                <!-- <td>
                                     <input type='text' name='roll[${sl}][totalQtr]' id='totalQtr${rowId}' class='form-control dynamic-field' onkeypress="return isNumDot(event);" required />
-                                </td>
+                                </td>-->
                                 <td><span onclick='removeTr(this)' class='btn btn-sm btn-warning'>X</span></td>
                             </tr>`;
                         $("#rollTableBody").append(row);
@@ -217,14 +297,91 @@
         $(element).closest("tr").remove();
     }
 
-    // Update Roll Printing (Submit form via AJAX)
+    function openGarbageModel(){
+        let rollValues = [];
+        $("input[name^='roll'][name$='[id]']").each(function() {
+            let value = $(this).val(); // Get input value
+            rollValues.push(value);
+        });
+        console.log(rollValues);
+        let formDataHidden=$("#cuttingRoll").serializeArray().map(({ name, value }) => {
+            return `<input type ='hidden' name='${name}' value='${value}' />`;
+        }).join("");
+
+        $.ajax({
+            type: "post",
+            url: "{{route('roll.cutting.garbage.model')}}",
+            data: { "rollIds": rollValues },
+            beforeSend: function() {
+                $("#loadingDiv").show();
+            },
+            success: function(response) {
+                console.log(response);
+                $("#loadingDiv").hide();
+                if (response.status) {
+                    let item = response?.data;
+                    let tr = item.map((val, index) => {
+                        let rollInput = val?.roll_ids.map((id, index1) => {
+                            return `<input type='hidden' name='client[${index}][rollId][${index1}][id]' value='${id}' />`;
+                        }).join(""); // Ensures all hidden inputs are properly combined
+
+                        return $("<tr>").append(
+                            `<td>${val?.client_name}</td>`,
+                            `<td>
+                                <input type='hidden' name='client[${index}][clientId]' value='${val?.client_detail_id}' />
+                                ${rollInput}
+                                <input data-id='${index}' data-item='${val?.total_weight}'  type='text' name='client[${index}][garbage]' id='garbage${index}' class='form-control dynamic-field' 
+                                    onkeypress="return isNumDot(event);" onkeyup="calculateGarbagePer(event)" required />
+                            </td>`,
+                            `<td id='gr_${index}'>0 %</td>`
+                        );
+                    });
+
+                    // Create the table properly
+                    let table = $("<table class='table table-bordered'>")
+                        .append(
+                            $("<thead>").append(
+                                $("<tr>").append(
+                                    "<th>Client Name</th>",
+                                    "<th>Garbage</th>",
+                                    "<th>Garbage %</th>"
+                                )
+                            )
+                        )
+                        .append($("<tbody>").append(tr));
+
+                    $("#garbageModalForm").html(table).append(formDataHidden); // Append table to a container
+                    $("#garbageModal").modal("show");
+                    
+                }
+            },
+            error: function(errors) {
+                console.log(errors);
+                $("#loadingDiv").hide();
+            }
+        });
+    }
+
+    function calculateGarbagePer(event){
+        let value = event.target.value; // Get input value
+        let dataItem = event.target.dataset.item; // Correct way to get data-item
+        let dataId = event.target.dataset.id;        
+        let percent = ((parseFloat(value)/parseFloat(dataItem)) * 100 ).toFixed(2);
+        $("#gr_"+dataId).html((value!=''?percent:'0')+" %");
+        if((percent > 2) || (percent < -2)){
+            $("#gr_"+dataId).css("color","red");
+        }else{
+            $("#gr_"+dataId).css("color","black");
+        }
+
+    }
 
     function updateRollCutting() {
         $.ajax({
             type: "POST",
             url: "{{ route('roll.cutting.update') }}",
             dataType: "json",
-            data: $("#cuttingRoll").serialize(),
+            data:$("#garbageModalForm").serialize(),
             beforeSend: function () {
                 $("#loadingDiv").show();
             },
@@ -232,11 +389,11 @@
                 $("#loadingDiv").hide();
                 if (data.status) {
                     sl =0;
-                    // Reset form and clear the table
                     $("#cuttingRoll")[0].reset();
                     $("#rollTableBody").empty();
-                    $("#UpdateCuttingModel").modal('hide');
-                    modelInfo(data.messages || "Update Successful!");
+                    $("#garbageModalForm").empty();                    
+                    $("#garbageModal").modal("toggle");
+                    modelInfo(data.message || "Update Successful!");
                 } else if (data.errors) {
                     let errors = data.errors;
                     for (field in errors) {
@@ -246,7 +403,11 @@
                 } else {
                     modelInfo("Something Went Wrong!!", "error");
                 }
-            },            
+            }, 
+            error:function(errors){
+                modelInfo("Server Error!!!","error");
+                $("#loadingDiv").hide();
+            }           
         });
     }
 
@@ -271,6 +432,7 @@
                         });
                         let selectElement=`<select class="form-control" onchange="setRollNo(event)"><option>select</option>${options}</select>`;
                         $("#rollSuggestionList").html(selectElement);
+                        selectElement.select2();
                     } else if(data.status && data.data.length==0){
                         modelInfo("Invalid Roll No", "warning");
                     }

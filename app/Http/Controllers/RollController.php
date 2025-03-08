@@ -12,6 +12,7 @@ use App\Models\ColorMaster;
 use App\Models\CuttingScheduleDetail;
 use App\Models\FareDetail;
 use App\Models\GarbageAcceptRegister;
+use App\Models\GarbageEntry;
 use App\Models\GarbageNotAcceptRegister;
 use App\Models\GradeMaster;
 use App\Models\LoopDetail;
@@ -86,6 +87,7 @@ class RollController extends Controller
     protected $_M_LoopDetail;
     protected $_M_LoopAccount;
     protected $_M_OrderBroker;
+    protected $_M_GarbageEntry;
 
     function __construct()
     {
@@ -115,6 +117,7 @@ class RollController extends Controller
         $this->_M_LoopStock = new LoopStock();
         $this->_M_LoopAccount = new LoopUsageAccount();
         $this->_M_OrderBroker = new OrderBroker();
+        $this->_M_GarbageEntry = new GarbageEntry();
     }
 
     #================ Roll Transit =====================
@@ -1602,6 +1605,31 @@ class RollController extends Controller
         }
     }
 
+    public function getDataForCuttingGarbage(Request $request){
+        try{
+            $rolls = $this->_M_RollDetail->select("*")
+                    ->whereIn("id",$request->rollIds)
+                    ->get();
+            $clintIds = $rolls->pluck("client_detail_id")->unique();
+            $data=[];
+            foreach($clintIds as $val){
+                $roll = $rolls->where("client_detail_id",$val)->map(function($item){
+                    $item->weight = $item->weight_after_print ? $item->weight_after_print : $item->net_weight;
+                    return $item;
+                });
+                $data[]=[
+                    "client_detail_id"=>$val,
+                    "client_name"=>$this->_M_ClientDetails->find($val)->client_name??"",
+                    "roll_ids"=>$roll->pluck("id")->toArray(),
+                    "total_weight"=>$roll->sum("weight") ,
+                ];
+            }
+            return responseMsgs(true,"modal Data",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
     public function rollPrintingUpdate(Request $request){        
         try{
            
@@ -1644,29 +1672,57 @@ class RollController extends Controller
                 "helperId" => "required|exists:".$this->_M_User->getTable().",id",
                 "roll" => "required|array",
                 "roll.*.id"=>"required|exists:".$this->_M_RollDetail->getTable().",id,lock_status,false,is_cut,false",
-                "roll.*.totalQtr"=>"required",
+                // "roll.*.totalQtr"=>"required",
+                "client.*.clientId"=>"required",
+                "client.*.rollId.*.id"=>"required",
+                "client.*.garbage"=>"required|numeric"
             ];
             $validate = Validator::make($request->all(),$rule);
             if($validate->fails()){
                 return validationError($validate);
             }
+            // dd($request->all());
             DB::beginTransaction();
-            foreach($request->roll as $index=>$val){
-                $roll = $this->_M_RollDetail->find($val['id']);
-                $roll->is_cut = true;
-                $roll->cutting_date = $request->cuttingUpdate;
-                $roll->weight_after_cutting = $roll->net_weight - $val["totalQtr"]??0;
-                $roll->cutting_machine_id = $request->id;
-                $roll->update();
-                $newRequest = new Request($request->all());
+            foreach($request->client as $val){
+                $newRequest = new Request();
+                $rolls = $this->_M_RollDetail->select("*")
+                    ->whereIn("id",collect($val["rollId"])->pluck("id")->toArray())
+                    ->get()->map(function($item){
+                        $item->weight = $item->weight_after_print ? $item->weight_after_print : $item->net_weight;
+                        return $item;
+                    });
+                $garbagePercent = (($val["garbage"]/$rolls->sum("weight"))/100);
                 $newRequest->merge([
-                    "roll_id"=>$roll->id,
-                    "total_qtr"=>$val["totalQtr"]??0,
+                    "operator_id" => $request->operatorId,
+                    "helper_id" => $request->helperId,
+                    "shift" => $request->shift,
+                    "client_id" => $val["clientId"],
+                    "user_id" => Auth()->user()->id,
+                    "garbage" => $val["garbage"],
+                    "is_verify" => is_between($garbagePercent,-2,2) ? false : true,
                 ]);
-                $id = $this->_M_GarbageAcceptRegister->store($newRequest);
+                $garbageId = $this->_M_GarbageEntry->store($newRequest);
+                $averageGarbage = $val["garbage"]/$rolls->count();
+
+                foreach($rolls as $index=>$val){
+                    $roll = $this->_M_RollDetail->find($val->id);
+                    $roll->is_cut = true;
+                    $roll->cutting_date = $request->cuttingUpdate;
+                    $roll->weight_after_cutting = ($val->weight - $averageGarbage)??0;
+                    $roll->cutting_machine_id = $request->id;
+                    $roll->update();
+                    $newRequest = new Request($request->all());
+                    $newRequest->merge([
+                        "garbage_entry_id"=>$garbageId,
+                        "roll_id"=>$roll->id,
+                        "total_qtr"=>$averageGarbage??0,
+                    ]);
+                    $id = $this->_M_GarbageAcceptRegister->store($newRequest);
+                }
             }
+            
             DB::commit();
-            return responseMsgs(true,"Roll No ".$roll->roll_no." Printed","");
+            return responseMsgs(true,"Cutting Roll Enter","");
 
         }catch(Exception $e){
             DB::rollBack();

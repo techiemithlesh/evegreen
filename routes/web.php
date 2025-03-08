@@ -247,6 +247,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post("roll/search/printing/list", "rollSearchPrintingRollList")->name("roll.search.printing.list");
         Route::post("roll/search/cutting", "rollSearchCutting")->name("roll.search.cutting");
         Route::post("roll/search/cutting/list", "rollSearchCuttingRollList")->name("roll.search.cutting.list");
+        Route::post("roll/cutting/garbage/model", "getDataForCuttingGarbage")->name("roll.cutting.garbage.model");
         Route::post("roll/update/edit", "rollUpdate")->name("roll.update.edit");
     });
 

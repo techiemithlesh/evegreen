@@ -5,22 +5,23 @@ namespace App\Models;
 use App\Traits\Loggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
 
-class GarbageAcceptRegister extends Model
+class GarbageEntry extends Model
 {
-    use Loggable;
     use HasFactory;
-
+    use Loggable;
     protected $fillable =[
-        "garbage_entry_id",
-        "roll_id",
-        "total_qtr",
-        "user_id",
+        "order_id",
         "operator_id",
         "helper_id",
         "shift",
-        "lock_status",
+        "client_id",
+        "user_id",
+        "garbage",
+        "is_verify",
+        "verify_by",
+        "remarks",
+        "lock_status"
     ];
 
     public function store($request){                
