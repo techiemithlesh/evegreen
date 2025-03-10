@@ -342,9 +342,12 @@ class PackingController extends Controller
                 ->addColumn('bag_size', function ($val) { 
                     return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
                 })
-                ->addColumn('action', function ($val) {                    
-                    $button = "";                    
-                    // $button='<button class="btn btn-sm btn-info" onClick="openCuttingModel('.$val->id.')" >Update Cutting</button>';
+                ->addColumn('action', function ($val) { 
+                    $button="";
+                    if((!$val->is_wip_disbursed) && (!$val->is_delivered) ){
+                        $button.='<button class="btn btn-sm btn-primary" onClick="editBag('.$val->id.')" >E</button>';
+                        $button.='<button class="btn btn-sm btn-danger" onClick="deleteBag('.$val->id.')" >D</button>';
+                    }                     
                     return $button;
                 })
                 ->rawColumns(['row_color', 'action'])
@@ -353,6 +356,30 @@ class PackingController extends Controller
 
         }
         return view("Packing/stock");
+    }
+
+    public function bagDtl($id){
+        try{
+            $data = $this->_M_BagPacking->find($id);
+            DB::enableQueryLog();
+            $data->units = $data->getOrderDtl()->units??"";
+            return responseMsg(true,"Data Fetched",$data);
+        }catch(Exception $e){
+            return responseMsg(false,$e->getMessage(),"");
+        }
+    }
+
+    public function editBag(Request $request){
+        try{
+            $rules=[
+                "id"=>"required|exists:".$this->_M_BagPacking->getTable().",id",
+                "packing_weight"=>"required|numeric",
+                "packing_bag_pieces"=>"nullable|numeric",
+            ];
+            dd($request->all());
+        }catch(Exception $e){
+            return responseMsg(false,$e->getMessage(),"");
+        }
     }
 
     public function bagGodown(Request $request){

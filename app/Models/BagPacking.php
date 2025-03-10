@@ -31,4 +31,8 @@ class BagPacking extends Model
         $id= self::create($inputs->all())->id;
         return $id;
     }
+
+    public function getOrderDtl(){
+        return $this->belongsTo(OrderPunchDetail::class,"order_id","id")->first();
+    }
 }

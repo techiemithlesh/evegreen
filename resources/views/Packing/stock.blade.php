@@ -41,6 +41,41 @@
             </table>
         </div>
     </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="editBagModal" tabindex="-1" aria-labelledby="editBagModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editBagModalLabel">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="" id="editBagForm">
+                    @csrf
+                    <!-- Hidden field for Client ID -->
+                    <input type="hidden" id="id" name="id" value="">
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label for="packing_weight" class="control-label">Weight<span class="text-danger">*</span></label>
+                            <input name="packing_weight"  id="packing_weight" class="form-control" required onkeypress="return isNum(event);"/>
+                            <span class="error-text" id="packing_weight-error"></span>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="packing_bag_pieces" class="control-label">Piece<span class="text-danger" style="display:none;">*</span></label>
+                            <input name="packing_bag_pieces"  id="packing_bag_pieces" class="form-control" onkeypress="return isNum(event);"/>
+                            <span class="error-text" id="packing_bag_pieces-error"></span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submitEditForm">Edit</button>
+            </div>
+            </div>
+        </div>
+    </div>
 </main>
 <script>
     $(document).ready(function(){
@@ -101,6 +136,85 @@
                 addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1]);
             },
         });
+        $("#submitEditForm").on("click",function(){
+            $("#editBagForm").submit();
+        });
+        $("#editBagForm").validate({
+                rules: {
+                    packing_weight: {
+                        required: true,
+                        number: true,
+                    },
+                },
+                submitHandler: function(form) {
+                    showConfirmDialog("Are sure want to edit??",editBagSubmit);
+                }
+            });
     });
+
+    function editBag(id) {
+        $.ajax({
+            url: "{{ route('packing.bag.dtl', ['id' => ':id']) }}".replace(':id', id),
+            type: "GET",
+            dataType: "json",
+            beforeSend: function() {
+                $("#loadingDiv").show();
+            },
+            success: function(response) {
+                $("#loadingDiv").hide();
+                $("#packing_bag_pieces").parent("label").find("span").css("display","none");
+                $("#packing_bag_pieces").closest(".form-group").find("label span.text-danger").css("display", "none");
+                $("#packing_bag_pieces").attr("required",false);
+                if(response.status && response.data.id){
+                    let item = response.data;
+                    $("#id").val(item.id);
+                    $("#packing_weight").val(item.packing_weight);
+                    $("#packing_bag_pieces").val(item.packing_bag_pieces);
+                    if(item.units!="Kg"){
+                        $("#packing_bag_pieces").closest(".form-group").find("label span.text-danger").css("display", "inline"); // Show the asterisk
+                        $("#packing_bag_pieces").attr("required",true);
+                    }
+                    $("#editBagModal").modal("show");
+                }
+                else{
+                    modelInfo("server error!!","warning");
+                }
+                console.log(response); // Handle the response here
+            },
+            error: function(errors) {
+                $("#loadingDiv").hide();
+                console.log(errors);
+                modelInfo("server error!!","error");
+            }
+        });
+    }
+
+
+
+    function editBagSubmit(){
+        $.ajax({
+            url:"{{route('packing.bag.edit')}}",
+            type:"post",
+            dataType:"json",
+            data:$("#editBagForm").serialize(),
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(response){
+                $("#loadingDiv").hide();
+                if(response.status){
+                    modelInfo(response?.message);
+                }else{
+                    modelInfo("server Error","warning");
+                }
+            },
+            error:function(error){
+                $("#loadingDiv").hide();
+                console.log(error);
+                modelInfo("server Error","error");
+            }
+        })
+    }
+
 </script>
 @include("layout.footer")
