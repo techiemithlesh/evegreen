@@ -152,6 +152,13 @@
             });
     });
 
+    function searchData(){
+        $('#postsTable').DataTable().ajax.reload(function(){
+            addFilter('postsTable',[0]);
+        },false);
+        
+    }
+
     function editBag(id) {
         $.ajax({
             url: "{{ route('packing.bag.dtl', ['id' => ':id']) }}".replace(':id', id),
@@ -189,8 +196,6 @@
         });
     }
 
-
-
     function editBagSubmit(){
         $.ajax({
             url:"{{route('packing.bag.edit')}}",
@@ -203,7 +208,9 @@
             success:function(response){
                 $("#loadingDiv").hide();
                 if(response.status){
+                    $("#editBagModal").modal("hide");
                     modelInfo(response?.message);
+                    searchData();
                 }else{
                     modelInfo("server Error","warning");
                 }
@@ -212,6 +219,29 @@
                 $("#loadingDiv").hide();
                 console.log(error);
                 modelInfo("server Error","error");
+            }
+        })
+    }
+
+    function deleteBag(id){
+        $.ajax({
+            url:"{{route('packing.bag.delete')}}",
+            type:"post",
+            dataType:"json",
+            data:{id:id},
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(response){
+                $("#loadingDiv").hide();
+                modelInfo(response.message,response.status?"success":"warning");
+                if(response.status){
+                    searchData();
+                }
+            },
+            error:function(errors){
+                console.log(error);
+                modelInfo("server error","error");
             }
         })
     }

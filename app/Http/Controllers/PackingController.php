@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\MyException;
 use App\Models\AutoDetail;
 use App\Models\BagPacking;
 use App\Models\BagPackingTransport;
@@ -376,9 +377,59 @@ class PackingController extends Controller
                 "packing_weight"=>"required|numeric",
                 "packing_bag_pieces"=>"nullable|numeric",
             ];
-            dd($request->all());
-        }catch(Exception $e){
+            $validate = Validator::make($request->all(),$rules);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            $bag = $this->_M_BagPacking->find($request->id);
+            $order = $bag->getOrderDtl();
+            $bagStatus = flipConstants(collect(Config::get("customConfig.bagStatus")));
+            if($bag->packing_status==$bagStatus["dispatched"]){
+                throw new MyException("Bag is Dispatch");
+            }
+            if($order && $order->is_wip_disbursed){
+                throw new MyException("can't Delete the roll because order is verified");
+            }
+            $bag->packing_weight = $request->packing_weight;
+            $bag->packing_bag_pieces = $request->packing_bag_pieces;
+            DB::beginTransaction();
+            $bag->update();
+            DB::commit();
+            return responseMsg(true,"Bag Update","");
+        }catch(MyException $e){
             return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            return responseMsg(false,"Server Error","");
+        }
+    }
+
+    public function deleteBag(Request $request){
+        try{
+            $rules=[
+                "id"=>"required|exists:".$this->_M_BagPacking->getTable().",id"
+            ];
+            $validate = Validator::make($request->all(),$rules);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            $bag = $this->_M_BagPacking->find($request->id);
+            $order = $bag->getOrderDtl();
+            $bagStatus = flipConstants(collect(Config::get("customConfig.bagStatus")));
+            if($bag->packing_status==$bagStatus["dispatched"]){
+                throw new MyException("Bag is Dispatch");
+            }
+            if($order && $order->is_wip_disbursed){
+                throw new MyException("can't Delete the roll because order is verified");
+            }
+            $bag->lock_status = true;
+            DB::beginTransaction();
+            $bag->update();
+            DB::commit();
+            return responseMsg(true,"Bag Deleted","");
+        }catch(MyException $e){
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            return responseMsg(false,"Server Error","");
         }
     }
 

@@ -2049,7 +2049,7 @@ class RollController extends Controller
                     $val->result = $avg; 
                     $val->unit =  $avg." ".$request->bookingBagUnits; 
                     return $val;
-                })->where("result","<=",$request->totalUnits)
+                })//->where("result","<=",$request->totalUnits)
                 ->sortByDesc(function ($item) {
                     return [$item['result'], $item['size']];
                 });
@@ -2077,7 +2077,7 @@ class RollController extends Controller
                     $val->result = $avg; 
                     $val->unit =  $avg." ".$request->bookingBagUnits; 
                     return $val;
-                })->where("result","<=",$request->totalUnits)
+                })//->where("result","<=",$request->totalUnits)
                 ->sortByDesc(function ($item) {
                     return [$item['result'], $item['size']];
                 });
