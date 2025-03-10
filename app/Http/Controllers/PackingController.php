@@ -347,7 +347,7 @@ class PackingController extends Controller
                     $button="";
                     if((!$val->is_wip_disbursed) && (!$val->is_delivered) ){
                         $button.='<button class="btn btn-sm btn-primary" onClick="editBag('.$val->id.')" >E</button>';
-                        $button.='<button class="btn btn-sm btn-danger" onClick="deleteBag('.$val->id.')" >D</button>';
+                        $button.='<button class="btn btn-sm btn-danger" onClick="showConfirmDialog('."'Are you sure you want to deactivate this item?', function() { deleteBag($val->id); })".'" >D</button>';
                     }                     
                     return $button;
                 })
