@@ -2178,7 +2178,7 @@ class RollController extends Controller
                             $pieces2 = $this->calculatePossibleProduction($newRequest2);
                             $totalPiece = ((($pieces["result"]??0)+($pieces2["result"]??0))/2); 
                             $totalLoopWeight = (($totalPiece*3.4)/1000);
-                            if(in_array($bag->id,[2,4])){
+                            if(in_array($bag->id,[2,4,5])){
                                 $loopStock = $this->_M_LoopStock->where("loop_color",$order->bag_loop_color)->first();
 
                                 $newLoopAccRequest = new Request(
@@ -2262,7 +2262,7 @@ class RollController extends Controller
                     $pieces2 = $this->calculatePossibleProduction($newRequest2);
                     $totalPiece = ((($pieces["result"]??0)+($pieces2["result"]??0))/2); 
                     $totalLoopWeight = (($totalPiece*3.4)/1000);
-                    if(in_array($bag->id,[2,4])){
+                    if(in_array($bag->id,[2,4,5])){
                         $loopStock = $this->_M_LoopStock->where("loop_color",$orderNew->bag_loop_color)->first();
 
                         $newLoopAccRequest = new Request(
@@ -2338,8 +2338,8 @@ class RollController extends Controller
 
         }
         $order->bag_gsm_json = $order->bag_gsm_json ? implode("/",json_decode($order->bag_gsm_json,true)) : $order->bag_gsm_json;
-        $order->bag_printing_color = json_decode($order->bag_printing_color,true);
-        $order->bag_color = json_decode($order->bag_color,true);
+        $order->bag_printing_color = $order->bag_printing_color ? json_decode($order->bag_printing_color,true):[];
+        $order->bag_color = $order->bag_color ? json_decode($order->bag_color,true):[];
         $order->bag_gsm = collect(json_decode($order->bag_gsm,true))->map(function($val){
             return (int) $val;
         })->toArray();

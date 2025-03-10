@@ -66,4 +66,27 @@ return[
                         "order_no",
                         "roll_no",     
     ],
+
+    "BagTypeIdealWeightFormula"=>[
+        [
+            "id"=>1,
+            "RS"=>"(L X 2) + 6",
+        ],
+        [
+            "id"=>2,
+            "RS"=>"(L X 2) + 6",
+        ],
+        [
+            "id"=>3,
+            "RS"=>"(W X 2) + 2",
+        ],
+        [
+            "id"=>4,
+            "RS"=>"(L X 2) + 3",
+        ],
+        [
+            "id"=>5,
+            "RS"=>"(L X 2) + 3",
+        ],
+    ],
 ];

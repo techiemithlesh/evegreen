@@ -69,13 +69,16 @@ class PackingController extends Controller
                             COALESCE(roll_weight,0) as roll_weight,
                             COALESCE(total_garbage,0) as total_garbage,
                             COALESCE(packing_weight,0) as packing_weight,
-                            COALESCE(packing_bag_pieces,0) as packing_bag_pieces")
+                            COALESCE(packing_bag_pieces,0) as packing_bag_pieces,
+                            roll.roll_ids
+                            ")
             )
             ->join("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")
             ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")
             ->join(DB::raw("
                 (
-                    select sum(net_weight) as roll_weight,order_id
+                    select sum(CASE WHEN is_printed=true then weight_after_print ELSE net_weight END ) as roll_weight,order_id,
+                        string_agg(roll_details.id::text,',') as roll_ids
                     from roll_details
                     join order_roll_bag_types on order_roll_bag_types.roll_id = roll_details.id
                     where order_roll_bag_types.lock_status = false and roll_details.is_cut = true
@@ -100,26 +103,78 @@ class PackingController extends Controller
                 ) As packing
             "),"packing.order_id","order_punch_details.id")
             ->where("order_punch_details.is_delivered",false)
+            ->where("order_punch_details.is_wip_disbursed",false)
             ->where(DB::raw("COALESCE(roll.roll_weight,0) - COALESCE(packing.packing_weight,0) - COALESCE(garbage.total_garbage,0)"),">",0)
-            ->orderBy("order_punch_details.id");
+            ->orderBy("order_punch_details.id")
+            ->get()
+            ->map(function($val){
+                $gsm_json = $val->bag_gsm;
+                $val->packing_date = $val->packing_date ? Carbon::parse($val->packing_date)->format("d-m-Y") : "";
+                $val->bag_printing_color = collect(json_decode($val->bag_printing_color,true))->implode(",") ;
+                $val->bag_color = collect(json_decode($val->bag_color,true))->implode(",") ;
+                $val->bag_gsm = collect(json_decode($val->bag_gsm,true))->implode(",") ;
+                $val->bag_size = (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
+                
+                $val->loop_weight = 0;
+                $rolls = $this->_M_RollDetail->whereIn("id",explode(",",$val->roll_ids))->get();
+                $totalPieces =0;
+                foreach($rolls as $roll){
+                    $bag = $this->_M_BagType->find($roll->bag_type_id);
+                    $formula = $bag->roll_find;
+                    $formula2 = $bag->roll_find_as_weight;
+
+                    $newRequest = new Request();
+                    $newRequest->merge(
+                        [
+                        "bookingBagUnits" => $roll->bag_unit,
+                        "formula" => $formula,
+                        "length" => $roll->length,
+                        "netWeight"=>$roll->net_weight,
+                        "size"=>$roll->size,
+                        "gsm"=>$roll->gsm,
+
+                        "bagL"=>$roll->l,
+                        "bagW"=>$roll->w,
+                        "bagG"=>$roll->g
+                        ]
+                    );
+                    $newRequest2 = new Request($newRequest->all());
+                    $newRequest2->merge([
+                        "formula" => $formula2,
+                    ]);
+
+                    $result = $this->calculatePossibleProduction($newRequest);
+                    $result2 = $this->calculatePossibleProduction($newRequest2);
+                    $totalPieces += ((($result["result"]??0)+($result2["result"]??0))/2);
+                }
+                $val->total_pieces = $val->units!="Kg" ? $totalPieces : 0 ;
+                $val->loop_weight = 0;
+                if(in_array($val->bag_type_id,[2,4,5])){
+                    $val->loop_weight = (($totalPieces*3.4)/1000);
+                }
+                $val->balance = roundFigure($val->roll_weight + $val->loop_weight - $val->packing_weight - $val->total_garbage);
+                $gsm = collect(json_decode($gsm_json,true));
+                $rs = Config::get("customConfig.BagTypeIdealWeightFormula.".$val->bag_type_id)["RS"]??"";
+                $val->valueObject = [
+                    "RS"=>$rs,
+                    "GSM"=>$gsm->sum()/$gsm->count(),
+                    "X"=>"*",
+                    "*"=>"*",
+                    "x"=>"*",
+                    "/"=>"/",
+                    "+"=>"+",
+                    "-"=>"-",
+                    "L"=>$val->bag_l,
+                    "W"=>$val->bag_w,
+                    "G"=>$val->bag_g??0,
+                ];
+                $val->formula_ideal_weight = $this->_M_BagType->find($val->bag_type_id)->weight_of_bag_per_piece;
+                return $val;
+
+            });
             
             $list = DataTables::of($data)
-                ->addIndexColumn()
-                ->addColumn('packing_date', function ($val) { 
-                    return $val->packing_date ? Carbon::parse($val->packing_date)->format("d-m-Y") : "";
-                })
-                ->addColumn('bag_printing_color', function ($val) { 
-                    return collect(json_decode($val->bag_printing_color,true))->implode(",") ;
-                })
-                ->addColumn('bag_color', function ($val) { 
-                    return collect(json_decode($val->bag_color,true))->implode(",") ;
-                })
-                ->addColumn('bag_gsm', function ($val) { 
-                    return collect(json_decode($val->bag_gsm,true))->implode(",") ;
-                })
-                ->addColumn('bag_size', function ($val) { 
-                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
-                })
+                ->addIndexColumn()                
                 ->addColumn('action', function ($val) {                    
                     $button = "";                    
                     // $button='<button class="btn btn-sm btn-info" onClick="openCuttingModel('.$val->id.')" >Update Cutting</button>';
@@ -131,6 +186,23 @@ class PackingController extends Controller
 
         }
         return view("Packing/wip");
+    }
+
+    public function disburseOrder(Request $request){
+        try{
+            $order = $this->_M_OrderPunchDetail->find($request->id);
+            $order->is_wip_disbursed = true;
+            $order->wip_disbursed_units =$request->balance;
+            $order->wip_disbursed_by = Auth::user()->id??null;
+            $order->wip_disbursed_date= Carbon::now();
+
+            DB::beginTransaction();
+            $order->update();
+            DB::commit();
+            return responseMsgs(true,"Data Update","");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),'');
+        }
     }
 
     public function packingEnterWipAdd(Request $request){

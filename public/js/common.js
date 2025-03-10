@@ -347,4 +347,14 @@ function setHintCollapse(id=""){
 
 //   end
 
+function evaluateFormula(formula, variables) {
+    return new Function(...Object.keys(variables), "return " + formula)(...Object.values(variables));
+}
+
+let formula = "a + b * c"; // Dynamic formula
+let values = { a: 10, b: 5, c: 2 }; // Variables
+
+console.log(evaluateFormula(formula, values)); // Output: 20
+
+
 

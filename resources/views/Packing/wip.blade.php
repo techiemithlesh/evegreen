@@ -23,15 +23,13 @@
                             <tr>
                                 <th>#</th>
                                 <th>Client Name</th>
-                                <th>Bag Type</th>
                                 <th>Bag Size</th>
-                                <th>Unit</th>
-                                <th>Client Requires</th>
-                                <th>Total Roll Weight</th>
-                                <th>Total Garbage Weight</th>
+                                <th>Bag Type</th>
+                                <th>Bag Color</th>
+                                <th>Bag GSM</th>
                                 <th>Total Bag Weight</th>
-                                <th>Balance</th>
-                                <th>Add</th>
+                                <th>Unit</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -75,25 +73,13 @@
             columns: [
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
                 { data: "client_name", name: "client_name" },
-                { data: "bag_type", name: "bag_type" },
                 { data: "bag_size", name: "bag_size" ,render: function(item) {  return `<pre>${item}</pre>`; }},
+                { data: "bag_type", name: "bag_type" },
+                { data: "bag_color", name: "bag_color" },
+                { data: "bag_gsm", name: "bag_gsm" },
+                { data: null,name: "balance",render: function(row, type, data) { return parseFloat(data.balance).toFixed(2);}},
                 { data: "units", name: "units" },
-                { data: "total_units", name: "total_units" },
-                { data: "roll_weight", name: "roll_weight" },
-                { data: "total_garbage", name: "total_garbage" },
-                { data: "packing_weight", name: "packing_weight" },
-                { 
-                    data: null,
-                    name: "balance",
-                    render: function(row, type, data) {
-                        return parseFloat(data.roll_weight - data.packing_weight - data.total_garbage).toFixed(2);
-                    }
-                },
-                { 
-                    data: null,
-                    orderable: false,
-                    searchable: false,
-                    render: function(row, type, data) {
+                { data: null, orderable: false, searchable: false, render: function(row, type, data) {
                         return `
                             <table class="mt-2 table table-bordered table-fixed" style="display:none;" id="table_${data.id}">
                             </table>
@@ -101,6 +87,7 @@
                                     id="button_${data.id}" 
                                     onclick="addTr('${data.id}')" 
                                     class="btn btn-sm btn-primary">+</button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="disburseOrderConform(${data.id},'${parseFloat(data.balance).toFixed(2)} Kg')">D</button>
                         `;
                     }
                 }
@@ -120,7 +107,10 @@
                     text: 'Export to Excel',
                     className: 'btn btn-success'
                 }
-            ]
+            ],
+            initComplete: function () {
+                addFilter('orderRoll',[0,$("#orderRoll th").length-1]);
+            }, 
         });
 
         $("#entryForm").validate({
@@ -150,19 +140,24 @@
         if (table.find("tbody").length === 0) {
             table.append("<tbody></tbody>");
         }
+        let formula = item?.formula_ideal_weight;
+        let valueObj = item?.valueObject;
  
 
         let tr = $("<tr>").attr("data-id", item.id)
             .append(`
                 <td>
-                    <input type='hidden' name='roll[${sl}][id]' value='${item.id}' />
-                    <input type='text' class="form-control" style="width:100px" placeholder="Weight" id='roll[${sl}][weight]' name='roll[${sl}][weight]' required onkeypress="return isNumDot(event);" />
-                    <span class="error-text" id="roll[${sl}][weight]-error"></span>
-                </td>
-                <td>
                     <input type='text' class="form-control" style="width:100px" placeholder="Piece" id='roll[${sl}][pieces]' name='roll[${sl}][pieces]' ${item.units === 'Piece' ? 'required' : ''} onkeypress="return isNumDot(event);" />
                     <span class="error-text" id="roll[${sl}][pieces]-error"></span>
                 </td>
+                <td>
+                    <input type='text' class="form-control" style="width:100px" placeholder="IdealWeight" id='roll[${sl}][idealWeight]' name='roll[${sl}][idealWeight]' readonly value='0' />
+                </td>
+                <td>
+                    <input type='hidden' name='roll[${sl}][id]' value='${item.id}' />
+                    <input type='text' class="form-control" style="width:100px" placeholder="Weight" id='roll[${sl}][weight]' name='roll[${sl}][weight]' required onkeypress="return isNumDot(event);" />
+                    <span class="error-text" id="roll[${sl}][weight]-error"></span>
+                </td>                
                 <td><button type='button' onclick='removeTr(this, ${id})' class='btn btn-sm btn-warning'>X</button></td>
             `);
         
@@ -201,7 +196,8 @@
                 if(data?.status){
                     modelInfo(data?.message);
                     $("#entryForm").get(0).reset();
-                    $("#orderRoll").DataTable().ajax.reload();
+                    searchData();
+                    // $("#orderRoll").DataTable().ajax.reload();
                     sl=0;
                 }else{
                     modelInfo("Server Error","error");
@@ -214,6 +210,47 @@
                 console.log(data);
             }
         });
+    }
+
+    function disburseOrderConform(orderId,message){
+        showConfirmDialog("Are You Sure Discard "+message+"??",function(){ 
+            disburseOrder(orderId);
+        });
+    }
+
+    function disburseOrder(orderId){
+        let buttonElement = document.getElementById("button_" + orderId); 
+        let item = JSON.parse(buttonElement.getAttribute('data-item'));
+        $.ajax({
+            url:"{{route('packing.wip.disburse.order')}}",
+            type:"post",
+            dataType:"json",
+            data:{"id":orderId,"balance":item.balance},
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(response){
+                console.log(response);                
+                $("#loadingDiv").hide();
+                if(response.status){
+                    modelInfo(response.message);
+                    searchData();
+                }else{
+                    modelInfo("server error!!","error");
+                }
+            },
+            error:function(errors){
+                console.log(errors);
+                modelInfo("server error!!","error");
+                $("#loadingDiv").hide();
+            }
+        })
+    }
+
+    function searchData(){
+        $('#orderRoll').DataTable().ajax.reload(function(){
+            addFilter('orderRoll',[0]);
+        },false);
     }
 </script>
 

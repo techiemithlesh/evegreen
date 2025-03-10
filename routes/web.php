@@ -262,6 +262,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     Route::controller(PackingController::class)->group(function () {
         Route::get("packing/entry", "packingEnter")->name("packing.entry");
         Route::get("packing/wip", "WIPVerification")->name("packing.wip");
+        Route::post("packing/wip/disburse/order", "disburseOrder")->name("packing.wip.disburse.order");
         Route::post("packing/entry-wip/add", "packingEnterWipAdd")->name("packing.entry.wip.add");
         Route::post("packing/entry/search", "searchRoll")->name("packing.entry.search");
         Route::post("packing/entry/add", "packingEnterAdd")->name("packing.entry.add");
