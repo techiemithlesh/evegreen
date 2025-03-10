@@ -34,9 +34,9 @@
                     <div class="row">
                         <div class="col-sm-3">
                             <div class="form-group">
-                                <label class="form-label" for="cuttingUpdate">Date <span class="text-danger">*</span></label>
-                                <input type="date" name="cuttingUpdate" id="cuttingUpdate" class="form-control" max="{{date('Y-m-d')}}" value="{{$privDate??''}}" required />
-                                <span class="error-text" id="cuttingUpdate-error"></span>
+                                <label class="form-label" for="printingUpdate">Date <span class="text-danger">*</span></label>
+                                <input type="date" name="printingUpdate" id="printingUpdate" class="form-control" max="{{date('Y-m-d')}}" value="{{$privDate??''}}" required />
+                                <span class="error-text" id="printingUpdate-error"></span>
                             </div>
                         </div>
                         <div class="col-sm-3">

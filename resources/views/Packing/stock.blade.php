@@ -15,8 +15,9 @@
         <div class="panel-heading">
             <h5 class="panel-title">List</h5> 
             <div class="panel-control">
-                <a href="{{route('packing.transport.stock')}}" class="btn btn-warning btn-sm">Transport Bag</a>
-                <!-- <a href="{{route('packing.transport.stock')}}" class="btn btn-warning btn-sm">Godaown</a> -->
+                <!-- <a href="{{route('packing.transport.stock')}}" class="btn btn-warning btn-sm">Transport Bag</a> -->
+                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('godown')">Godown</button>
+                <button type="button" class="btn btn-sm btn-success" onclick="openTransportModel('client')">Client</button>
             </div>           
         </div>
         <div class="panel-body">            
@@ -77,6 +78,7 @@
             </div>
         </div>
     </div>
+
 </main>
 <script>
     $(document).ready(function(){
@@ -105,7 +107,13 @@
             },
 
             columns: [
-                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
+                // { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
+                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false ,
+                    render: function(data, type, row, meta) {
+                            const rowDataEncoded = base64Encode(JSON.stringify(row));
+                            return `${meta.row + 1} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" onclick='updateCheckTr(event)' class="row-select checkbox" >`;
+                        }
+                },
                 { data: "packing_date", name: "packing_date" },
                 { data: "packing_no", name: "packing_no" },
                 { data: "client_name", name: "client_name" },
@@ -132,7 +140,11 @@
                 text: 'Export to Excel',
                 className: 'btn btn-success',
 
-            }],            
+            }],  
+            createdRow: function(row, data, dataIndex) {
+                $(row).attr('data-id', data.id);
+                $(row).attr('data-item', JSON.stringify(data));
+            },          
             initComplete: function () {
                 addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1]);
             },
@@ -245,6 +257,19 @@
                 modelInfo("server error","error");
             }
         })
+    }
+
+    function openTransportModel(transportType){
+        let sequence = [];
+        $(".checkbox").each(function () {
+            if ($(this).is(":checked")) {
+                let jsonData = JSON.parse($(this).attr("data-row"));
+                sequence.push(jsonData);
+            }
+        });
+        if(sequence.length>0){
+            
+        }
     }
 
 </script>
