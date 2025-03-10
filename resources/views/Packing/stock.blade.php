@@ -140,16 +140,16 @@
             $("#editBagForm").submit();
         });
         $("#editBagForm").validate({
-                rules: {
-                    packing_weight: {
-                        required: true,
-                        number: true,
-                    },
+            rules: {
+                packing_weight: {
+                    required: true,
+                    number: true,
                 },
-                submitHandler: function(form) {
-                    showConfirmDialog("Are sure want to edit??",editBagSubmit);
-                }
-            });
+            },
+            submitHandler: function(form) {
+                showConfirmDialog("Are sure want to edit??",editBagSubmit);
+            }
+        });
     });
 
     function searchData(){

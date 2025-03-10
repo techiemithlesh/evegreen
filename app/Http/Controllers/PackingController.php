@@ -457,8 +457,11 @@ class PackingController extends Controller
                     return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
                 })
                 ->addColumn('action', function ($val) {                    
-                    $button = "";                    
-                    // $button='<button class="btn btn-sm btn-info" onClick="openCuttingModel('.$val->id.')" >Update Cutting</button>';
+                    $button="";
+                    if((!$val->is_wip_disbursed) && (!$val->is_delivered) ){
+                        $button.='<button class="btn btn-sm btn-primary" onClick="editBag('.$val->id.')" >E</button>';
+                        $button.='<button class="btn btn-sm btn-danger" onClick="showConfirmDialog('."'Are you sure you want to deactivate this item?', function() { deleteBag($val->id); })".'" >D</button>';
+                    } 
                     return $button;
                 })
                 ->rawColumns(['row_color', 'action'])
