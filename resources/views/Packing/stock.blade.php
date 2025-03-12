@@ -138,7 +138,7 @@
     </div>
 
     <!-- model chalan -->
-    <div class="modal fade" id="chalanModal" tabindex="-1" aria-labelledby="chalanModalLabel" aria-hidden="true">
+    <div class="modal fade modal-lg" id="chalanModal" tabindex="-1" aria-labelledby="chalanModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
             <div class="modal-header">
