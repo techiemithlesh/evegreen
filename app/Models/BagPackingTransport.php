@@ -24,6 +24,7 @@ class BagPackingTransport  extends Model
         'user_id',
         "reiving_user_id",
         'lock_status',
+        "chalan_unique_id",
     ];
 
     public function store($request){        

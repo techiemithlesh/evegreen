@@ -1,6 +1,8 @@
 <?php
 namespace App\Traits;
 
+use Illuminate\Support\Facades\DB;
+
 trait Formula{
     public function calculatePossibleProduction($request){
 
@@ -68,4 +70,20 @@ trait Formula{
             "formula"=>$request->formula,
         ]);
     }
+
+    public function getChalaneSequence(int $transPortStatus)
+    {
+        $sequence = "sequence_" . str_replace('-',"_",getFY()) . "_" . $transPortStatus;
+
+        
+
+        // ✅ Execute the query
+        
+        DB::statement("CREATE SEQUENCE IF NOT EXISTS $sequence");
+
+        // ✅ Fetch the next sequence value properly
+        return DB::selectOne("SELECT nextval('$sequence') AS next_value")->next_value;
+    }
+
+
 }

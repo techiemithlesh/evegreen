@@ -11,7 +11,8 @@ class TransporterDetail extends Model
     use Loggable;
     use HasFactory;
     protected $fillable = [
-        "transporter_name",
+        "transporter_name",        
+        "mobile_no",
         'lock_status',
     ];
 

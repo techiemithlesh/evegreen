@@ -89,4 +89,18 @@ return[
             "RS"=>"(L X 2) + 3",
         ],
     ],
+    "localCityIds"=>[
+        333,
+    ],
+    "godownDtl"=>[
+        "id"=>0,
+        "client_name"=>"Godown",
+        "mobile_no"=>"----------",
+        "email"=>"------------",
+        "address"=>"----------",
+        "address"=>"----------",
+        "city"=>"Ranchi",
+        "state"=>"Jharkhand",
+    ],
+
 ];

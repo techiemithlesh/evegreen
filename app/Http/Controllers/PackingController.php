@@ -8,8 +8,10 @@ use App\Models\BagPacking;
 use App\Models\BagPackingTransport;
 use App\Models\BagPackingTransportDetail;
 use App\Models\BagTypeMaster;
+use App\Models\ChalanDtl;
 use App\Models\ClientDetailMaster;
 use App\Models\OrderPunchDetail;
+use App\Models\RateTypeMaster;
 use App\Models\RollDetail;
 use App\Models\TransporterDetail;
 use App\Traits\Formula;
@@ -22,6 +24,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+
 
 class PackingController extends Controller
 {
@@ -36,7 +42,8 @@ class PackingController extends Controller
     protected $_M_OrderPunchDetail;
     protected $_M_Auto;
     protected $_M_Transporter;
-
+    protected $_M_RateType;
+    protected $_M_ChalanDtl;
     function __construct()
     {
         $this->_M_RollDetail = new RollDetail();
@@ -48,6 +55,8 @@ class PackingController extends Controller
         $this->_M_OrderPunchDetail = new OrderPunchDetail();
         $this->_M_Auto  =  new AutoDetail();
         $this->_M_Transporter = new TransporterDetail();
+        $this->_M_RateType = new RateTypeMaster();
+        $this->_M_ChalanDtl = new ChalanDtl();
     }
 
     public function packingEnter(Request $request){
@@ -324,8 +333,10 @@ class PackingController extends Controller
         $user = Auth()->user();
         $user_type = $user->user_type;
         if($request->ajax()){
+            $rateType = $this->_M_RateType->all();
             $data = $this->_M_BagPacking->select("order_punch_details.*","bag_packings.*",
-                        "bag_type_masters.bag_type","client_detail_masters.client_name"
+                        "bag_type_masters.bag_type","client_detail_masters.client_name","client_detail_masters.city_id",
+                        "client_detail_masters.state_id",
                     )
                     ->join("order_punch_details","order_punch_details.id","bag_packings.order_id")
                     ->join("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")
@@ -336,6 +347,12 @@ class PackingController extends Controller
                 ->addIndexColumn()
                 ->addColumn('packing_date', function ($val) { 
                     return $val->packing_date ? Carbon::parse($val->packing_date)->format("d-m-Y") : "";
+                })
+                ->addColumn("is_local_order",function($val){
+                    return in_array($val->city_id,Config::get("customConfig.localCityIds"))?true:false;
+                })
+                ->addColumn("rate_type",function($val)use($rateType){
+                    return $rateType->where("id",$val->rate_type_id)->first()->rate_type??"";
                 })
                 ->addColumn('bag_color', function ($val) { 
                     return collect(json_decode($val->bag_color,true))->implode(",") ;
@@ -356,7 +373,9 @@ class PackingController extends Controller
             return $list;
 
         }
-        return view("Packing/stock");
+        $data["autoList"] =$this->_M_Auto->where("lock_status",false)->orderBy("id","ASC")->get();
+        $data["transporterList"] = $this->_M_Transporter->where("lock_status",false)->orderBy("id","ASC")->get();
+        return view("Packing/stock",$data);
     }
 
     public function bagDtl($id){
@@ -429,6 +448,93 @@ class PackingController extends Controller
         }catch(MyException $e){
             return responseMsg(false,$e->getMessage(),"");
         }catch(Exception $e){
+            return responseMsg(false,"Server Error","");
+        }
+    }
+
+    public function generateChalan(Request $request){
+        try{
+            $data = ['title' => 'Laravel 10 PDF Example'];
+
+            
+            // return $pdf->output(); 
+            $bags = $this->_M_BagPacking->whereIn("id",collect($request->bag)->pluck("id"))->get();
+            $bags->map(function($val){
+                $order = $val->getOrderDtl();
+                $val->bag_type = $order->getBagType()->bag_type;
+                $val->bag_color = collect(json_decode($order->bag_color,true))->implode(","); 
+                $val->bag_size = (float)$order->bag_w." x ".(float)$order->bag_l.($order->bag_g ?(" x ".(float)$order->bag_g) :"");                
+                return $val;
+            });
+            
+            $bagGroup = $bags->groupBy(["bag_type","bag_color","bag_size"]);
+            $table=[];
+            $table["grandTotal"]=[
+                "total"=>$bags->count(),
+                "totalWeight"=>$bags->sum("packing_weight"),
+            ];
+            foreach($bagGroup as $bagType=>$colorSize){
+                foreach($colorSize as $color=>$size){
+                    foreach($size as $key=>$val){
+                        $table["row"][]=[
+                            "bagType"=>$bagType,
+                            "color"=>$color,
+                            "size"=>$key,
+                            "bags"=>$val->toArray(),
+                            "count"=>collect($val)->count(),
+                            "totalWeight"=>collect($val)->sum("packing_weight"),
+                        ];
+                    }
+                }
+            }
+
+            $firstBag = $bags->first();
+            $order = $firstBag->getOrderDtl();
+            $client = $order->getClient();
+            $rateType = $order->getRateType();
+            $auto = $this->_M_Auto->find($request->autoId);
+            $transposer = $this->_M_Transporter->find($request->transporterId);
+            $fyear=getFY();
+            list($fromDate,$uptoDate) = explode("-",$fyear);
+            $fromDate=$fromDate."-04-01"; 
+            $uptoDate=$uptoDate."-03-31"; 
+            $transPortStatus = (Config::get("customConfig.transportType.".$request->transPortType));            
+            $count = $this->getChalaneSequence($transPortStatus);
+            $chalanNo = ($transPortStatus==4 ? "C":"G")."-";
+            $chalanNo .=substr(Str::upper($rateType->rate_type??"O"),0,1)."-";
+            $chalanNo .=str_pad((string)$count,4,"0",STR_PAD_LEFT); 
+            
+            if($transPortStatus==3){
+                $godownDtl = Config::get("customConfig.godownDtl");
+                foreach($godownDtl as $key=>$val){
+                    $client->$key=$val;
+                }
+            }
+            $data["uniqueId"]=getFY()."_".$count;
+            $data["table"]=$table;
+            $data["chalanDate"]=Carbon::now()->format("d-m-Y");
+            $data["transposer"]=$transposer;
+            $data["auto"]=$auto;
+            $data["chalanNo"] = $chalanNo;
+            $data["client"] = $client;
+            $pdf = Pdf::loadView('pdf.template', $data);
+            $pdfContent = $pdf->output();
+            $data["pdfBase64"]= base64_encode($pdfContent);
+            $newRequest = new Request(
+                [
+                    "uniqueId"=> $data["uniqueId"],
+                    "chalan_date"=> Carbon::parse($data["chalanDate"])->format("Y-m-d"),
+                    "chalanNo"=>$chalanNo,
+                    "chalan_json"=>$data,
+                    "user_id"=>Auth()->user()->id,
+                ]                
+            );
+            $this->_M_ChalanDtl->store($newRequest);
+            return responseMsgs(true,"Chalane Genrated",$data);
+        }catch(MyException $e){
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            // dd($e->getMessage(),$e->getLine());
             return responseMsg(false,"Server Error","");
         }
     }
@@ -720,7 +826,7 @@ class PackingController extends Controller
                     $order->update();
                 }
             }
-            DB::commit();
+            // DB::commit();
             return responseMsgs(true,"Dag is Dispatched","");
         }catch(Exception $e){
             DB::rollBack();
