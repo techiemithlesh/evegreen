@@ -575,7 +575,9 @@ class PackingController extends Controller
             return $list;
 
         }
-        return view("Packing/godown");
+        $data["autoList"] =$this->_M_Auto->where("lock_status",false)->orderBy("id","ASC")->get();
+        $data["transporterList"] = $this->_M_Transporter->where("lock_status",false)->orderBy("id","ASC")->get();
+        return view("Packing/godown",$data);
     }
 
     public function reivingGodown(Request $request){
@@ -826,7 +828,7 @@ class PackingController extends Controller
                     $order->update();
                 }
             }
-            // DB::commit();
+            DB::commit();
             return responseMsgs(true,"Dag is Dispatched","");
         }catch(Exception $e){
             DB::rollBack();
