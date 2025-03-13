@@ -2343,6 +2343,7 @@ class RollController extends Controller
         $order->bag_gsm = collect(json_decode($order->bag_gsm,true))->map(function($val){
             return (int) $val;
         })->toArray();
+        $order->bookRoll = $order->getOrderRollBagTypes()->count()?true:false;
         $data["prevUrl"] = url()->previous();
         $data["order"] = $order;
         $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->orderBy("client_name","ASC")->get();

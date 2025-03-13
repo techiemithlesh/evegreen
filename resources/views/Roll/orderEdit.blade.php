@@ -65,14 +65,14 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="orderDate">Order Date</label>
-                                <input type="date" max="{{date('Y-m-d')}}" value="{{$order->order_date}}" name="orderDate" id="orderDate" class="form-control" required/>                                  
+                                <input type="date" {{ $order->bookRoll ? "" : 'max="date("Y-m-d")"' }} value="{{$order->order_date}}" name="orderDate" id="orderDate" class="form-control readOnly" required/>                                  
                                 <span class="error-text" id="orderDate-error"></span>
                             </div>
                         </div>                        
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingEstimatedDespatchDate">Dispatch Date</label>
-                                <input type="date" min="{{date('Y-m-d')}}" value="{{$order->estimate_delivery_date}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" required/>                                  
+                                <input type="date" {{$order->bookRoll ? "" : 'min="date("Y-m-d")"' }}  value="{{$order->estimate_delivery_date}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control readOnly" required/>                                  
                                 <span class="error-text" id="bookingEstimatedDespatchDate-error"></span>
                             </div>
                         </div>
@@ -92,7 +92,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bagQuality">Bag Quality </label>
-                                <select name="bagQuality" id="bagQuality" class="form-select" required onchange="showHidePrintingColorDiv()">
+                                <select name="bagQuality" id="bagQuality" class="form-select readOnly" required onchange="showHidePrintingColorDiv()">
                                     <option value="">Select</option>                                    
                                     <option value="NW" {{$order->bag_quality=="NW"?"selected" : ""}}>NW</option>
                                     <option value="BOPP" {{$order->bag_quality=="BOPP"?"selected" : ""}}>BOPP</option>
@@ -104,7 +104,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="gradeId">Roll Grade</label>
-                                <select name="gradeId" id="gradeId" class="form-select" required >
+                                <select name="gradeId" id="gradeId" class="form-select readOnly" required >
                                     <option value="">Select</option>
                                     @foreach($grade as $val)
                                     <option value="{{$val->id}}" {{$order->grade_id==$val->id ? "selected" : ""}}>{{$val->grade}}</option>
@@ -163,7 +163,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagTypeId">Bag Type </label>
-                                <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop()">
+                                <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select readOnly" onchange="showHideLoop()">
                                     <option value="">Select</option>
                                     @foreach ($bagType as $val)
                                         <option value="{{ $val->id }}" {{$order->bag_type_id==$val->id ? "selected" : ""}} >{{ $val->bag_type }}</option>
@@ -176,7 +176,7 @@
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagColor">Bag Color </label>
                                 <div class="col-md-12">
-                                    <select name="bookingBagColor[]" id="bookingBagColor" multiple="multiple" class="form-select" required> 
+                                    <select name="bookingBagColor[]" id="bookingBagColor" multiple="multiple" class="form-select readOnly" required> 
                                         <option value="">Select</option>                                     
                                         @foreach($rollColor as $val)
                                         <option {{in_array($val->color,$order->bag_color)?"selected":""}} data-color="{{$val->color}}" value="{{$val->color}}" {{$order->bag_color==$val->color ? "selected" : ""}} >{{$val->color}}</option>
@@ -190,7 +190,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagUnits">Bag Unit</label>
-                                <select name="bookingBagUnits" id="bookingBagUnits" class="form-select" onchange="emptyTable()">
+                                <select name="bookingBagUnits" id="bookingBagUnits" class="form-select readOnly" onchange="emptyTable()">
                                     <option value="">Select</option>
                                     <option value="Kg" {{$order->units=="Kg" ? "selected" : ""}} >Kg</option>
                                     <option value="Piece" {{$order->units=="Piece" ? "selected" : ""}} >Piece</option>
@@ -201,7 +201,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="totalUnits">QTY</label>
-                                <input value="{{$order->total_units}}" name="totalUnits" id="totalUnits" class="form-control" required onkeypress="return isNumDot(event);" onchange="getBalance()"/>                                 
+                                <input value="{{$order->total_units}}" name="totalUnits" id="totalUnits" class="form-control readOnly" required onkeypress="return isNumDot(event);" onchange="getBalance()"/>                                 
                                 <span class="error-text" id="bookingBagUnits-error"></span>
                             </div>
                         </div>
@@ -211,7 +211,7 @@
                         <div class="col-sm-4">
                             <div class="form-group" id='singleGsm'>
                                 <label class="form-label" for="bagGsm">GSM</label>
-                                <select name="bagGsm[]" id="bagGsm" class="form-select" multiple="multiple">
+                                <select name="bagGsm[]" id="bagGsm" class="form-select readOnly" multiple="multiple">
                                     <option value="">All</option>
                                     @foreach($gsm as $val)
                                     <option {{in_array($val,$order->bag_gsm)?"selected":""}} value="{{$val}}">{{$val}}</option>
@@ -221,7 +221,7 @@
                             </div>
                             <div class="form-group" id='multipleGsm' style="display: none;">
                                 <label class="form-label" for="bagGsmJson">GSM</label>
-                                <input value="{{$order->bag_gsm_json}}" name="bagGsmJson" id="bagGsmJson" class="form-control" placeholder="gsm/lamination/boop" required onkeypress="return gsmJson(event); "  onkeyup="setGsm();"/>                                 
+                                <input value="{{$order->bag_gsm_json}}" name="bagGsmJson" id="bagGsmJson" class="form-control readOnly" placeholder="gsm/lamination/boop" required onkeypress="return gsmJson(event); "  onkeyup="setGsm();"/>                                 
                                 <span class="error-text" id="bagGsmJson-error"></span>
                             </div>
                         </div>
@@ -229,14 +229,14 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="w">W</label>
-                                <input value="{{$order->bag_w}}" name="w" id="w" class="form-control" onkeypress="return isNumDot(event);" required />                                
+                                <input value="{{$order->bag_w}}" name="w" id="w" class="form-control readOnly" onkeypress="return isNumDot(event);" required />                                
                                 <span class="error-text" id="w-error"></span>
                             </div>
                         </div>
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="l">L </label>
-                                <input value="{{$order->bag_l}}" name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required />                                                                    
+                                <input value="{{$order->bag_l}}" name="l" id="l" class="form-control readOnly" onkeypress="return isNumDot(event);" required />                                                                    
                                 <span class="error-text" id="l-error"></span>
                             </div>
                         </div>
@@ -246,7 +246,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="looColor">Loop Color</label>
-                                <select name="looColor" id="looColor" class="form-control"  required onchange="testLoop()">
+                                <select name="looColor" id="looColor" class="form-control readOnly"  required onchange="testLoop()">
                                     <option value="">select</option>
                                     @foreach($loopColor as $val)
                                       <option value="{{$val->loop_color}}" {{$order->bag_loop_color==$val->loop_color?"selected":""}} id="{{$val->loop_color}}" data-item="{{json_encode($val)}}">{{$val->loop_color}}</option>
@@ -259,7 +259,7 @@
                         <div class="col-sm-4" id="gussetDiv">
                             <div class="form-group">
                                 <label class="form-label" for="g">G </label>
-                                <input value="{{$order->bag_g}}" name="g" id="g" class="form-control" onkeypress="return isNumDot(event);" required />                                                                    
+                                <input value="{{$order->bag_g}}" name="g" id="g" class="form-control readOnly" onkeypress="return isNumDot(event);" required />                                                                    
                                 <span class="error-text" id="g-error"></span>
                             </div>
                         </div>
@@ -269,7 +269,7 @@
                             <div class="form-group">
                                 <label class="form-label" for="bookingPrintingColor">Printing Color</label>
                                 <div class="col-md-12">
-                                    <select name="bookingPrintingColor[]" id="bookingPrintingColor" class="form-select select22" multiple="multiple" required> 
+                                    <select name="bookingPrintingColor[]" id="bookingPrintingColor" class="form-select select22 readOnly" multiple="multiple" required> 
                                         <option value="">Select</option>                                     
                                         @foreach($color as $val)
                                         <option {{in_array($val->color,$order->bag_printing_color)?"selected":""}} data-color="{{$val->color}}" value="{{$val->color}}" style="background-color:{{$val->color}};">{{$val->color}}</option>
@@ -325,7 +325,8 @@
 
 
 <script>
-
+    let orderJson = {!! json_encode($order->toArray()) !!};
+    let isRollBook = orderJson?.bookRoll??false;
     var collapsibleButtons = document.querySelectorAll('.collapsible-btn');
             
     collapsibleButtons.forEach(function(button) {
@@ -343,6 +344,7 @@
     });
 
     $(document).ready(function(){
+        makeReadOnly();
         getBalance();
         $('.select22').select2({            
             width:"100%",
@@ -405,9 +407,13 @@
                     required:true,
                 }
             },
-            // submitHandler: function(form) {
-            //     bookForClient();
-            // }
+            submitHandler: function(form) {
+                $("#loadingDiv").show();
+                isRollBook = false;
+                makeReadOnly();
+                return true;
+                // bookForClient();
+            }
         });
 
         $('#bookingForClientId').select2({
@@ -980,6 +986,16 @@
         }else if(item?.balance < (item?.min_limit+100)){
             modelInfo(item?.loop_color+" is nearly sorted.","info");
         }
+    }
+
+    function makeReadOnly() {
+        $(".readOnly").each(function() {
+            if ($(this).is("select")) {
+                $(this).attr("disabled", isRollBook);
+            } else {
+                $(this).attr("readonly", isRollBook);
+            }
+        });
     }
 
 

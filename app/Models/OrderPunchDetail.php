@@ -112,4 +112,8 @@ class OrderPunchDetail extends Model
     public function getRollDetail(){
         return $this->hasManyThrough(RollDetail::class,OrderRollBagType::class,"order_id","id","id","roll_id","id");
     }
+
+    public function getOrderRollBagTypes(){
+        return $this->hasMany(OrderRollBagType::class,"order_id","id")->where("lock_status",false);
+    }
 }
