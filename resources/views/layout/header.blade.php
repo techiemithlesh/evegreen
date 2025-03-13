@@ -230,6 +230,35 @@
             }
         }
 
+
+        let scale = 1; // Initial zoom level
+
+        function zoomIn() {
+            scale += 0.1; // Increase zoom
+            $(".panel-body").css({
+                "transform": `scale(${scale})`,
+                "transform-origin": "center center"
+            });
+        }
+
+        function zoomOut() {
+            if (scale > 0.5) { // Prevent zooming out too much
+                scale -= 0.1;
+                $(".panel-body").css({
+                    "transform": `scale(${scale})`,
+                    "transform-origin": "center center"
+                });
+            }
+        }
+
+        function resetZoom() {
+            scale = 1;            
+            $(".panel-body").css({
+                "transform": "scale(1)",
+                "transform-origin": "center center"
+            });
+        }
+
         
     </script>
  
@@ -288,10 +317,12 @@
                                 <i class="lni lni-text-align-left"></i>
                             </button>
                         </div>
-
-
+                        
                         <!-- Right Section (Icons) -->
                         <div class="navbar-icons d-flex gap-3 ">
+                            <button type="button"  class="btn text-white" onclick="zoomIn()" title="Zoom in"><i class="bi bi-zoom-in"></i></button>
+                            <button type="button" class="btn text-white" onclick="zoomOut()" title="Zoom out"><i class="bi bi-zoom-out"></i></button>
+                            <button  type="button"class="btn text-white" onclick="resetZoom()" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></button>
                             <a href="#" class="text-white" title="Notifications">
                                 <i class="bi bi-bell"></i>
                             </a>

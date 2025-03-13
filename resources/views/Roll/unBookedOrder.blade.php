@@ -49,7 +49,6 @@
 
     <!-- Modal -->
     <x-unbooked-order-roll-suggestion />
-    <x-custom-alert />
 </main>
 <script>
 
