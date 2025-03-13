@@ -476,6 +476,7 @@
                             );
         $("#orderRoll tbody").append(tr);
         getBalance();
+        testAccessBooking();
     }
 
     function removeTr(element) {
@@ -581,7 +582,7 @@
             }
         });
         $("#balance").html(($("#totalUnits").val()-bookedQtr)+" "+$("#bookingBagUnits").val());        
-        return bookedQtr;
+        return ($("#totalUnits").val()-bookedQtr);
     }
 
     function disbursedOrder(id){
@@ -664,6 +665,11 @@
         }
     }
     
-
+    function testAccessBooking(){
+       let balance =  getBalance();
+       if(balance<0){
+        popupAlert("Order Quantity Excide");
+       }
+    }
 </script>
 @include("layout.footer")
