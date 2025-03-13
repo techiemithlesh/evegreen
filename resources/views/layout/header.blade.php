@@ -107,6 +107,46 @@
         }
 
     </style>
+    <style>
+        /* Full-screen overlay to block actions */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4); /* Dark transparent background */
+            z-index: 1099; /* Below alert but above all content */
+            display: none; /* Hidden by default */
+        }
+
+        /* Alert container fixed at the top */
+        #globalAlertContainer {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            z-index: 1100; /* Highest priority */
+        }
+
+        /* Smooth fade-in animation */
+        .alert-card {
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
     <script>
         function resetTimer() {
             $.ajax({
@@ -127,11 +167,80 @@
             setInterval(resetTimer, 60000);
         })
     </script>
+
+    <script>
+        let modelInfo2 = {};
+        
+        function popupAlert(message, className = "warning") {
+            // Show overlay to block interactions
+            let topZindex=10;
+            document.getElementById("overlay").style.display = "block";
+
+            let alertCardHtml = `
+                <div class="card text-bg-${className} mb-2 mx-auto shadow-sm alert-card" style="max-width: 100%;" id="alert-${Date.now()}">
+                    <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                        <div class="small">
+                            <strong>⚠ ${className === "danger" ? 'Error' : 'Warning'}:</strong> 
+                            <p class="mb-0">${message}</p>
+                        </div>
+                        <button type="button" class="btn-close btn-sm" aria-label="Close" onclick="removeAlert(event)"></button>
+                    </div>
+                </div>
+            `;
+            document.getElementById("globalAlertContainer").insertAdjacentHTML("afterbegin", alertCardHtml);
+
+            // Lower the z-index of modals to ensure alert is above them
+            document.querySelectorAll(".modal").forEach(modal => {
+                let zIndex = window.getComputedStyle(modal).zIndex;
+                if(topZindex<=zIndex){
+                    topZindex=zIndex+10;
+                }
+                modelInfo2[modal.id] = zIndex; // Store original z-index
+                modal.style.zIndex = parseInt(zIndex) - 10;
+            });
+            $("#globalAlertContainer").css("z-index", topZindex);
+
+            // Also lower the modal backdrop z-index if present
+            // let modalBackdrop = document.querySelector(".modal-backdrop");
+            // if (modalBackdrop) {
+            //     modalBackdrop.style.zIndex = "1040";
+            // }
+        }
+
+        function removeAlert(event) {
+            let alertCard = event.target.closest(".card"); // Get the closest alert card
+            if (alertCard) {
+                alertCard.remove(); // Remove the alert
+            }
+
+            // Hide overlay to allow interactions again
+            document.getElementById("overlay").style.display = "none";
+
+            // Restore the original z-index of all modals
+            document.querySelectorAll(".modal").forEach(modal => {
+                if (modelInfo2[modal.id]) {
+                    modal.style.zIndex = modelInfo2[modal.id];
+                }
+            });
+
+            // Restore modal backdrop z-index
+            let modalBackdrop = document.querySelector(".modal-backdrop");
+            if (modalBackdrop) {
+                modalBackdrop.style.zIndex = "1050";
+            }
+        }
+
+        
+    </script>
  
 </head>
 <x-confirmation />
 <body>
+    <!-- Overlay to block user actions -->
+    <div id="overlay"></div>
 
+    <!-- Small Global Alert Card (Positioned at Top) -->
+    <div id="globalAlertContainer" class="text-center"></div>
     <div class="d-flex">
         <!-- Sidebar -->
         <aside id="sidebar" class="sidebar-toggle text-sm" style="overflow-y: scroll;max-height:100vh;">

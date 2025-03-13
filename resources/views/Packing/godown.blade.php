@@ -355,7 +355,7 @@
 
         // ✅ Fix: Check if sequence is empty
         if (sequence.length === 0) {
-            alert("Please select at least one bag");
+            popupAlert("Please select at least one bag");
             return;
         }
 
@@ -382,11 +382,11 @@
         
         console.log(rateType);
         if (Object.keys(rateType).length > 1 && transportType!="For Godown") {
-            alert("Cannot generate different rate type Chalan");
+            popupAlert("Cannot generate different rate type Chalan");
             return;
         }
         if (Object.keys(client).length > 1 && transportType!="For Godown") {
-            alert("Cannot generate Chalan for more then one client");
+            popupAlert("Cannot generate Chalan for more then one client");
             return;
         }
         $("#transposerDiv").show();
@@ -479,7 +479,7 @@
             error: function (xhr, status, error) {
                 $("#loadingDiv").hide();
                 console.error("AJAX error:", error);
-                alert("An error occurred while generating the PDF.");
+                popupAlert("An error occurred while generating the PDF.");
             }
 
         });

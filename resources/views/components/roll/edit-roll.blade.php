@@ -250,21 +250,21 @@
         
         // Ensure the input starts with a number (only on first character entry)
         if (value.length === 0 && (keyCode < 48 || keyCode > 57)) {
-            alert("Input must start with a number!");
+            popupAlert("Input must start with a number!");
             e.preventDefault();
             return false;
         }
 
         // Allow only numbers and slashes (no dots allowed)
         if ((keyCode < 48 || keyCode > 57) && keyCode !== 47) {
-            alert("Only numbers and '/' are allowed!");
+            popupAlert("Only numbers and '/' are allowed!");
             e.preventDefault();
             return false;
         }
 
         // Prevent consecutive slashes
         if (value.slice(-1) === '/' && keyCode === 47) {
-            alert("Consecutive '/' are not allowed!");
+            popupAlert("Consecutive '/' are not allowed!");
             e.preventDefault();
             return false;
         }
@@ -272,7 +272,7 @@
         // Count the number of slashes and restrict to a maximum of 3
         var slashCount = (value.match(/\//g) || []).length;
         if (slashCount >= 2 && keyCode === 47) {
-            alert("Only three '/' are allowed!");
+            popupAlert("Only three '/' are allowed!");
             e.preventDefault();
             return false;
         }

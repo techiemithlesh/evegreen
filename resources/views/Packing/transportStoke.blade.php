@@ -231,7 +231,7 @@
             }
         });
         if (!selectitem) {
-            alert('Pleas Add Attlist One Bag');
+            popupAlert('Pleas Add Attlist One Bag');
             return false;
         }
         $("#transPortType").attr("disabled",false);

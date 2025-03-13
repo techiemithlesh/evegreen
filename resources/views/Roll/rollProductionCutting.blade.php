@@ -202,7 +202,7 @@
             submitHandler: function (form) {
                 // If form is valid, submit it
                 if ($("input[type='hidden'][name^='roll']").length === 0) {
-                    alert("Please add at least one roll before submitting.");
+                    popupAlert("Please add at least one roll before submitting.");
                     return false;
                 }
                 openGarbageModel();

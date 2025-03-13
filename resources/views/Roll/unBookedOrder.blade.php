@@ -456,7 +456,7 @@
         const item = JSON.parse($(event.target).attr("data-item"));
         const existingRow = $(`#orderRoll tbody tr[data-id="${item.id}"]`);
         if (existingRow.length > 0) {
-            alert("This item is already added.");
+            popupAlert("This item is already added.");
             return; // Exit the function if the item already exists
         }
         const tr = $("<tr>")
@@ -485,7 +485,7 @@
 
     function bookForClient(){        
         if ($("input[type='hidden'][name^='roll']").length === 0) {
-            alert("Book Attlist One roll");
+            popupAlert("Book Attlist One roll");
             return false;
         }
         else{

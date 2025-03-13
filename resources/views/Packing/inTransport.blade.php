@@ -202,7 +202,7 @@
 
     function addInTransport(){
         if ($("input[type='hidden'][name^='packing']").length === 0) {
-            alert('Pleas Add Attlist One Bag');
+            popupAlert('Pleas Add Attlist One Bag');
             return false;
         }
         $.ajax({
