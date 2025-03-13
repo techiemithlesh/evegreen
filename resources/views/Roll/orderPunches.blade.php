@@ -216,7 +216,7 @@
                                 <label class="form-label" for="bagGsm">GSM</label>
                                 <!-- <input name="bagGsm" id="bagGsm" class="form-control" required onkeypress="return isNumDot(event);" />  -->
                                 <select name="bagGsm[]" id="bagGsm" class="form-select" multiple="multiple" onchange="showAlternativeOption()">
-                                    <option value="">All</option>
+                                    
                                     @foreach($gsm as $val)
                                     <option value="{{$val}}">{{$val}}</option>
                                     @endforeach
@@ -274,7 +274,7 @@
                                 <label class="form-label" for="bookingPrintingColor">Printing Color</label>
                                 <div class="col-md-12">
                                     <select name="bookingPrintingColor[]" id="bookingPrintingColor" class="form-select select22" multiple="multiple" required> 
-                                        <option value="">Select</option>                                     
+                                                                           
                                         @foreach($color as $val)
                                         <option data-color="{{$val->color}}" value="{{$val->color}}" style="background-color:{{$val->color}};">{{$val->color}}</option>
                                         @endforeach
@@ -307,7 +307,7 @@
                                 <label class="form-label" for="altBagColor">Alternate Bag Color</label>
                                 <div class="col-md-12">
                                     <select name="altBagColor[]" id="altBagColor" class="form-select select22" multiple="multiple" onchange="showAlternativeOptionGsm()"> 
-                                        <option value="">Select</option> 
+                                        
                                         @foreach($altRollColor as $val)
                                         <option value="{{$val->color}}">{{$val->color}}</option>
                                         @endforeach
@@ -321,7 +321,7 @@
                                 <label class="form-label" for="altBagGsm">Alternate Gsm</label>
                                 <div class="col-md-12">
                                     <select name="altBagGsm[]" id="altBagGsm" class="form-select select22" multiple="multiple" > 
-                                        <option value="">Select</option>                                        
+                                                                              
                                         @foreach($altGsm as $val)
                                         <option value="{{$val}}">{{$val}}</option>
                                         @endforeach
@@ -1148,6 +1148,10 @@
         }else if(item?.balance < (item?.min_limit+100)){
             modelInfo(item?.loop_color+" is nearly sorted.","info");
         }
+    }
+
+    function testAccessBooking(){
+       let balance =  getBalance();
     }
 
 

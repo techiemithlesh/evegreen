@@ -212,7 +212,6 @@
                             <div class="form-group" id='singleGsm'>
                                 <label class="form-label" for="bagGsm">GSM</label>
                                 <select name="bagGsm[]" id="bagGsm" class="form-select readOnly" multiple="multiple">
-                                    <option value="">All</option>
                                     @foreach($gsm as $val)
                                     <option {{in_array($val,$order->bag_gsm)?"selected":""}} value="{{$val}}">{{$val}}</option>
                                     @endforeach
