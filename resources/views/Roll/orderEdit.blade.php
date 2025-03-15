@@ -65,14 +65,14 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="orderDate">Order Date</label>
-                                <input type="date" {{ $order->bookRoll ? "" : 'max="date("Y-m-d")"' }} value="{{$order->order_date}}" name="orderDate" id="orderDate" class="form-control readOnly" required/>                                  
+                                <input type="date" {{ $order->bookRoll ? "" : ('max=' . now()->format('Y-m-d')) }} value="{{$order->order_date}}" name="orderDate" id="orderDate" class="form-control readOnly" required/>                                  
                                 <span class="error-text" id="orderDate-error"></span>
                             </div>
                         </div>                        
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingEstimatedDespatchDate">Dispatch Date</label>
-                                <input type="date" {{$order->bookRoll ? "" : 'min="date("Y-m-d")"' }}  value="{{$order->estimate_delivery_date}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control readOnly" required/>                                  
+                                <input type="date" {{$order->bookRoll ? "" : ('min=' . now()->format('Y-m-d')) }}  value="{{$order->estimate_delivery_date}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control readOnly" required/>                                  
                                 <span class="error-text" id="bookingEstimatedDespatchDate-error"></span>
                             </div>
                         </div>

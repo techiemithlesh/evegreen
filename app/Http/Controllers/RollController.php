@@ -2044,7 +2044,7 @@ class RollController extends Controller
                         "formula"=>$bestFind2
                     ]);
                     $result = $this->calculatePossibleProduction($newRequest);
-                    $result1 = $this->calculatePossibleProduction($newRequest);
+                    $result1 = $this->calculatePossibleProduction($newRequest2);
                     $avg = round((($result["result"]??0)+($result1["result"]??0))/2);
                     $val->result = $avg; 
                     $val->unit =  $avg." ".$request->bookingBagUnits; 
