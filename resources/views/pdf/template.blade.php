@@ -30,17 +30,17 @@
         </tr>
         <tr>
             <td colspan="2">
-                Chalan No   : <b>{{$chalanNo}}</b><br>
-                Client Name : <b>{{$client->client_name}}</b> <br>
-                Mobile NO.  : <b>{{$client->mobile_no}}</b><br>
-                Address     : <b>{{$client->address}}</b>
+                Chalan No   : <b>{{$chalan_no}}</b><br>
+                Client Name : <b>{{$client['client_name']}}</b> <br>
+                Mobile NO.  : <b>{{$client['mobile_no']}}</b><br>
+                Address     : <b>{{$client['address']}}</b>
             </td>
             <td colspan="2"></td>
             <td colspan="2">
-                Date            : <b> {{$chalanDate}}</b><br>
-                Auto Name       : <b>{{$auto->auto_name??"N/A"}}</b><br>
-                Auto Mobile No  : <b>{{$auto->mobile_no??"----------"}}</b> <br>
-                Transposer Name : <b>{{$transposer->name??"N/A"}}</b><br>
+                Date            : <b> {{$chalan_date}}</b><br>
+                Auto Name       : <b>{{$auto['auto_name']??"N/A"}}</b><br>
+                Auto Mobile No  : <b>{{$auto['mobile_no']??"----------"}}</b> <br>
+                Transposer Name : <b>{{$transposer['transporter_name']??"N/A"}}</b><br>
             </td>
         </tr>
         <tr>
@@ -59,7 +59,7 @@
                         @foreach($item["bags"] as $bags)                                 
                             <tr>
                                 @if($index==0)
-                                    <td rowspan="{{$index==0 ? $item['count'] :''}}">{{$index==0 ? $item['bagType']:""}}</td>
+                                    <td rowspan="{{$index==0 ? $item['count'] :''}}">{{$index==0 ? $item['bag_type']:""}}</td>
                                 @endif                                
                                 <td >{{$bags['bag_size']}}</td>
                                 <td >{{$bags['bag_color']}}</td>
@@ -71,13 +71,13 @@
                         @endforeach
                         <tr>
                             <td  colspan="3"></td>
-                            <td>{{$item['totalWeight']}}</td>
+                            <td>{{$item['total_weight']}}</td>
                         </tr>
                     @endforeach
                     <tr>
                         <th colspan="2">Grand Total</th>
-                        <th>{{$table["grandTotal"]["total"] }}</th>
-                        <th>{{$table["grandTotal"]["totalWeight"] }}</th>
+                        <th>{{$table["grand_total"]["total"] }}</th>
+                        <th>{{$table["grand_total"]["total_weight"] }}</th>
                     </tr>
                 </table>
             </td>

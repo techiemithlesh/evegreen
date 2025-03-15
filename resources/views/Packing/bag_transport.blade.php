@@ -112,6 +112,25 @@
             </table>
         </div>
     </div>
+
+    <!-- model chalan -->
+    <div class="modal fade modal-lg" id="chalanModal" tabindex="-1" aria-labelledby="chalanModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chalanModalLabel">Chalan Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdfPreview" style="width: 100%; height: 500px; display: none;"></iframe>
+            </div>
+            <div class="modal-footer">
+                <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> -->
+                <button type="button" class="btn btn-primary" id="downloadChalan">Download</button>
+            </div>
+            </div>
+        </div>
+    </div>
 </main>
 <script>
     $(document).ready(function(){
@@ -186,6 +205,53 @@
         $('#postTable').DataTable().ajax.reload(function(){
             addFilter('postTable',[0]);
         },false);
+    }
+
+    function base64ToBlob(base64, mimeType) {
+        let byteCharacters = atob(base64);
+        let byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        let byteArray = new Uint8Array(byteNumbers);
+        return new Blob([byteArray], { type: mimeType });
+    }
+
+    function openPreviewChalanModel(unique_id){
+        $.ajax({
+            url: "{{ route('packing.view.chalan', ['unique_id' => ':unique_id']) }}".replace(':unique_id', unique_id),
+            type:"get",
+            dataType:"json",
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(response){
+                $("#loadingDiv").hide();
+                if(response.status){
+                    let chalanNo = response.data.chalan_no;
+                    let pdfBase64 = response.data.pdf_base64;
+                    let isDownload = false;
+                    let pdfDataUri = "data:application/pdf;base64," + pdfBase64;
+                    $("#pdfPreview").attr("src", pdfDataUri).show();
+
+                    $("#downloadChalan").show().off("click").on("click", function () {
+                        isDownload= true;
+                        let pdfBlob = base64ToBlob(pdfBase64, "application/pdf");
+                        let link = document.createElement("a");
+                        link.href = URL.createObjectURL(pdfBlob);
+                        link.download = chalanNo+".pdf";
+                        link.click();
+                    });
+
+                    $("#chalanModal").modal("show");
+                }
+            },
+            error: function (xhr, status, error) {
+                $("#loadingDiv").hide();
+                console.error("AJAX error:", error);
+                popupAlert("An error occurred while generating the PDF.");
+            }
+        })
     }
 </script>
 @include("layout.footer")

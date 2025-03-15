@@ -282,6 +282,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post("packing/bag/delete","deleteBag")->name("packing.bag.delete");
         Route::get("packing/bag/history", "bagHistory")->name("packing.bag.history");
         Route::post("packing/generate/chalan","generateChalan")->name("packing.generate.chalan");
+        Route::get("packing/view/chalan/{unique_id}","viewChalan")->name("packing.view.chalan");
     });
 
     Route::controller(OtherRegister::class)->group(function () {

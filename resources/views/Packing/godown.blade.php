@@ -416,8 +416,8 @@
                 console.log(response);
                 if(response.status){
                     console.log("Extra Data:", response.data);
-                    let chalanNo = response.data.chalanNo;
-                    let pdfBase64 = response.data.pdfBase64;
+                    let chalanNo = response.data.chalan_no;
+                    let pdfBase64 = response.data.pdf_base64;
                     let isDownload = false;
                     let pdfDataUri = "data:application/pdf;base64," + pdfBase64;
                     $("#pdfPreview").attr("src", pdfDataUri).show();
@@ -433,8 +433,8 @@
 
                     $("#transportBag").show().off("click").on("click", function () {
                         let formDataNew = new FormData($("#transportModelForm")[0]); 
-                        formDataNew.append("chalanUniqueId", response.data.uniqueId);
-                        formDataNew.append("invoiceNo", response.data.chalanNo);
+                        formDataNew.append("chalanUniqueId", response.data.unique_id);
+                        formDataNew.append("invoiceNo", response.data.chalan_no);
 
                         $.ajax({
                             url: "{{route('packing.transport.save')}}",

@@ -453,10 +453,7 @@ class PackingController extends Controller
     }
 
     public function generateChalan(Request $request){
-        try{
-            $data = ['title' => 'Laravel 10 PDF Example'];
-
-            
+        try{            
             // return $pdf->output(); 
             $bags = $this->_M_BagPacking->whereIn("id",collect($request->bag)->pluck("id"))->get();
             $bags->map(function($val){
@@ -469,20 +466,20 @@ class PackingController extends Controller
             
             $bagGroup = $bags->groupBy(["bag_type","bag_color","bag_size"]);
             $table=[];
-            $table["grandTotal"]=[
+            $table["grand_total"]=[
                 "total"=>$bags->count(),
-                "totalWeight"=>$bags->sum("packing_weight"),
+                "total_weight"=>$bags->sum("packing_weight"),
             ];
             foreach($bagGroup as $bagType=>$colorSize){
                 foreach($colorSize as $color=>$size){
                     foreach($size as $key=>$val){
                         $table["row"][]=[
-                            "bagType"=>$bagType,
+                            "bag_type"=>$bagType,
                             "color"=>$color,
                             "size"=>$key,
                             "bags"=>$val->toArray(),
                             "count"=>collect($val)->count(),
-                            "totalWeight"=>collect($val)->sum("packing_weight"),
+                            "total_weight"=>collect($val)->sum("packing_weight"),
                         ];
                     }
                 }
@@ -510,21 +507,21 @@ class PackingController extends Controller
                     $client->$key=$val;
                 }
             }
-            $data["uniqueId"]=getFY()."_".$count;
+            $data["unique_id"]=getFY()."_".$count;
             $data["table"]=$table;
-            $data["chalanDate"]=Carbon::now()->format("d-m-Y");
+            $data["chalan_date"]=Carbon::now()->format("d-m-Y");
             $data["transposer"]=$transposer;
             $data["auto"]=$auto;
-            $data["chalanNo"] = $chalanNo;
+            $data["chalan_no"] = $chalanNo;
             $data["client"] = $client;
             $pdf = Pdf::loadView('pdf.template', $data);
             $pdfContent = $pdf->output();
-            $data["pdfBase64"]= base64_encode($pdfContent);
+            $data["pdf_base64"]= base64_encode($pdfContent);
             $newRequest = new Request(
                 [
-                    "uniqueId"=> $data["uniqueId"],
-                    "chalan_date"=> Carbon::parse($data["chalanDate"])->format("Y-m-d"),
-                    "chalanNo"=>$chalanNo,
+                    "unique_id"=> $data["unique_id"],
+                    "chalan_date"=> Carbon::parse($data["chalan_date"])->format("Y-m-d"),
+                    "chalan_no"=>$chalanNo,
                     "chalan_json"=>$data,
                     "user_id"=>Auth()->user()->id,
                 ]                
@@ -536,6 +533,23 @@ class PackingController extends Controller
         }catch(Exception $e){
             // dd($e->getMessage(),$e->getLine());
             return responseMsg(false,"Server Error","");
+        }
+    }
+
+    public function viewChalan($unique_id){
+        try{
+            $chalan = $this->_M_ChalanDtl->where("unique_id",$unique_id)->first();
+            $data = json_decode($chalan->chalan_json,true);
+            if(!$data["pdf_base64"]){
+                $pdf = Pdf::loadView('pdf.template', $data);
+                $pdfContent = $pdf->output();
+                $data["pdf_base64"]= base64_encode($pdfContent);
+            }
+            return responseMsg(true,"Chalan Preview",$data);
+        }catch(MyException $e){
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            return responseMsg(false,"Server Error!!","");
         }
     }
 
@@ -898,9 +912,8 @@ class PackingController extends Controller
                     $client = $this->_M_ClientDetails->whereIn("id",$clineId)->get();
                     return collect($client)->pluck("client_name")->implode(" , ") ;
                 })
-                ->addColumn('action', function ($val) {                    
-                    $button = "";                    
-                    // $button='<button class="btn btn-sm btn-info" onClick="openCuttingModel('.$val->id.')" >Update Cutting</button>';
+                ->addColumn('action', function ($val) {                   
+                    $button='<button class="btn btn-sm btn-info" onClick="openPreviewChalanModel('."'".$val->chalan_unique_id."'".')" >Chalan</button>';
                     return $button;
                 })
                 ->rawColumns(['row_color', 'action'])
