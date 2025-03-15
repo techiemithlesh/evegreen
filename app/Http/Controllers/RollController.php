@@ -526,7 +526,7 @@ class RollController extends Controller
                 {
                     $rowData["purchase_date"] = is_int($rowData["purchase_date"])? getDateColumnAttribute($rowData['purchase_date']) : $rowData['purchase_date'];
                 }
-                $validator = Validator::make($rowData, [
+                $rules = [
                     'vendor_name' => [
                         "required",
                         function($attribute, $value, $fail)use ($rowData,$index ){
@@ -589,7 +589,28 @@ class RollController extends Controller
                     'roll_length' => 'required|int',
                     'net_weight' => 'required|numeric',
                     'gross_weight' => 'required|numeric',
-                ]);
+                ];
+                if(isset($rowData['roll_no'])){
+                    $rules["roll_no"]=[
+                        "nullable",
+                        function($attribute, $value, $fail)use ($rowData,$index ){
+                            $existsInTransit = DB::table('roll_transits')
+                                ->where("roll_no", $value)
+                                ->exists();
+
+                            $existsInDetail = DB::table('roll_details')
+                                ->where("roll_no", $value)
+                                ->exists();
+
+                            if ($existsInTransit || $existsInDetail) {
+                                $fail('The '.$attribute.'['.$value.'] is already Exists.');
+                            }
+
+
+                        },
+                    ];
+                }
+                $validator = Validator::make($rowData, $rules);
 
                 if ($validator->fails()) {
                     $validationErrors[$index] = $validator->errors()->all();
