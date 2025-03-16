@@ -2221,6 +2221,7 @@ class RollController extends Controller
                                 $loopStock->update();
                             }
                             $order->booked_units = $order->booked_units - $qty;
+                            $order->disbursed_units = 0;
                             $orderRoll->lock_status=true;
                             $order->update();
                             $orderRoll->update();
@@ -3077,6 +3078,7 @@ class RollController extends Controller
                     $result = $this->calculatePossibleProduction($newRequest);
                     $result2 = $this->calculatePossibleProduction($newRequest2);
                     $order->booked_units = $order->booked_units - ((($result["result"]??0)+($result2["result"]??0))/2);
+                    $order->disbursed_units = 0;
                     $orderRoll->lock_status=true;
                     $order->update();
                     $orderRoll->update();
