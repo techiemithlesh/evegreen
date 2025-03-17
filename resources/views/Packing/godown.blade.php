@@ -127,6 +127,18 @@
                                     <span class="error-text" id="transporterId-error"></span>
                                 </div>
                             </div>
+                            <div class="col-sm-4" id="rateTypeDiv">
+                                <div class="form-group">
+                                    <label class="form-label" for="rateTypeId">Rate Type</label>
+                                    <select name="rateTypeId" id="rateTypeId" class="form-select" >
+                                        <option value="">select</option>
+                                        @foreach($rateType as $val)
+                                            <option value="{{$val->id}}">{{$val->rate_type}}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="error-text" id="rateTypeId-error"></span>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>

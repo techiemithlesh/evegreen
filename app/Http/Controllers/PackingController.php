@@ -604,6 +604,7 @@ class PackingController extends Controller
         }
         $data["autoList"] =$this->_M_Auto->where("lock_status",false)->orderBy("id","ASC")->get();
         $data["transporterList"] = $this->_M_Transporter->where("lock_status",false)->orderBy("id","ASC")->get();
+        $data["rateType"] = $this->_M_RateType->all();
         return view("Packing/godown",$data);
     }
 
