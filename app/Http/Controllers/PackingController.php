@@ -496,8 +496,8 @@ class PackingController extends Controller
             $order = $firstBag->getOrderDtl();
             $client = $order->getClient();
             $rateType = $order->getRateType();
-            if($request->rateTypeIdNew){
-                $rateType= $this->_M_RateType->find($request->rateTypeIdNew);
+            if($request->rateTypeId){
+                $rateType= $this->_M_RateType->find($request->rateTypeId);
             }
             $auto = $this->_M_Auto->find($request->autoId);
             $transposer = $this->_M_Transporter->find($request->transporterId);
@@ -508,7 +508,7 @@ class PackingController extends Controller
             $transPortStatus = (Config::get("customConfig.transportType.".$request->transPortType));            
             $count = $this->getChalaneSequence($transPortStatus);
             $chalanNo = ($transPortStatus==4 ? "C":"G")."-";
-            $chalanNo .=substr(Str::upper($rateType->rate_type??"O"),0,1)."-";
+            $chalanNo .=substr($$rateType ? Str::upper($rateType->rate_type) :"O",0,1)."-";
             $chalanNo .=str_pad((string)$count,4,"0",STR_PAD_LEFT); 
             
             if($transPortStatus==3){
@@ -853,8 +853,8 @@ class PackingController extends Controller
                         $order->is_delivered = true;
                         $order->delivery_date = Carbon::now()->format("Y-m-d");
                     }
-                    if($request->rateTypeIdNew){
-                        $order->rate_type_id=$request->rateTypeIdNew;
+                    if($request->rateTypeId){
+                        $order->rate_type_id=$request->rateTypeId;
                     }
                     $order->update();
                 }
