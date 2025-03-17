@@ -166,7 +166,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingBagTypeId">Bag Type </label>
-                                <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop();showAlternativeOption()">
+                                <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop();showAlternativeOption();getBalance()">
                                     <option value="">Select</option>
                                     @foreach ($bagType as $val)
                                         <option value="{{ $val->id }}">{{ $val->bag_type }}</option>
@@ -1075,7 +1075,12 @@
                 bookedQtr += parseFloat(value);
             }
         });
-        $("#balance").html(($("#totalUnits").val()-bookedQtr)+" "+$("#bookingBagUnits").val());        
+        let towevePer = 0;
+        if($("#bookingBagTypeId").val()==3){
+            let towevePer = $("#totalUnits").val() * 0.12;
+        }
+        console.log($("#bookingBagTypeId").val()==3);
+        $("#balance").html(($("#totalUnits").val()+ towevePer-bookedQtr)+" "+$("#bookingBagUnits").val());        
         return ($("#totalUnits").val()-bookedQtr);
     }
 

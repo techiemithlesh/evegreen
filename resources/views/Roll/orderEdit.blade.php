@@ -52,7 +52,7 @@
                             <div class="form-group">
                                 <label class="form-label" for="bookingForClientId">Book For Client</label>
                                 <div class="col-md-12">
-                                    <select name="bookingForClientId" id="bookingForClientId" class="form-control" disabled>
+                                    <select name="bookingForClientId" id="bookingForClientId" class="form-control" {{$order->client_detail_id==1?'':'disabled'}}>
                                         <option value="">Select</option>
                                         @foreach ($clientList as $val)
                                             <option value="{{ $val->id }}" {{$order->client_detail_id==$val->id ? "selected" : ""}}>{{ $val->client_name }}</option>

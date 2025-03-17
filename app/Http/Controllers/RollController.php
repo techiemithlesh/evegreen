@@ -23,7 +23,9 @@ use App\Models\OrderBroker;
 use App\Models\OrderPunchDetail;
 use App\Models\OrderRollBagType;
 use App\Models\PendingOrderBagType;
+use App\Models\PrintingEntry;
 use App\Models\PrintingMachine;
+use App\Models\PrintingRegister;
 use App\Models\PrintingScheduleDetail;
 use App\Models\RateTypeMaster;
 use App\Models\RollColorMaster;
@@ -88,6 +90,8 @@ class RollController extends Controller
     protected $_M_LoopAccount;
     protected $_M_OrderBroker;
     protected $_M_GarbageEntry;
+    protected $_M_PrintingEntry ;
+    protected $_M_PrintingRegister;
 
     function __construct()
     {
@@ -118,6 +122,8 @@ class RollController extends Controller
         $this->_M_LoopAccount = new LoopUsageAccount();
         $this->_M_OrderBroker = new OrderBroker();
         $this->_M_GarbageEntry = new GarbageEntry();
+        $this->_M_PrintingEntry = new PrintingEntry();
+        $this->_M_PrintingRegister = new PrintingRegister();
     }
 
     #================ Roll Transit =====================
@@ -177,6 +183,7 @@ class RollController extends Controller
                             "vendor_detail_masters.vendor_name",
                             DB::raw("count(roll_transits.id) as total_count,
                                     count(CASE WHEN roll_transits.size <=2 then roll_transits.id END) as total_loop,
+                                    COUNT(CASE WHEN roll_transits.gsm_variation <= (-8/100.0) OR roll_transits.gsm_variation >= (8/100.0)  THEN roll_transits.id END) AS total_deviation,
                                     count( CASE WHEN roll_transits.client_detail_id IS NOT NULL THEN roll_transits.id END ) as total_book 
                             ")
                         )
@@ -1076,9 +1083,7 @@ class RollController extends Controller
         $flag= $request->flag;
         $machineId = $request->machineId;
         $user_type = Auth()->user()->user_type_id??"";
-        list($from,$upto)=explode("-",getFY());
-        $data["fromDate"] = $from."-04-01";
-        $data["uptoDate"] = Carbon::now()->format("Y-m-d");
+        list($from,$upto)=explode("-",getFY());        
         if($request->ajax()){
             // dd($request->ajax());
             $fromDate = $request->fromDate;
@@ -1099,7 +1104,7 @@ class RollController extends Controller
                     ->leftJoin("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")                    
                     ->where("roll_details.lock_status",false)
                     ->where("roll_details.printing_machine_id",$machineId)
-                    ->orderBy("roll_details.id","DESC"); 
+                    ->orderBy("roll_details.printing_date","DESC"); 
 
             if($fromDate && $uptoDate){              
                 $data->whereBetween("printing_date",[$fromDate,$uptoDate]);
@@ -1134,7 +1139,7 @@ class RollController extends Controller
                     return"";
                 })
                 ->addColumn('bag_size', function ($val) { 
-                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
+                    return (float)$val->w." x ".(float)$val->l.($val->g ?(" x ".(float)$val->g) :"") ;
                 })
                 ->addColumn("gsm_json",function($val){
                     return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
@@ -1145,6 +1150,8 @@ class RollController extends Controller
 
         }
         $data=[];
+        $data["fromDate"] = $from."-04-01";
+        $data["uptoDate"] = Carbon::now()->format("Y-m-d");
         $data["machine"] = $this->_M_Machine->find($machineId);
         return view("Roll/rollRegisterPrinting",$data);
     }
@@ -1154,8 +1161,6 @@ class RollController extends Controller
         $machineId = $request->machineId;
         $user_type = Auth()->user()->user_type_id??"";
         list($from,$upto)=explode("-",getFY());
-        $data["fromDate"] = $from."-04-01";
-        $data["uptoDate"] = Carbon::now()->format("Y-m-d");
         if($request->ajax()){
             // dd($request->ajax());
             $fromDate = $request->fromDate;
@@ -1163,6 +1168,8 @@ class RollController extends Controller
             $data = $this->_M_RollDetail->select("roll_details.*","vendor_detail_masters.vendor_name",
                                 "client_detail_masters.client_name",
                                 "bag_type_masters.bag_type",
+                                "garbage_accept_registers.id AS garbage_id","garbage_accept_registers.shift",
+                                "operator.name as operator_name","helper.name as helper_name",
                                 DB::raw("
                                     TO_CHAR(roll_details.purchase_date, 'DD-MM-YYYY') as purchase_date ,
                                     TO_CHAR(roll_details.estimate_delivery_date, 'DD-MM-YYYY') as estimate_delivery_date ,
@@ -1173,10 +1180,16 @@ class RollController extends Controller
                                 )
                     ->join("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
-                    ->leftJoin("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")                    
+                    ->leftJoin("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id") 
+                    ->leftJoin("garbage_accept_registers",function($join){
+                        $join->on("garbage_accept_registers.roll_id","roll_details.id")
+                        ->where('garbage_accept_registers.lock_status',false);
+                    }) 
+                    ->leftJoin("users AS operator","operator.id","garbage_accept_registers.operator_id") 
+                    ->leftJoin("users AS helper","helper.id","garbage_accept_registers.helper_id")                    
                     ->where("roll_details.lock_status",false)
                     ->where("roll_details.cutting_machine_id",$machineId)
-                    ->orderBy("roll_details.id","DESC"); 
+                    ->orderBy("roll_details.cutting_date","DESC"); 
 
             if($fromDate && $uptoDate){              
                 $data->whereBetween("cutting_date",[$fromDate,$uptoDate]);
@@ -1207,8 +1220,38 @@ class RollController extends Controller
                 ->addColumn('print_color', function ($val) {                    
                     return collect(json_decode($val->printing_color,true))->implode(",");
                 })
-                ->addColumn("loop_color",function($val){
-                    return"";
+                ->addColumn("possible_piece",function($val){
+                    $bag = $this->_M_BagType->find($val->bag_type_id);
+                    $bestFind = "";
+                    $bestFind2 ="";
+                    $bestFind = $bag->roll_find;
+                    $bestFind2 = $bag->roll_find_as_weight;
+                    $newRequest = new Request();
+                    $newRequest->merge(
+                        [
+                        "bookingBagUnits" => "Piece",
+                        "formula" => $bestFind,
+                        "length" => $val->length,
+                        "netWeight"=>$val->net_weight,
+                        "size"=>$val->size,
+                        "gsm"=>$val->gsm,
+
+                        "bagL"=>$val->l,
+                        "bagW"=>$val->w,
+                        "bagG"=>$val->g
+                        ]
+                    );
+                    $newRequest2 = new Request($newRequest->all());
+                    $newRequest2->merge([
+                        "formula"=>$bestFind2
+                    ]);
+                    $result = $this->calculatePossibleProduction($newRequest);
+                    $result2 = $this->calculatePossibleProduction($newRequest2);
+                    $qty = ((($result["result"]??0)+($result2["result"]??0))/2);
+                    return round($qty);
+                })
+                ->addColumn('bag_size', function ($val) { 
+                    return (float)$val->w." x ".(float)$val->l.($val->g ?(" x ".(float)$val->g) :"") ;
                 })
                 ->addColumn("gsm_json",function($val){
                     return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
@@ -1220,6 +1263,8 @@ class RollController extends Controller
 
         }
         $data=[];
+        $data["fromDate"] = $from."-04-01";
+        $data["uptoDate"] = Carbon::now()->format("Y-m-d");
         $data["machine"] = $this->_M_Machine->find($machineId);
         return view("Roll/rollRegisterCutting",$data);
     }
@@ -1659,6 +1704,9 @@ class RollController extends Controller
             $rule = [
                 "id" => "required|exists:" . $this->_M_Machine->getTable() . ",id,is_printing,true",
                 "printingUpdate" => "required|date|date_format:Y-m-d|before_or_equal:" . Carbon::now()->format("Y-m-d"),
+                "shift" => "required|in:Day,Night",
+                "operatorId" => "required|exists:".$this->_M_User->getTable().",id",
+                "helperId" => "required|exists:".$this->_M_User->getTable().",id",
                 "roll" => "required|array",
                 "roll.*.id"=>"required|exists:".$this->_M_RollDetail->getTable().",id,lock_status,false,is_printed,false,is_cut,false",
             ];
@@ -1667,6 +1715,11 @@ class RollController extends Controller
                 return validationError($validate);
             }
             DB::beginTransaction();
+            if($request->roll){
+                $newRequest = new Request($request->all());
+                $newRequest->merge(["printingDate"=>$request->printingUpdate,"user_id"=>Auth()->user()->id]);
+                $entryId = $this->_M_PrintingEntry->store($newRequest);
+            }
             foreach($request->roll as $index=>$val){
                 $roll = $this->_M_RollDetail->find($val['id']);
                 $roll->is_printed = true;
@@ -1674,6 +1727,16 @@ class RollController extends Controller
                 $roll->weight_after_print = $val["printingWeight"];
                 $roll->printing_machine_id = $request->id;
                 $roll->update();
+                $colorArr=[];
+                foreach($val["color"] as $index=>$ratio){
+                    $colorArr[]=[
+                        "color"=>$val["colorName"][$index],
+                        "ratio"=>$ratio
+                    ];
+
+                }
+                $newRequest = new Request(["printingId"=>$entryId,"rollId"=>$roll->id,"printing_color_json"=>$colorArr?$colorArr:null]);
+                $this->_M_PrintingRegister->store($newRequest);
             }
             DB::commit();
             return responseMsgs(true,"Roll No ".$roll->roll_no." Printed","");
@@ -1938,7 +2001,11 @@ class RollController extends Controller
                     ->where("order_punch_details.client_detail_id",$request->clientId)
                     ->where("order_punch_details.lock_status",false)
                     ->orderBy("order_punch_details.created_at","DESC")
-                    ->get();
+                    ->get()
+                    ->map(function($val){
+                        $val->stereo_type_id = $val->stereo_type_id ? 2:null;
+                        return $val;
+                    });
 
             // Remove duplicates based on the specified columns
             $roll = $roll->unique(function ($item) {

@@ -22,7 +22,7 @@
                     <div class="col-sm-3">
                         <div class="form-group">
                             <label class="form-label" for="fromDate">From Date</label>
-                            <input type="date" name="fromDate" id="fromDate" class="form-control" max="{{date('Y-m-d')}}" />
+                            <input type="date" name="fromDate" id="fromDate" class="form-control" max="{{date('Y-m-d')}}" value="{{$fromDate??''}}" />
                         </div>
                     </div>
 
@@ -30,7 +30,7 @@
                     <div class="col-sm-3">
                         <div class="form-group">
                             <label class="form-label" for="uptoDate">Upto Date</label>
-                            <input type="date" name="uptoDate" id="uptoDate" class="form-control" max="{{date('Y-m-d')}}" />
+                            <input type="date" name="uptoDate" id="uptoDate" class="form-control" max="{{date('Y-m-d')}}" value="{{$uptoDate??''}}" />
                         </div>
                     </div>
                 </div>
@@ -48,30 +48,22 @@
             <table id="postsTable" class="table table-striped table-bordered table-fixed">
                 <thead>
                     <tr>
-                        <th >#</th>
-                        <th>Purchase Date</th>
+                        <th>Cutting Date</th>
+                        <th>Roll No</th>
                         <th>Vendor Name</th>
-                        <th>Hardness</th>
-                        <th>Roll Type</th>
                         <th>Roll Size</th>
                         <th>GSM</th>
                         <th>Roll Color</th>
-                        <th>Length</th>
-                        <th>Roll No</th>
-                        <th>Gross Weight</th>
                         <th>Net Weight</th>
-                        <th>GSM Variation</th>
-
-                        <th>W</th>
-                        <th>L</th>
-                        <th>G</th>
+                        <th>Weight After Print</th>
+                        <th>Bag Size</th>
                         <th>Bag Type</th>
-                        <th>Unit</th>
-                        <th>Customer</th>
-                        <th>Printing Color</th>
+                        <th>Client Name</th>
                         <th>Loop Color</th>
-                        <th>Printing Date</th>
-                        <th>Cutting Date</th>
+                        <th>Possible Piece</th>
+                        <th>Operator Name</th>
+                        <th>Helper Name</th>
+                        <th>Shift</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,30 +106,23 @@
                     $("#loadingDiv").hide();
                 },
             },
-            columns: [
-                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                { data: "purchase_date", name: "purchase_date" },
+            columns: [                
+                { data: "cutting_date", name: "cutting_date" },
+                { data: "roll_no", name: "roll_no" },
                 { data: "vendor_name", name: "vendor_name" },
-                { data: "hardness", name: "hardness" },
-                { data: "roll_type", name: "roll_type" },
                 { data: "size", name: "size" },
                 { data: "gsm", name: "gsm" },
                 { data: "roll_color", name: "roll_color" },
-                { data: "length", name: "length" },
-                { data: "roll_no", name: "roll_no" },
-                { data: "gross_weight", name: "gross_weight" },
                 { data: "net_weight", name: "net_weight" },
-                { data: "gsm_variation", name: "gsm_variation" },
-                { data : "w", name: "w" },
-                { data : "l", name: "l" },
-                { data : "g", name: "g" },
+                { data : "weight_after_print", name: "weight_after_print" },
+                { data: "bag_size", name: "bag_size" },
                 { data : "bag_type", name: "bag_type" },
-                { data : "bag_unit", name: "bag_unit" },
                 { data : "client_name", name: "client_name" },
-                { data : "print_color", name: "print_color" },
                 { data : "loop_color", name: "loop_color" },
-                { data : "printing_date", name: "printing_date" },
-                { data : "cutting_date", name: "cutting_date" },
+                { data : "possible_piece", name: "possible_piece" },
+                { data : "operator_name", name: "operator_name" },
+                { data : "helper_name", name: "helper_name" },
+                { data : "shift", name: "shift" },
             ],
             dom: 'lBfrtip', // This enables the buttons
             language: {
@@ -160,17 +145,17 @@
                     orientation: 'portrait',
                     pageSize: 'A4',
                     exportOptions: {
-                        columns: [0, 1,2, 3,4,5,6,7,8,9,10]  // Export only Name, Position, and Age columns
+                        columns: [0, 1,2, 3,4,5,6,7,8,9,10,11,12,13,14,15]  // Export only Name, Position, and Age columns
                     }
 
                 },
             ], 
             createdRow: function(row, data, dataIndex) {
-                let td = $('td', row).eq(6); 
+                let td = $('td', row).eq(5); 
                 td.attr("title", data?.gsm_json);
             },           
             initComplete: function () {
-                addFilter('postsTable',[0]);
+                addFilter('postsTable');
             },
         });
 
