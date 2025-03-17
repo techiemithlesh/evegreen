@@ -119,10 +119,6 @@
                     required: true,
                     number: true,
                 },
-                "roll[][weight]":{
-                    required:true,
-                    number: true,
-                },
             },
             submitHandler: function(form) {
                 entryFormSubmit();
@@ -147,17 +143,18 @@
         let tr = $("<tr>").attr("data-id", item.id)
             .append(`
                 <td>
-                    <input type='text' class="form-control" style="width:100px" placeholder="Piece" id='roll[${sl}][pieces]' name='roll[${sl}][pieces]' ${item.units === 'Piece' ? 'required' : ''} onkeypress="return isNumDot(event);" />
-                    <span class="error-text" id="roll[${sl}][pieces]-error"></span>
-                </td>
-                <td>
-                    <input type='text' class="form-control" style="width:100px" placeholder="IdealWeight" id='roll[${sl}][idealWeight]' name='roll[${sl}][idealWeight]' readonly value='0' />
-                </td>
-                <td>
                     <input type='hidden' name='roll[${sl}][id]' value='${item.id}' />
-                    <input type='text' class="form-control" style="width:100px" placeholder="Weight" id='roll[${sl}][weight]' name='roll[${sl}][weight]' required onkeypress="return isNumDot(event);" />
-                    <span class="error-text" id="roll[${sl}][weight]-error"></span>
-                </td>                
+                    <input type='text' class="form-control" style="width:100px" placeholder="Weight" id='roll_${sl}_weight' name='roll[${sl}][weight]' required onkeypress="return isNumDot(event);" onkeyup="addColorInput(${sl})" />
+                    <span class="error-text" id="roll_${sl}_weight-error"></span>
+                </td>
+                <td>
+                    <input type='text' class="form-control" style="width:100px" placeholder="IdealWeight" id='roll_${sl}_idealWeight' name='roll[${sl}][idealWeight]' readonly value='' />
+                </td> 
+                <td>
+                    <input data-id="${sl}" type='text' class="form-control" style="width:100px" placeholder="Piece" id='roll_${sl}_pieces' name='roll[${sl}][pieces]' ${item.units === 'Piece' ? 'required' : ''} onkeypress="return isNumDot(event);" onkeyup="calculateIdealWeight(event,${id})" />
+                    <span class="error-text" id="roll_${sl}_pieces-error"></span>
+                </td>
+                                               
                 <td><button type='button' onclick='removeTr(this, ${id})' class='btn btn-sm btn-warning'>X</button></td>
             `);
         
@@ -251,6 +248,29 @@
         $('#orderRoll').DataTable().ajax.reload(function(){
             addFilter('orderRoll',[0]);
         },false);
+    }
+
+    function calculateIdealWeight(event,id){
+        let value = event.target.value;
+        let dataId = event.target.getAttribute('data-id') ;
+        let buttonElement = document.getElementById("button_" + id); 
+        let item = JSON.parse(buttonElement.getAttribute('data-item'));
+        let weightPerBag = item?.weight_per_bag||0;
+        $("#roll_"+dataId+"_idealWeight").val((weightPerBag*value).toFixed(2));
+        console.log(id);
+        console.log(value);
+        console.log(weightPerBag);
+        addColorInput(dataId);
+    }
+
+    function addColorInput(slNo){
+        let weight = $("#roll_"+slNo+"_weight").val();
+        let picess = $("#roll_"+slNo+"_pieces").val();
+        let idealWeight = $("#roll_"+slNo+"_idealWeight").val();
+        $("#roll_"+slNo+"_idealWeight").css("color","black");
+        if(weight !=idealWeight && picess){
+            $("#roll_"+slNo+"_idealWeight").css("color","red");
+        }
     }
 </script>
 

@@ -123,6 +123,7 @@ class PackingController extends Controller
                 $val->bag_printing_color = collect(json_decode($val->bag_printing_color,true))->implode(",") ;
                 $val->bag_color = collect(json_decode($val->bag_color,true))->implode(",") ;
                 $val->bag_gsm = collect(json_decode($val->bag_gsm,true))->implode(",") ;
+                $val->bag_gsm_json = collect(json_decode($val->bag_gsm_json,true))->implode(",");
                 $val->bag_size = (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
                 
                 $val->loop_weight = 0;
@@ -157,10 +158,10 @@ class PackingController extends Controller
                     $result2 = $this->calculatePossibleProduction($newRequest2);
                     $totalPieces += ((($result["result"]??0)+($result2["result"]??0))/2);
                 }
-                $val->total_pieces = $val->units!="Kg" ? $totalPieces : 0 ;
+                $val->total_pieces =  $totalPieces ;
                 $val->loop_weight = 0;
                 if(in_array($val->bag_type_id,[2,4,5])){
-                    $val->loop_weight = (($totalPieces*3.4)/1000);
+                    $val->loop_weight = (($totalPieces*3.4)/1000); # convert it in kg
                 }
                 $val->balance = roundFigure($val->roll_weight + $val->loop_weight - $val->packing_weight - $val->total_garbage);
                 $gsm = collect(json_decode($gsm_json,true));
@@ -178,7 +179,9 @@ class PackingController extends Controller
                     "W"=>$val->bag_w,
                     "G"=>$val->bag_g??0,
                 ];
-                $val->formula_ideal_weight = $this->_M_BagType->find($val->bag_type_id)->weight_of_bag_per_piece;
+                $val->formula_ideal_weight = $this->_M_BagType->find($val->bag_type_id)->weight_of_bag_per_piece;                
+                $val->weight_per_bag = ($val->roll_weight + $val->loop_weight - $val->total_garbage)/$val->total_pieces;
+                
                 return $val;
 
             });
