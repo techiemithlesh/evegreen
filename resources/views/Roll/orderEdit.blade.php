@@ -91,7 +91,7 @@
                     <div class="row mt-3"> 
                         <div class="col-sm-4">
                             <div class="form-group">
-                                <label class="form-label" for="bagQuality">Bag Quality </label>
+                                <label class="form-label" for="bagQuality">Roll Configuration </label>
                                 <select name="bagQuality" id="bagQuality" class="form-select readOnly" required onchange="showHidePrintingColorDiv()">
                                     <option value="">Select</option>                                    
                                     <option value="NW" {{$order->bag_quality=="NW"?"selected" : ""}}>NW</option>
@@ -103,7 +103,7 @@
                         </div>
                         <div class="col-sm-4">
                             <div class="form-group">
-                                <label class="form-label" for="gradeId">Roll Grade</label>
+                                <label class="form-label" for="gradeId">Roll Quality</label>
                                 <select name="gradeId" id="gradeId" class="form-select readOnly" required >
                                     <option value="">Select</option>
                                     @foreach($grade as $val)

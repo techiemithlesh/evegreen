@@ -303,7 +303,7 @@
                 <div class="row">
                     <div class="row mt-3">
                         <div class="col-sm-4">
-                            <div class="form-group">
+                            <!-- <div class="form-group">
                                 <label class="form-label" for="altBagColor">Alternate Bag Color</label>
                                 <div class="col-md-12">
                                     <select name="altBagColor[]" id="altBagColor" class="form-select select22" multiple="multiple" onchange="showAlternativeOptionGsm()"> 
@@ -314,10 +314,10 @@
                                     </select>
                                 </div>                                                                                                          
                                 <span class="error-text" id="altBagColor-error"></span>
-                            </div>
+                            </div> -->
                         </div>
                         <div class="col-sm-4">
-                            <div class="form-group">
+                            <!-- <div class="form-group">
                                 <label class="form-label" for="altBagGsm">Alternate Gsm</label>
                                 <div class="col-md-12">
                                     <select name="altBagGsm[]" id="altBagGsm" class="form-select select22" multiple="multiple" > 
@@ -328,7 +328,7 @@
                                     </select>
                                 </div>                                                                                                          
                                 <span class="error-text" id="altBagGsm-error"></span>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
