@@ -508,7 +508,7 @@ class PackingController extends Controller
             $transPortStatus = (Config::get("customConfig.transportType.".$request->transPortType));            
             $count = $this->getChalaneSequence($transPortStatus);
             $chalanNo = ($transPortStatus==4 ? "C":"G")."-";
-            $chalanNo .=substr($$rateType ? Str::upper($rateType->rate_type) :"O",0,1)."-";
+            $chalanNo .=substr($rateType ? Str::upper($rateType->rate_type) :"O",0,1)."-";
             $chalanNo .=str_pad((string)$count,4,"0",STR_PAD_LEFT); 
             
             if($transPortStatus==3){
@@ -541,7 +541,7 @@ class PackingController extends Controller
         }catch(MyException $e){
             return responseMsg(false,$e->getMessage(),"");
         }catch(Exception $e){
-            // dd($e->getMessage(),$e->getLine());
+            dd($e->getMessage(),$e->getLine());
             return responseMsg(false,"Server Error","");
         }
     }

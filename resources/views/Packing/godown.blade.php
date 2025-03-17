@@ -25,16 +25,17 @@
             <table class="table table-bordered  table-responsive table-fixed" id="postsTable">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Packing Date</th>
+                        <!-- <th>#</th>
+                        <th>Packing Date</th> -->
                         <th>Packing No</th>
                         <th>Client Name</th>
+                        <th>Bag Size </th>
                         <th>Bag Type</th>
-                        <th>Bag Unit</th> 
-                        <th>Bag Color</th>                      
+                        <th>Bag Color</th> 
+                        <th>Bag GSM</th>                     
                         <th>Bag Weight</th>
                         <th>Bag Piece</th>
-                        <th>Bag Size </th>
+                        <!-- <th>Bag Unit</th>  -->
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -196,21 +197,19 @@
             },
 
             columns: [
-                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false,
-                    render: function(data, type, row, meta) {
+                { data: "packing_no", name: "packing_no",render: function(data, type, row, meta) {
                             const rowDataEncoded = base64Encode(JSON.stringify(row));
-                            return `${meta.row + 1} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
+                            return `${row.packing_no} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
                         }
-                 },
-                { data: "packing_date", name: "packing_date" },
-                { data: "packing_no", name: "packing_no" },
+                },
                 { data: "client_name", name: "client_name" },
-                { data: "bag_type", name: "bag_type" },
-                { data: "units", name: "units" },
-                { data: "bag_color", name: "bag_color" },
-                { data: "packing_weight", name: "packing_weight" },
-                { data: "packing_bag_pieces", name: "packing_bag_pieces" },
                 { data: "bag_size", name: "bag_size",render: function(item) {  return `<pre>${item}</pre>`; }},                
+                { data: "bag_type", name: "bag_type" },
+                { data: "bag_color", name: "bag_color" },
+                { data: "bag_gsm", name: "bag_gsm" },
+                // { data: "units", name: "units" },
+                { data: "packing_weight", name: "packing_weight",render:function(data, type, row, meta){return `${row.packing_weight} (Kg)`} },
+                { data: "packing_bag_pieces", name: "packing_bag_pieces",render:function(data, type, row, meta){return `${row.packing_bag_pieces ? row.packing_bag_pieces +" (Pcs)" : "NA"} `} },
                 { data: "action", name: "action", orderable: false, searchable: false },
                 
             ],
