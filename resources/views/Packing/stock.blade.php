@@ -206,7 +206,7 @@
                 { data: "bag_gsm", name: "bag_gsm" },
                 // { data: "units", name: "units" },
                 { data: "packing_weight", name: "packing_weight",render:function(data, type, row, meta){return `${row.packing_weight} (Kg)`} },
-                { data: "packing_bag_pieces", name: "packing_bag_pieces",render:function(data, type, row, meta){return `${row.packing_bag_pieces ? row.packing_bag_pieces +" (Psc)" : ""} `} },
+                { data: "packing_bag_pieces", name: "packing_bag_pieces",render:function(data, type, row, meta){return `${row.packing_bag_pieces ? row.packing_bag_pieces +" (Pcs)" : "NA"} `} },
                 { data: "action", name: "action", orderable: false, searchable: false },
 
                 
