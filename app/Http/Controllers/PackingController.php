@@ -757,7 +757,7 @@ class PackingController extends Controller
                 "transPortType" => "required|in:For Godown,For Delivery", // Fixed 'id' to 'in' for a set of allowed values
                 "dispatchedDate" => "required|date", // Ensures dispatchedDate is a valid date
                 "invoiceNo" => "required", // Invoice number is mandatory
-                "billNo" => "required_if:transPortType,For Delivery", // Bill number is required only if transport type is 'For Delivery'
+                // "billNo" => "required_if:transPortType,For Delivery", // Bill number is required only if transport type is 'For Delivery'
                 "bag" => "required|array", // Packing must be a non-empty array
                 "bag.*.id" => [
                         "required",

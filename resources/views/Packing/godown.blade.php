@@ -363,12 +363,14 @@
         let is_local_order=true;
         let rateType = [];
         let client=[];
+        let rate = "";
 
         // ✅ Fix: Use `forEach` correctly
         sequence.forEach((item) => {
             if(!item.is_local_order && is_local_order){
                 is_local_order=false;
             }
+            rate=item.rate_type_id;
             if (!rateType[item.rate_type_id]) {
                 rateType[item.rate_type_id] = item.rate_type;
             }
@@ -378,6 +380,7 @@
 
             hidden += `<input type='hidden' name="bag[][id]" value="${item.id}" />`;
         });
+        hidden+=`<input type='hidden' name='rateTypeIdNew' value="${rate}" />`;
         hidden+=`<input type='hidden' id='transPortType' name='transPortType' value="${transportType}" />`;
         
         console.log(rateType);
@@ -391,9 +394,12 @@
         }
         $("#transposerDiv").show();
         $("#transporterId").attr("required",true);
+        $("#rateTypeDiv").show();
+        $("#rateTypeId").val(rate);
         if(is_local_order || transportType=="For Godown"){
             $("#transposerDiv").hide();            
             $("#transporterId").attr("required",false);
+            $("#rateTypeDiv").hide();
         }
         $("#hiddenDiv").html(hidden);
         $("#transportModelLabel").html(transportType);
