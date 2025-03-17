@@ -496,6 +496,9 @@ class PackingController extends Controller
             $order = $firstBag->getOrderDtl();
             $client = $order->getClient();
             $rateType = $order->getRateType();
+            if($request->rateTypeIdNew){
+                $rateType= $this->_M_RateType->find($request->rateTypeIdNew);
+            }
             $auto = $this->_M_Auto->find($request->autoId);
             $transposer = $this->_M_Transporter->find($request->transporterId);
             $fyear=getFY();
@@ -848,6 +851,9 @@ class PackingController extends Controller
                     if(($order->total_units - $order->disbursed_units)<=round($totalUnit + ($order->units=="Kg" ? $totalGarbage : $garbagePossibleBagPiece))){
                         $order->is_delivered = true;
                         $order->delivery_date = Carbon::now()->format("Y-m-d");
+                    }
+                    if($request->rateTypeIdNew){
+                        $order->rate_type_id=$request->rateTypeIdNew;
                     }
                     $order->update();
                 }

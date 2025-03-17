@@ -408,6 +408,7 @@
 
             hidden += `<input type='hidden' name="bag[][id]" value="${item.id}" />`;
         });
+        hidden+=`<input type='hidden' name='rateTypeIdNew' value="${rate}" />`;
         hidden+=`<input type='hidden' id='transPortType' name='transPortType' value="${transportType}" />`;
         
         console.log(rateType);
