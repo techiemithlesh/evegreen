@@ -363,6 +363,9 @@ class PackingController extends Controller
                 ->addColumn('bag_size', function ($val) { 
                     return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
                 })
+                ->addColumn('bag_gsm', function ($val) { 
+                    return collect(json_decode($val->bag_gsm,true))->implode(",");
+                })
                 ->addColumn('action', function ($val) { 
                     $button="";
                     if((!$val->is_wip_disbursed) && (!$val->is_delivered) ){
@@ -578,6 +581,9 @@ class PackingController extends Controller
                 })
                 ->addColumn('bag_size', function ($val) { 
                     return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
+                })
+                ->addColumn('bag_gsm', function ($val) { 
+                    return collect(json_decode($val->bag_gsm,true))->implode(",");
                 })
                 ->addColumn('action', function ($val) {                    
                     $button="";
