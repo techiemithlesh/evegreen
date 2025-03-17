@@ -4,6 +4,7 @@ return[
     "transportType"=>[
         "For Delivery"=>4,
         "For Godown"=>3,
+        "For Factory"=>1,
     ],
     "bagStatus"=>[
         1=>"in factory",

@@ -1133,6 +1133,9 @@ class RollController extends Controller
                 ->addColumn("loop_color",function($val){
                     return"";
                 })
+                ->addColumn('bag_size', function ($val) { 
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
+                })
                 ->addColumn("gsm_json",function($val){
                     return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
                 })

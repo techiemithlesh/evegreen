@@ -505,9 +505,19 @@ class PackingController extends Controller
             list($fromDate,$uptoDate) = explode("-",$fyear);
             $fromDate=$fromDate."-04-01"; 
             $uptoDate=$uptoDate."-03-31"; 
-            $transPortStatus = (Config::get("customConfig.transportType.".$request->transPortType));            
+            $transPortStatus = (Config::get("customConfig.transportType.".$request->transPortType));         
             $count = $this->getChalaneSequence($transPortStatus);
-            $chalanNo = ($transPortStatus==4 ? "C":"G")."-";
+            $chalanNo="OO"."-";
+            if($transPortStatus==4){
+                $chalanNo="FC"."-";
+            }
+            elseif($transPortStatus==1){
+                $chalanNo="GF"."-";
+            }
+            elseif($transPortStatus==3){
+                $chalanNo="FG"."-";
+            }
+            $key=$chalanNo;
             $chalanNo .=substr($rateType ? Str::upper($rateType->rate_type) :"O",0,1)."-";
             $chalanNo .=str_pad((string)$count,4,"0",STR_PAD_LEFT); 
             
@@ -517,7 +527,7 @@ class PackingController extends Controller
                     $client->$key=$val;
                 }
             }
-            $data["unique_id"]=getFY()."_".$count;
+            $data["unique_id"]=getFY()."-".$key.$count;
             $data["table"]=$table;
             $data["chalan_date"]=Carbon::now()->format("d-m-Y");
             $data["transposer"]=$transposer;
@@ -541,7 +551,7 @@ class PackingController extends Controller
         }catch(MyException $e){
             return responseMsg(false,$e->getMessage(),"");
         }catch(Exception $e){
-            dd($e->getMessage(),$e->getLine());
+            // dd($e->getMessage(),$e->getLine());
             return responseMsg(false,"Server Error","");
         }
     }
@@ -755,7 +765,7 @@ class PackingController extends Controller
         try{
             $user = Auth()->user();
             $rules = [
-                "transPortType" => "required|in:For Godown,For Delivery", // Fixed 'id' to 'in' for a set of allowed values
+                "transPortType" => "required|in:For Godown,For Delivery, For Factory", // Fixed 'id' to 'in' for a set of allowed values
                 "dispatchedDate" => "required|date", // Ensures dispatchedDate is a valid date
                 "invoiceNo" => "required", // Invoice number is mandatory
                 // "billNo" => "required_if:transPortType,For Delivery", // Bill number is required only if transport type is 'For Delivery'

@@ -15,9 +15,9 @@
         <div class="panel-heading">
             <h5 class="panel-title">List</h5>   
             <div class="panel-control">
-                <a href="{{route('packing.godown.reiving')}}" class="btn btn-primary btn-sm">Add Bag</a>
+                <a href="{{route('packing.godown.reiving')}}" class="btn btn-primary btn-sm">Verify</a>
                 <!-- <a href="{{route('packing.transport.for','For Delivery')}}" class="btn btn-warning btn-sm">Transport Bag</a> -->
-                <!-- <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Godown')">Godown</button> -->
+                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Factory')">Factory</button>
                 <button type="button" class="btn btn-sm btn-success" onclick="openTransportModel('For Delivery')">Client</button>
             </div>         
         </div>
@@ -395,11 +395,11 @@
         hidden+=`<input type='hidden' id='transPortType' name='transPortType' value="${transportType}" />`;
         
         console.log(rateType);
-        if (Object.keys(rateType).length > 1 && transportType!="For Godown") {
+        if (Object.keys(rateType).length > 1 && transportType=="For Delivery") {
             popupAlert("Cannot generate different rate type Chalan");
             return;
         }
-        if (Object.keys(client).length > 1 && transportType!="For Godown") {
+        if (Object.keys(client).length > 1 && transportType=="For Delivery") {
             popupAlert("Cannot generate Chalan for more then one client");
             return;
         }
@@ -407,7 +407,7 @@
         $("#transporterId").attr("required",true);
         $("#rateTypeDiv").show();
         $("#rateTypeId").val(rate);
-        if(is_local_order || transportType=="For Godown"){
+        if(is_local_order || transportType=="For Godown" || transportType=="For Factory"){
             $("#transposerDiv").hide();            
             $("#transporterId").attr("required",false);
             $("#rateTypeDiv").hide();
