@@ -31,13 +31,13 @@
             <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
                 <ol class="breadcrumb fs-6">
                     <li class="breadcrumb-item fs-6"><a href="#">Home</a></li>
-                    <li class="breadcrumb-item active fs-6" aria-current="page">Order Punches</li>
+                    <li class="breadcrumb-item active fs-6" aria-current="page">Order Punch</li>
                 </ol>
             </nav>
 
         </div>
         <div class="panel-heading">
-            <h5 class="panel-title">Order Punches</h5>            
+            <h5 class="panel-title">Order Punch</h5>            
         </div>
     </div>
     <div class="container">
@@ -75,7 +75,7 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingEstimatedDespatchDate">Dispatch Date</label>
-                                <input type="date" min="{{date('Y-m-d')}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" required/>                                  
+                                <input type="date" min="{{date('Y-m-d')}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" value="{{date('Y-m-d',strtotime(date('Y-m-d').' 10 days'))}}" required/>                                  
                                 <span class="error-text" id="bookingEstimatedDespatchDate-error"></span>
                             </div>
                         </div>
@@ -94,7 +94,7 @@
                     <div class="row mt-3"> 
                         <div class="col-sm-4">
                             <div class="form-group">
-                                <label class="form-label" for="bagQuality">Bag Quality </label>
+                                <label class="form-label" for="bagQuality">Roll Configuration </label>
                                 <select name="bagQuality" id="bagQuality" class="form-select" required onchange="showHidePrintingColorDiv();showAlternativeOption()">
                                     <option value="">Select</option>                                    
                                     <option value="NW">NW</option>
@@ -106,7 +106,7 @@
                         </div>
                         <div class="col-sm-4">
                             <div class="form-group">
-                                <label class="form-label" for="gradeId">Roll Grade</label>
+                                <label class="form-label" for="gradeId">Roll Quality</label>
                                 <select name="gradeId" id="gradeId" class="form-select" required onchange="showAlternativeOption()" >
                                     <option value="">Select</option>
                                     @foreach($grade as $val)

@@ -18,6 +18,16 @@
                         <input type="text" maxlength="100" id="autoName" name="autoName" class="form-control" placeholder="Enter Auto Name" required>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label" for="autoName">Auto No<span class="text-danger">*</span></label>
+                        <input type="text" maxlength="100" id="autoName" name="autoName" class="form-control" placeholder="Enter Auto Name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="autoName">Auto Name<span class="text-danger">*</span></label>
+                        <input type="text" maxlength="100" id="autoName" name="autoName" class="form-control" placeholder="Enter Auto Name" required>
+                    </div>
+
                     <!-- Submit Button -->
                     <div class="row mt-4">
                         <div class="col-sm-12 text-end">
