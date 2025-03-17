@@ -127,6 +127,19 @@
                                     <span class="error-text" id="transporterId-error"></span>
                                 </div>
                             </div>
+
+                            <div class="col-sm-4" id="rateTypeDiv">
+                                <div class="form-group">
+                                    <label class="form-label" for="rateTypeId">Rate Type</label>
+                                    <select name="rateTypeId" id="rateTypeId" class="form-select" >
+                                        <option value="">select</option>
+                                        @foreach($rateType as $val)
+                                            <option value="{{$val->id}}">{{$val->rate_type}}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="error-text" id="rateTypeId-error"></span>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -378,12 +391,14 @@
         let is_local_order=true;
         let rateType = [];
         let client=[];
+        let rate = "";
 
         // ✅ Fix: Use `forEach` correctly
         sequence.forEach((item) => {
             if(!item.is_local_order && is_local_order){
                 is_local_order=false;
             }
+            rate=item.rate_type_id;
             if (!rateType[item.rate_type_id]) {
                 rateType[item.rate_type_id] = item.rate_type;
             }
@@ -405,10 +420,13 @@
             return;
         }
         $("#transposerDiv").show();
+        $("#rateTypeDiv").show();
+        $("#rateTypeId").val(rate);
         $("#transporterId").attr("required",true);
         if(is_local_order || transportType=="For Godown"){
             $("#transposerDiv").hide();            
             $("#transporterId").attr("required",false);
+            $("#rateTypeDiv").hide();
         }
         $("#hiddenDiv").html(hidden);
         $("#transportModelLabel").html(transportType);
