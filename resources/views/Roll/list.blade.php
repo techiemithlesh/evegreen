@@ -17,9 +17,11 @@
     <div class="container">
         <div class="panel-heading">
             <h5 class="panel-title">Roll List</h5>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rollSwapSwapModal">Swap The Roll</button>
+            <!-- <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rollSwapSwapModal">Swap The Roll</button> -->
+            <button class="btn btn-primary" onclick="swapSelectedRoll()">Swap The Roll</button>
         </div>
         <div class="panel-body">
+            <input type="hidden" id="selectedRollId">
             <table id="postsTable" class="table table-striped table-bordered text-center table-fixed">
                 <thead>
                     <!-- <tr>
@@ -172,7 +174,11 @@
 
 
             columns: [
-                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
+                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false,
+                    render:function(row,type,data){
+                        return `${data?.DT_RowIndex} <input type="checkbox" value='${data.id}' onchange='updateSelection(event)' />`
+                    } 
+                },
                 { data: "purchase_date", name: "purchase_date" ,render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")}},
                 { data: "vendor_name", name: "vendor_name",render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")} },
                 { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality :"N/A")}},
@@ -775,6 +781,80 @@
             }
         })
     }
+
+    function updateSelection(event) {
+        let id = event.target.value;
+        let rollId = $("#selectedRollId").val().split(",").filter(Boolean); // Ensure no empty values
+
+        if (event.target.checked) {
+            rollId.push(id);
+        } else {
+            rollId = rollId.filter(item => item !== id); // Remove only the unchecked item
+        }
+
+        $("#selectedRollId").val(rollId.join(",")); // Update the hidden input field
+
+        console.log(rollId);
+    }
+
+    function swapSelectedRoll() {
+        let rollId = $("#selectedRollId").val().split(",").filter(Boolean);
+
+        if (rollId.length < 2) {
+            alert("Please select 2 rolls");
+            return;
+        } else if (rollId.length > 2) {
+            alert("Selected rolls are more than 2");
+            return;
+        }
+
+        // Create FormData object
+        let formData = new FormData();
+        formData.append("roll[firstRoll][]", rollId[0]);
+        formData.append("roll[secondRoll][]", rollId[1]);
+
+        $.ajax({
+            url: "{{ route('roll.swap.selected') }}",
+            type: "POST",
+            data: formData,
+            processData: false,  // ⬅️ Prevent jQuery from processing FormData
+            contentType: false,  // ⬅️ Prevent jQuery from setting content type
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // CSRF Token for Laravel
+            },
+            beforeSend: function () {
+                $("#loadingDiv").show();
+            },
+            success: function (response) {
+                $("#loadingDiv").hide();
+
+                if (response.status) {
+                    $("#selectedRollId").val("");
+                    $("#rollSwapSwapModal").modal("hide");
+                    $("#swap_tbl tbody").empty();
+                    searchData();
+                } else if (response?.errors) {
+                    console.log(response?.errors);
+                    modelInfo(response.message, "warning");
+
+                    for (let field in response.errors) {
+                        let fieldId = field.replace(/\./g, '\\.');
+                        $(`#${fieldId}-error`).text(response.errors[field][0]);
+                    }
+                } else {
+                    modelInfo("Server error", "error");
+                }
+            },
+            error: function (errors) {
+                console.log(errors);
+                $("#loadingDiv").hide();
+                modelInfo("Server error", "error");
+            }
+        });
+    }
+
+
+
     
 
 </script>

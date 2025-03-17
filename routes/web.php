@@ -225,6 +225,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::get("roll/list/{flag?}", "rollList")->name("roll.list");
         Route::post("roll/add", "addRoll")->name("roll.add");
         Route::post("roll/swap", "swapRollNo")->name("roll.swap");
+        Route::post("roll/swap/selected", "swapSelectedRoll")->name("roll.swap.selected");
         Route::post("roll/import", "importRoll")->name("roll.import");
         Route::get('roll/import-template', 'downloadCsvTemplate')->name('download.roll.import.template')->withoutMiddleware("auth:sanctum");
         Route::post("roll/book", "rollBook")->name("roll.book");

@@ -4,7 +4,6 @@ toggler.addEventListener("click", function () {
 });
   
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('DOM is fully loaded and parsed!');
 
     // Get all the sidebar links
     const sidebarLinks = document.querySelectorAll('.sidebar-link');
@@ -61,9 +60,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const activeMenu = document.getElementById('p' + activeMenuName);
             const activeSubMenu = document.getElementById("p"+activeSubMenuName);
             const activeSubSubMenu = document.getElementById(activeSubSubMenuName);
-            console.log("activeMenu:",activeMenu);
-            console.log("activeSubMenu:",activeSubMenu);
-            console.log("activeSubSubMenu:",activeSubSubMenu);
 
             if (activeMenu) {
                 activeMenu.setAttribute("aria-expanded", "true"); // Ensure the parent is expanded
@@ -100,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function toggleNave(element){
-    console.log(element.classList.toggle("collapsed"));
     if(!element.classList.toggle("collapsed")){
         element.classList.add("show");
     }
