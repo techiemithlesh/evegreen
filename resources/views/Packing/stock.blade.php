@@ -503,6 +503,7 @@
                                 console.log(errors);
                                 $("#loadingDiv").hide();
                                 modelInfo("Server error", "error");
+                                $("#transportBag").prop("disabled", false);
                             }
                         });
                     });

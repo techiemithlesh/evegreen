@@ -278,6 +278,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post("packing/godown/transport", "reivingTransport")->name("packing.godown.transport");
         Route::post("packing/godown/add", "addInGodown")->name("packing.godown.add");
         Route::get("packing/transport/register", "transportRegister")->name("packing.transport.register");
+        Route::get("packing/transport/delete/{id}", "deleteTransPortDtl")->name("packing.transport.delete");
         Route::get("packing/bag/dtl/{id}","bagDtl")->name("packing.bag.dtl");
         Route::post("packing/bag/edit","editBag")->name("packing.bag.edit");
         Route::post("packing/bag/delete","deleteBag")->name("packing.bag.delete");

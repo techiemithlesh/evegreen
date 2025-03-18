@@ -21,6 +21,7 @@ class BagPackingTransport  extends Model
         'bill_no',
         'invoice_no',
         "transport_status",
+        "transport_init_status",
         'user_id',
         "reiving_user_id",
         'lock_status',

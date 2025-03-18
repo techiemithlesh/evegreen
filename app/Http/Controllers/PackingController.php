@@ -765,7 +765,7 @@ class PackingController extends Controller
         try{
             $user = Auth()->user();
             $rules = [
-                "transPortType" => "required|in:For Godown,For Delivery, For Factory", // Fixed 'id' to 'in' for a set of allowed values
+                "transPortType" => "required|in:For Godown,For Delivery,For Factory", // Fixed 'id' to 'in' for a set of allowed values
                 "dispatchedDate" => "required|date", // Ensures dispatchedDate is a valid date
                 "invoiceNo" => "required", // Invoice number is mandatory
                 // "billNo" => "required_if:transPortType,For Delivery", // Bill number is required only if transport type is 'For Delivery'
@@ -781,9 +781,9 @@ class PackingController extends Controller
                 return validationError($validate);
             }
             $transportStatus = Config::get("customConfig.transportType.".$request->transPortType);
-            $request->merge(["userId"=>$user->id,"transportStatus"=>$transportStatus]);
+            $firstBag= $this->_M_BagPacking->find(collect($request->bag)->first()["id"]);
+            $request->merge(["userId"=>$user->id,"transportStatus"=>$transportStatus,"transport_init_status"=>$firstBag->packing_status]);
             DB::beginTransaction();
-
             $tranId = $this->_M_PackTransport->store($request);
             $orderId=collect();
             foreach($request->bag as $val){
@@ -877,7 +877,7 @@ class PackingController extends Controller
         }
     }
 
-    public function transportRegister(Request $request){
+    public function transportRegister_old(Request $request){
         
         if($request->ajax())
         {
@@ -911,8 +911,20 @@ class PackingController extends Controller
                 $data->where("bag_packing_transports.invoice_no",$request->invoiceNo);
             }
             if($request->transportTypeId){
-                $data->where("bag_packing_transports.transport_status",$request->transportTypeId);
+                $data->where(function($query) use($request){
+                    foreach($request->transportTypeId as $index=> $val){
+                        $statusType=Config::get("customConfig.transportationDropDownType.".$val);
+                        if ($statusType) { // Ensure config exists to prevent errors
+                            $query->orWhere(function ($q) use ($statusType) {
+                                $q->where("bag_packing_transports.transport_status", $statusType["transport_status"])
+                                  ->where("bag_packing_transports.transport_init_status", $statusType["transport_init_status"]);
+                            });
+                        }
+            
+                    }
+                });
             }
+            
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn("transition_type",function($val){
@@ -950,10 +962,136 @@ class PackingController extends Controller
         }
         $data["autoList"] = $this->_M_Auto->getAutoListOrm()->orderBy("id","ASC")->get();
         $data["transporterList"] = $this->_M_Transporter->getAutoListOrm()->orderBy("id","ASC")->get();
-        $data["transportType"] = collect(flipConstants(Config::get("customConfig.transportType")))->map(function($val,$index){
-            return json_decode(json_encode(["id"=>$index,"type"=>$val]));
+        $data["transportType"] = collect(Config::get("customConfig.transportationDropDownType"))->map(function($val,$index){
+            return json_decode(json_encode(["id"=>$index,"type"=>$index]));
         });
         return view("Packing/bag_transport",$data);
+    }
+
+    public function transportRegister(Request $request){
+        
+        if($request->ajax())
+        {
+            $data = $this->_M_TransportDetail->select("bag_packing_transport_details.*","bag_packing_transports.transport_date","bag_packing_transports.invoice_no",
+                        "bag_packing_transports.chalan_unique_id",
+                        "bag_packing_transports.transport_status","bag_packing_transports.transport_init_status",
+                        "bag_packings.packing_no","bag_packings.packing_weight","bag_packings.packing_bag_pieces",
+                        "auto_details.auto_name","client_detail_masters.client_name",
+                        "order_punch_details.order_no","order_punch_details.order_date","order_punch_details.bag_gsm","order_punch_details.bag_printing_color",
+                        "order_punch_details.bag_w","order_punch_details.bag_l","order_punch_details.bag_g","order_punch_details.bag_color",
+                        "bag_type_masters.bag_type",
+                        "transporter_details.transporter_name"
+                    )
+                    ->join("bag_packing_transports","bag_packing_transports.id","bag_packing_transport_details.pack_transport_id")
+                    ->join("bag_packings","bag_packings.id","bag_packing_transport_details.bag_packing_id")
+                    ->join("order_punch_details","order_punch_details.id","bag_packings.order_id")
+                    ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")
+                    ->join("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")
+                    ->leftJoin("auto_details","auto_details.id","bag_packing_transports.auto_id")
+                    ->leftJoin("transporter_details","transporter_details.id","bag_packing_transports.transporter_id")
+                    ->where("bag_packing_transports.lock_status",false)
+                    ->where("bag_packing_transport_details.lock_status",false)
+                    ->orderBy("bag_packing_transports.transport_date","DESC");
+
+            if($request->fromDate && $request->uptoDate){
+                $data->WhereBetween("bag_packing_transports.transport_date",[$request->fromDate,$request->uptoDate]);
+            }elseif($request->fromDate){
+                $data->Where("bag_packing_transports.transport_date",$request->fromDate);
+            }elseif($request->uptoDate){
+                $data->Where("bag_packing_transports.transport_date",$request->uptoDate);
+            }
+
+            if($request->autoId){
+                $data->where("bag_packing_transports.auto_id",$request->autoId);
+            }
+
+            if($request->transporterId){
+                $data->where("bag_packing_transports.transporter_id",$request->transporterId);
+            }
+            if($request->billNo){
+                $data->where("bag_packing_transports.bill_no",$request->billNo);
+            }
+            if($request->invoiceNo){
+                $data->where("bag_packing_transports.invoice_no",$request->invoiceNo);
+            }
+            if($request->transportTypeId){
+                $data->where(function($query) use($request){
+                    foreach($request->transportTypeId as $index=> $val){
+                        $statusType=Config::get("customConfig.transportationDropDownType.".$val);
+                        if ($statusType) { // Ensure config exists to prevent errors
+                            $query->orWhere(function ($q) use ($statusType) {
+                                $q->where("bag_packing_transports.transport_status", $statusType["transport_status"])
+                                  ->where("bag_packing_transports.transport_init_status", $statusType["transport_init_status"]);
+                            });
+                        }
+            
+                    }
+                });
+            }
+            $list = DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn("transition_type",function($val){
+                    return $transition_type = collect(Config::get("customConfig.transportationDropDownType"))->where("transport_status",$val->transport_status)->where("transport_init_status",$val->transport_init_status)->first()["type"]??"";
+                    
+                })
+                ->addColumn('transport_date', function ($val) { 
+                    return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
+                })
+                ->addColumn("bag_printing_color",function($val){
+                    return collect(json_decode($val->bag_printing_color,true))->implode(",") ;
+                })
+                ->addColumn('bag_color', function ($val) { 
+                    return collect(json_decode($val->bag_color,true))->implode(",") ;
+                })
+                ->addColumn('bag_size', function ($val) { 
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
+                })
+                ->addColumn('bag_gsm', function ($val) { 
+                    return collect(json_decode($val->bag_gsm,true))->implode(",");
+                })
+                ->addColumn('action', function ($val) {                   
+                    $button='<button class="btn btn-sm btn-info" onClick="openPreviewChalanModel('."'".$val->chalan_unique_id."'".')" >Chalan</button>';
+                    if(in_array(Auth()->user()->user_type_id,[1,2])){
+                        $button.='<button class="btn btn-sm btn-danger" onclick="showConfirmDialog('."'Are you sure you want to deactivate this item?', function() { deleteTransPortDtl('$val->id'); })".'" >Delete</button>';
+
+                    }
+                    return $button;
+                })
+                ->rawColumns(['row_color', 'action'])
+                ->make(true);
+            return $list;
+
+        }
+        $data["autoList"] = $this->_M_Auto->getAutoListOrm()->orderBy("id","ASC")->get();
+        $data["transporterList"] = $this->_M_Transporter->getAutoListOrm()->orderBy("id","ASC")->get();
+        $data["transportType"] = collect(Config::get("customConfig.transportationDropDownType"))->map(function($val,$index){
+            return json_decode(json_encode(["id"=>$index,"type"=>$index]));
+        });
+        return view("Packing/bag_transport",$data);
+    }
+
+    public function deleteTransPortDtl($id,Request $request){
+        try{
+            
+            $tranportDtl = $this->_M_TransportDetail->find($id);
+            $tranportDtl->lock_status=true;
+            $testOther = $this->_M_TransportDetail->where("pack_transport_id",$tranportDtl->pack_transport_id)->where("lock_status",false)->where("id","<>",$tranportDtl->id)->count();
+            $transport = $this->_M_PackTransport->find($tranportDtl->pack_transport_id);
+            DB::beginTransaction();
+            if($testOther==0){
+                $transport->lock_status = true;
+                $transport->update();
+            }
+            $tranportDtl->update();
+            DB::commit();
+            return responseMsg(true,"Bag Delete From Transport","");
+        }catch(MyException $e){
+            DB::rollBack();
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            DB::rollBack();
+            return responseMsg(false,"Server error!!!","");
+        }
     }
 
     public function bagHistory(Request $request){

@@ -30,54 +30,14 @@
                                 <span class="error-text" id="uptoDate-error"></span>
                             </div>
                         </div>
+                    
                         <div class="col-sm-3">
                             <div class="form-group">
-                                <label class="form-label" for="autoId">Auto</label>
-                                <select type="text" id="autoId" name="autoId" class="form-select">
-                                    <option value="">Select</option>
-                                    @foreach($autoList as $val)
-                                        <option value="{{$val->id}}">{{$val->auto_name}}</option>
-                                    @endforeach
-                                </select>
-                                <span class="error-text" id="transPortType-error"></span>
-                            </div>
-                        </div> 
-                                                
-                        <div class="col-sm-3">
-                            <div class="form-group">
-                                <label class="form-label" for="transporterId">Transporter</label>
-                                <select type="text" id="transporterId" name="transporterId" class="form-select">
-                                    <option value="">Select</option>
-                                    @foreach($transporterList as $val)
-                                        <option value="{{$val->id}}">{{$val->transporter_name}}</option>
-                                    @endforeach
-                                </select>
-                                <span class="error-text" id="transporterId-error"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-sm-3">
-                            <div class="form-group">
-                                <label class="form-label" for="billNo">Bill No.</label>
-                                <input type="text" name="billNo" id="billNo" class="form-control"  />
-                                <span class="error-text" id="billNo-error"></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-3">
-                            <div class="form-group">
-                                <label class="form-label" for="invoiceNo">Chalan No.</label>
-                                <input type="text" name="invoiceNo" id="invoiceNo" class="form-control"  />
-                                <span class="error-text" id="invoiceNo-error"></span>
-                            </div>
-                        </div> 
-                        <div class="col-sm-3">
-                            <div class="form-group">
-                                <label class="form-label" for="transportTypeId">Transport Type</label>
-                                <select type="text" id="transportTypeId" name="transportTypeId" class="form-select">
-                                    <option value="">Select</option>
+                                <label class="form-label" for="transportTypeId">Transportation Type</label>
+                                <select type="text" id="transportTypeId" name="transportTypeId[]" class="form-select" multiple>
+                                    <!-- <option value="">Select</option> -->
                                     @foreach($transportType as $val)
-                                        <option value="{{$val->id}}">{{$val->type}}</option>
+                                        <option value="{{$val->id}}" {{in_array($val->id,['Factory To Client','Godown To Client'])?"selected":""}}>{{$val->type}}</option>
                                     @endforeach
                                 </select>
                                 <span class="error-text" id="transporterId-error"></span>
@@ -97,16 +57,20 @@
             <table class="table table-bordered table-responsive table-fixed" id="postTable">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Transition Type</th>
-                        <th>Transport Date</th>
+                        <th>Dispatch Date</th>
+                        <th>Bag No</th>
+                        <th>Client Name</th>
+                        <th>Bag Size</th>
+                        <th>Bag Color</th>
+                        <th>Printing Color</th>
+                        <th>GSM</th>
+                        <th>Bag Type</th>
+                        <th>Bag Weight</th>
+                        <th>Bag Pieces</th>
                         <th>Auto Name</th>
                         <th>Transporter Name</th>
                         <th>Chalan No</th>
-                        <th>Bill No</th>
-                        <th>Bags</th>
-                        <th>Client Name</th>
-                        <th>View</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
             </table>
@@ -134,7 +98,7 @@
 </main>
 <script>
     $(document).ready(function(){
-
+        $("#transportTypeId").select2();
         const table = $('#postTable').DataTable({
             processing: true,
             serverSide: false,
@@ -145,7 +109,14 @@
                     // Add custom form data to the AJAX request
                     var formData = $("#searchForm").serializeArray();
                     $.each(formData, function(i, field) {
-                        d[field.name] = field.value; // Corrected: use d[field.name] instead of d.field.name
+                        if (d[field.name]) {
+                            if (!Array.isArray(d[field.name])) {
+                                d[field.name] = [d[field.name]];
+                            }
+                            d[field.name].push(field.value);
+                        } else {
+                            d[field.name] = field.value;
+                        }
                     });
 
                 },              
@@ -160,15 +131,19 @@
             },
 
             columns: [
-                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                { data: "transition_type", name: "transition_type", orderable: false, searchable: false },
-                { data: "transport_date", name: "transport_date", orderable: false, searchable: false },                
-                { data: "auto_name", name: "auto_name", orderable: false, searchable: false },                
-                { data: "transporter_name", name: "transporter_name", orderable: false, searchable: false },
-                { data: "invoice_no", name: "invoice_no", orderable: false, searchable: false },
-                { data: "bill_no", name: "bill_no", orderable: false, searchable: false },
-                { data: "bag_no", name: "bag_no", orderable: false, searchable: false },
-                { data: "client_name", name: "client_name", orderable: false, searchable: false },
+                { data: "transport_date", name: "transport_date" },
+                { data: "packing_no", name: "packing_no" },
+                { data: "client_name", name: "client_name" },
+                { data: "bag_size", name: "bag_size" },                
+                { data: "bag_color", name: "bag_color" },                
+                { data: "bag_printing_color", name: "bag_printing_color" },
+                { data: "bag_gsm", name: "bag_gsm" },
+                { data: "bag_type", name: "bag_type" },
+                { data: "packing_weight", name: "packing_weight" },
+                { data: "packing_bag_pieces", name: "packing_bag_pieces" },
+                { data: "auto_name", name: "auto_name" },
+                { data: "transporter_name", name: "transporter_name" },
+                { data: "invoice_no", name: "invoice_no" },
                 { data: "action", name: "action", orderable: false, searchable: false },
                 
             ],
@@ -203,7 +178,7 @@
 
     function searchData(){
         $('#postTable').DataTable().ajax.reload(function(){
-            addFilter('postTable',[0]);
+            addFilter('postTable',[$('#postTable thead tr:nth-child(1) th').length - 1]);
         },false);
     }
 
@@ -250,6 +225,29 @@
                 $("#loadingDiv").hide();
                 console.error("AJAX error:", error);
                 popupAlert("An error occurred while generating the PDF.");
+            }
+        })
+    }
+
+    function deleteTransPortDtl(id){
+        $.ajax({
+            url:"{{route('packing.transport.delete', ['id' => ':id']) }}".replace(':id', id),
+            type:"get",
+            dataType:"json",
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(response){
+                $("#loadingDiv").hide();
+                modelInfo(response.message);
+                if(response.status){
+                    searchData();
+                }
+            },
+            error: function (xhr, status, error) {
+                $("#loadingDiv").hide();
+                console.error("AJAX error:", error);
+                modelInfo("server error");
             }
         })
     }

@@ -12,6 +12,28 @@ return[
         3=>"in transport",
         4=>"dispatched",
     ],
+    "transportationDropDownType"=>[
+        "Factory To Godown"=>[
+            "transport_init_status"=>1,
+            "transport_status"=>3,
+            "type"=>"Factory To Godown",
+        ],
+        "Factory To Client"=>[
+            "transport_init_status"=>1,
+            "transport_status"=>4,
+            "type"=>"Factory To Client",
+        ],        
+        "Godown To Client"=>[
+            "transport_init_status"=>2,
+            "transport_status"=>4,
+            "type"=>"Godown To Client",
+        ],
+        "Godown To Factory"=>[
+            "transport_init_status"=>2,
+            "transport_status"=>1,
+            "type"=>"Godown To Factory",
+        ],
+    ],
     "rollImportCsvHeader"=>['vendor_name',
                              "roll_no",
                             'vehicle_no',
