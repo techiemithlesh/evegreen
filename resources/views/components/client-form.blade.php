@@ -1,6 +1,6 @@
 <!-- Modal Form -->
-<div class="modal fade modal-lg" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade modal-xl" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="clientModalLabel">Add New Client</h5>
@@ -13,108 +13,80 @@
                     <input type="hidden" id="id" name="id" value="">
                     <input type="hidden" id="cityHidden"/>
 
-                    <div class="row">
+                    <div class="row mb-3">
                         <!-- Client Name -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="control-label" for="clientName">Client Name<span class="text-danger">*</span></label>
-                                <input type="text" maxlength="100" id="clientName" name="clientName" class="form-control" placeholder="Enter Client Name" required>
-                                <span class="error-text" id="clientName-error"></span>
-                            </div>
+                        <label class="control-label col-md-2" for="clientName">Client Name<span class="text-danger">*</span></label>
+                        <div class="col-md-4">
+                            <input type="text" maxlength="100" id="clientName" name="clientName" class="form-control" placeholder="Enter Client Name" required>
+                            <span class="error-text" id="clientName-error"></span>
+                        </div>
+                        <label class="control-label col-md-2" for="stateId">State<span class="text-danger">*</span></label>
+                        <div class="col-md-4">
+                            <select name="stateId" id="stateId" class="form-select" required>
+                                <option value="">select</option>
+                                @foreach($stateList as $val)
+                                <option value="{{$val->id}}">{{$val->state_name}}</option>
+                                @endforeach
+                            </select>
+                            <span class="error-text" id="stateId-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3"> 
+                        <label class="control-label col-md-2" for="cityId">City<span class="text-danger">*</span></label>
+                        <div class="col-md-4">
+                            <select name="cityId" id="cityId" class="form-select" required>
+                                <option value="">select</option>
+                            </select>
+                            <span class="error-text" id="cityId-error"></span>
                         </div>
                         
-                        <!-- Client Email -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="control-label" for="email">Email</label>
-                                <input type="email" maxlength="100" id="email" name="email" class="form-control" placeholder="client@example.com">
-                                <span class="error-text" id="email-error"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">                        
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="control-label" for="stateId">State<span class="text-danger">*</span></label>
-                                <select name="stateId" id="stateId" class="form-select" required>
-                                    <option value="">select</option>
-                                    @foreach($stateList as $val)
-                                    <option value="{{$val->id}}">{{$val->state_name}}</option>
-                                    @endforeach
-                                </select>
-                                <span class="error-text" id="stateId-error"></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="control-label" for="cityId">City<span class="text-danger">*</span></label>
-                                <select name="cityId" id="cityId" class="form-select" required>
-                                    <option value="">select</option>
-                                </select>
-                                <!-- <input type="text" id="city" name="city" class="form-control" placeholder="Enter city" required > -->
-                                <span class="error-text" id="cityId-error"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="control-label" for="location">Location</label>
-                                <textarea name="location" id="location" class="form-control" placeholder="Enter Location" maxlength="80"></textarea>
-                                <span class="error-text" id="cityId-error"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="control-label" for="sectorId">Sector<span class="text-danger">*</span></label>
-                                <select type="text" id="sectorId" name="sectorId" class="form-select" placeholder="Enter state" required >
-                                    <option value="">Select</option>
-                                    @foreach($sector as $val)
-                                        <option value="{{$val->id}}">{{$val->sector}}</option>
-                                    @endforeach
-                                </select>
-                                <span class="error-text" id="sectorId-error"></span>
-                            </div>
-                        </div>
-                        <!-- Client Mobile Number -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="control-label" for="mobileNo">Mobile Number<span class="text-danger">*</span></label>
-                                <input type="text" maxlength="15" id="mobileNo" name="mobileNo" class="form-control" placeholder="Enter Mobile Number" required onkeypress="return isNum(event);">
-                                <span class="error-text" id="mobileNo-error"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="control-label" for="secondaryMobileNo">Secondary Mobile Number</label>
-                                <input type="text" maxlength="15" id="secondaryMobileNo" name="secondaryMobileNo" class="form-control" placeholder="Enter Secondary Mobile Number" onkeypress="return isNum(event);">
-                                <span class="error-text" id="secondaryMobileNo-error"></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="control-label" for="temporaryMobileNo">Temporary Mobile Number</label>
-                                <input type="text" maxlength="15" id="temporaryMobileNo" name="temporaryMobileNo" class="form-control" placeholder="Enter Temporary Mobile Number" onkeypress="return isNum(event);">
-                                <span class="error-text" id="temporaryMobileNo-error"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
                         <!-- Client Address -->
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label class="control-label" for="address">Address<span class="text-danger">*</span></label>
-                                <textarea id="address" name="address" class="form-control" placeholder="Enter Client Address" rows="3" required></textarea>
-                                <span class="error-text" id="address-error"></span>
-                            </div>
+                        <label class="control-label col-md-2" for="address">Address<span class="text-danger">*</span></label>
+                        <div class="col-md-4">
+                            <textarea id="address" name="address" class="form-control" placeholder="Enter Client Address" rows="3" required></textarea>
+                            <span class="error-text" id="address-error"></span>
+                        </div>
+                        
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="control-label col-md-2" for="sectorId">Sector<span class="text-danger">*</span></label>
+                        <div class="col-md-4">
+                            <select type="text" id="sectorId" name="sectorId" class="form-select" placeholder="Enter state" required >
+                                <option value="">Select</option>
+                                @foreach($sector as $val)
+                                    <option value="{{$val->id}}">{{$val->sector}}</option>
+                                @endforeach
+                            </select>
+                            <span class="error-text" id="sectorId-error"></span>
+                        </div>
+                        <!-- Mobile Number -->
+                        <label class="control-label col-md-2" for="mobileNo">Mobile Number<span class="text-danger">*</span></label>
+                        <div class="col-md-4">
+                            <input type="text" maxlength="15" id="mobileNo" name="mobileNo" class="form-control" placeholder="Enter Mobile Number" required onkeypress="return isNum(event);">
+                            <span class="error-text" id="mobileNo-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="control-label col-md-2" for="secondaryMobileNo">Mobile Number 2</label>
+                        <div class="col-md-4">
+                            <input type="text" maxlength="15" id="secondaryMobileNo" name="secondaryMobileNo" class="form-control" placeholder="Enter Secondary Mobile Number" onkeypress="return isNum(event);">
+                            <span class="error-text" id="secondaryMobileNo-error"></span>
+                        </div>
+                        <label class="control-label col-md-2" for="temporaryMobileNo">Mobile Number 3</label>
+                        <div class="col-md-4">
+                            <input type="text" maxlength="15" id="temporaryMobileNo" name="temporaryMobileNo" class="form-control" placeholder="Enter Temporary Mobile Number" onkeypress="return isNum(event);">
+                            <span class="error-text" id="temporaryMobileNo-error"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <!-- Client Email -->
+                        <label class="control-label col-md-2" for="email">Email</label>
+                        <div class="col-md-4">
+                            <input type="email" maxlength="100" id="email" name="email" class="form-control" placeholder="client@example.com">
+                            <span class="error-text" id="email-error"></span>
                         </div>
                     </div>
 

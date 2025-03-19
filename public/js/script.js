@@ -170,12 +170,12 @@ function addFilter(tableName,indexNo=[]){
           width: '100%'
       }).on('select2:open', function () {
             // Apply min-width styling dynamically when dropdown opens
-            $('.select2-container--open .select2-dropdown').css('min-width', '100px');
-            $('.select2-container--open .select2-selection').css('min-width', '100px');
+            $('.select2-container--open .select2-dropdown').css('min-width', '100px').css('z-index', '9999');
+            $('.select2-container--open .select2-selection').css('min-width', '100px').css('z-index', '9999');
         }).on('select2:close', function () {
             // Apply min-width styling dynamically when dropdown opens
-            $('.select2-container .select2-dropdown').css('min-width', '0px');
-            $('.select2-container .select2-selection').css('min-width', '0px');
+            $('.select2-container .select2-dropdown').css('min-width', '0px').css('z-index', '0');
+            $('.select2-container .select2-selection').css('min-width', '0px').css('z-index', '0');
         });
   });
 

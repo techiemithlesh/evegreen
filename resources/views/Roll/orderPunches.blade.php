@@ -45,7 +45,7 @@
 
             <form action="" id="myForm" class="row g-3">                
                 @csrf
-                <div class="row">                    
+                <div class="row mb-3">                    
                     <div class="row mt-3">
                         <div class="col-sm-4">
                             <div class="form-group">
@@ -81,7 +81,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mb-3">
                     <div class="" id="orderHistory" >
                         <div class="collapsible">                            
                             <button type="button" class="collapsible-btn"><i class="bi bi-eye-fill" class="collapsible-btn"></i></button>
@@ -89,216 +89,209 @@
                             </div>
                         </div>
                     </div>
-                    
+                </div>
 
-                    <div class="row mt-3"> 
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="bagQuality">Roll Configuration </label>
-                                <select name="bagQuality" id="bagQuality" class="form-select" required onchange="showHidePrintingColorDiv();showAlternativeOption()">
-                                    <option value="">Select</option>                                    
-                                    <option value="NW">NW</option>
-                                    <option value="BOPP">BOPP</option>
-                                    <option value="LAM">LAM</option>
-                                </select>                                                                       
-                                <span class="error-text" id="bagQuality-error"></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="gradeId">Roll Quality</label>
-                                <select name="gradeId" id="gradeId" class="form-select" required onchange="showAlternativeOption()" >
-                                    <option value="">Select</option>
-                                    @foreach($grade as $val)
-                                    <option value="{{$val->id}}">{{$val->grade}}</option>
-                                    @endforeach
-                                </select>                                                                       
-                                <span class="error-text" id="bagQuality-error"></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="ratePerUnit">Rate Per Unit</label>
-                                <input type="text" name="ratePerUnit" id="ratePerUnit" class="form-control" required onkeypress="return isNumDot(event);" />                                                     
-                                <span class="error-text" id="ratePerUnit-error"></span>
-                            </div>
+                <div class="row mb-3">                     
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="w">W</label>
+                            <input name="w" id="w" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                
+                            <span class="error-text" id="w-error"></span>
                         </div>
                     </div>
-                    <div class="row mt-3"> 
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="rateTypeId">Rate Type </label>
-                                <select name="rateTypeId" id="rateTypeId" class="form-select" required>
-                                    <option value="">Select</option>
-                                    @foreach($rateType as $val)
-                                    <option value="{{$val->id}}">{{$val->rate_type}}</option>
-                                    @endforeach                                    
-                                </select>                                                                       
-                                <span class="error-text" id="rateTypeId-error"></span>
-                            </div>
-                        </div> 
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="fareTypeId">Fare</label>
-                                <select name="fareTypeId" id="fareTypeId" class="form-select" required>
-                                    <option value="">Select</option>
-                                    @foreach($fare as $val)
-                                    <option value="{{$val->id}}">{{$val->fare_type}}</option>
-                                    @endforeach                                    
-                                </select>                                                                       
-                                <span class="error-text" id="fareTypeId-error"></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="stereoTypeId">Stereo</label>
-                                <select name="stereoTypeId" id="stereoTypeId" class="form-select" required>
-                                    <option value="">Select</option>
-                                    @foreach($stereo as $val)
-                                    <option value="{{$val->id}}">{{$val->stereo_type}}</option>
-                                    @endforeach                                  
-                                </select>                                                                       
-                                <span class="error-text" id="stereoTypeId-error"></span>
-                            </div>
-                        </div>       
-                    </div>
-                    <div class="row mt-3">                            
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="bookingBagTypeId">Bag Type </label>
-                                <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop();showAlternativeOption();getBalance()">
-                                    <option value="">Select</option>
-                                    @foreach ($bagType as $val)
-                                        <option value="{{ $val->id }}">{{ $val->bag_type }}</option>
-                                    @endforeach
-                                </select>                                                                       
-                                <span class="error-text" id="bookingBagTypeId-error"></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="bookingBagColor">Bag Color </label>
-                                <div class="col-md-12">
-                                    <select name="bookingBagColor[]" id="bookingBagColor" class="form-select" multiple="multiple" onchange="showAlternativeOption()" > 
-                                        <option value="">All</option>                                     
-                                        @foreach($rollColor as $val)
-                                        <option data-color="{{$val->color}}" value="{{$val->color}}">{{$val->color}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>                                                                       
-                                <span class="error-text" id="bookingBagColor-error"></span>
-                            </div>
-                        </div>
-                        
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="bookingBagUnits">Bag Unit</label>
-                                <select name="bookingBagUnits" id="bookingBagUnits" class="form-select" onchange="emptyTable()">
-                                    <option value="">Select</option>
-                                    <option value="Kg">Kg</option>
-                                    <option value="Piece">Piece</option>
-                                </select>                                    
-                                <span class="error-text" id="bookingBagUnits-error"></span>
-                            </div>
-                        </div>                        
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="totalUnits">QTY</label>
-                                <input name="totalUnits" id="totalUnits" class="form-control" required onkeypress="return isNumDot(event);" onchange="getBalance()"/>                                 
-                                <span class="error-text" id="bookingBagUnits-error"></span>
-                            </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="l">L </label>
+                            <input name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()"/>                                                                    
+                            <span class="error-text" id="l-error"></span>
                         </div>
                     </div>
-
-                    <div class="row mt-3"> 
-                        <div class="col-sm-4">
-                            <div class="form-group" id='singleGsm'>
-                                <label class="form-label" for="bagGsm">GSM</label>
-                                <!-- <input name="bagGsm" id="bagGsm" class="form-control" required onkeypress="return isNumDot(event);" />  -->
-                                <select name="bagGsm[]" id="bagGsm" class="form-select" multiple="multiple" onchange="showAlternativeOption()">
-                                    
-                                    @foreach($gsm as $val)
-                                    <option value="{{$val}}">{{$val}}</option>
-                                    @endforeach
-                                </select>                                
-                                <span class="error-text" id="bagGsm-error"></span>
-                            </div>
-                            <div class="form-group" id='multipleGsm' style="display: none;">
-                                <label class="form-label" for="bagGsmJson">GSM</label>
-                                <input name="bagGsmJson" id="bagGsmJson" class="form-control" placeholder="gsm/lamination/boop" required onkeypress="return gsmJson(event); "  onkeyup="setGsm();"/>                                 
-                                <span class="error-text" id="bagGsmJson-error"></span>
-                            </div>
-                        </div>
-                       
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="w">W</label>
-                                <input name="w" id="w" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                
-                                <span class="error-text" id="w-error"></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="l">L </label>
-                                <input name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()"/>                                                                    
-                                <span class="error-text" id="l-error"></span>
-                            </div>
+                    <div class="col-sm-4" id="gussetDiv">
+                        <div class="form-group">
+                            <label class="form-label" for="g">G </label>
+                            <input name="g" id="g" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                                                    
+                            <span class="error-text" id="g-error"></span>
                         </div>
                     </div>
-
-                    <div class="row mt-3" id="loopColorDiv"> 
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="looColor">Loop Color</label>
-                                <select name="looColor" id="looColor" class="form-control"  required onchange="testLoop()">
-                                    <option value="">select</option>
-                                    @foreach($loopColor as $val)
-                                      <option value="{{$val->loop_color}}" id="{{$val->loop_color}}" data-item="{{json_encode($val)}}">{{$val->loop_color}}</option>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4">
+                        <div class="form-group" id='singleGsm'>
+                            <label class="form-label" for="bagGsm">GSM</label>
+                            <select name="bagGsm[]" id="bagGsm" class="form-select" multiple="multiple" onchange="showAlternativeOption()">                                    
+                                @foreach($gsm as $val)
+                                <option value="{{$val}}">{{$val}}</option>
+                                @endforeach
+                            </select>                                
+                            <span class="error-text" id="bagGsm-error"></span>
+                        </div>
+                        <div class="form-group" id='multipleGsm' style="display: none;">
+                            <label class="form-label" for="bagGsmJson">GSM</label>
+                            <input name="bagGsmJson" id="bagGsmJson" class="form-control" placeholder="gsm/lamination/boop" required onkeypress="return gsmJson(event); "  onkeyup="setGsm();"/>                                 
+                            <span class="error-text" id="bagGsmJson-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="bookingBagColor">Bag Color </label>
+                            <div class="col-md-12">
+                                <select name="bookingBagColor[]" id="bookingBagColor" class="form-select" multiple="multiple" onchange="showAlternativeOption()" > 
+                                    <option value="">All</option>                                     
+                                    @foreach($rollColor as $val)
+                                    <option data-color="{{$val->color}}" value="{{$val->color}}">{{$val->color}}</option>
                                     @endforeach
                                 </select>
-                                <!-- <input name="looColor" id="looColor" class="form-control" required />                                -->
-                                <span class="error-text" id="looColor-error"></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-4" id="gussetDiv">
-                            <div class="form-group">
-                                <label class="form-label" for="g">G </label>
-                                <input name="g" id="g" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                                                    
-                                <span class="error-text" id="g-error"></span>
-                            </div>
+                            </div>                                                                       
+                            <span class="error-text" id="bookingBagColor-error"></span>
                         </div>
                     </div>
-                    <div class="row mt-3">  
-                        <div class="col-sm-4" id="bookingPrintingColorDiv">
-                            <div class="form-group">
-                                <label class="form-label" for="bookingPrintingColor">Printing Color</label>
-                                <div class="col-md-12">
-                                    <select name="bookingPrintingColor[]" id="bookingPrintingColor" class="form-select select22" multiple="multiple" required> 
-                                                                           
-                                        @foreach($color as $val)
-                                        <option data-color="{{$val->color}}" value="{{$val->color}}" style="background-color:{{$val->color}};">{{$val->color}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>                                                                                                          
-                                <span class="error-text" id="bookingPrintingColor-error"></span>
-                            </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="bookingBagTypeId">Bag Type </label>
+                            <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop();showAlternativeOption();getBalance()">
+                                <option value="">Select</option>
+                                @foreach ($bagType as $val)
+                                    <option value="{{ $val->id }}">{{ $val->bag_type }}</option>
+                                @endforeach
+                            </select>                                                                       
+                            <span class="error-text" id="bookingBagTypeId-error"></span>
                         </div>
-                        <div class="col-sm-4">
-                            <div class="form-group">
-                                <label class="form-label" for="brokerId">Agent</label>
-                                <div class="col-md-12">
-                                    <select name="brokerId" id="brokerId" class="form-select" required> 
-                                        <option value="">Select</option>                                     
-                                        @foreach($broker as $val)
-                                        <option value="{{$val->id}}">{{$val->broker_name}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>                                                                                                          
-                                <span class="error-text" id="brokerId-error"></span>
-                            </div>
-                        </div>
-                        
                     </div>
+                </div>
+                <div class="row mb-3"> 
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="bagQuality">Roll Configuration </label>
+                            <select name="bagQuality" id="bagQuality" class="form-select" required onchange="showHidePrintingColorDiv();showAlternativeOption()">
+                                <option value="">Select</option>                                    
+                                <option value="NW">NW</option>
+                                <option value="BOPP">BOPP</option>
+                                <option value="LAM">LAM</option>
+                            </select>                                                                       
+                            <span class="error-text" id="bagQuality-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="gradeId">Roll Quality</label>
+                            <select name="gradeId" id="gradeId" class="form-select" required onchange="showAlternativeOption()" >
+                                <option value="">Select</option>
+                                @foreach($grade as $val)
+                                <option value="{{$val->id}}">{{$val->grade}}</option>
+                                @endforeach
+                            </select>                                                                       
+                            <span class="error-text" id="bagQuality-error"></span>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4" id="bookingPrintingColorDiv">
+                        <div class="form-group">
+                            <label class="form-label" for="bookingPrintingColor">Printing Color</label>
+                            <div class="col-md-12">
+                                <select name="bookingPrintingColor[]" id="bookingPrintingColor" class="form-select select22" multiple="multiple" required> 
+                                                                        
+                                    @foreach($color as $val)
+                                    <option data-color="{{$val->color}}" value="{{$val->color}}" style="background-color:{{$val->color}};">{{$val->color}}</option>
+                                    @endforeach
+                                </select>
+                            </div>                                                                                                          
+                            <span class="error-text" id="bookingPrintingColor-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4" id="loopColorDiv">
+                        <div class="form-group">
+                            <label class="form-label" for="looColor">Loop Color</label>
+                            <select name="looColor" id="looColor" class="form-control"  required onchange="testLoop()">
+                                <option value="">select</option>
+                                @foreach($loopColor as $val)
+                                    <option value="{{$val->loop_color}}" id="{{$val->loop_color}}" data-item="{{json_encode($val)}}">{{$val->loop_color}}</option>
+                                @endforeach
+                            </select>
+                            <!-- <input name="looColor" id="looColor" class="form-control" required />                                -->
+                            <span class="error-text" id="looColor-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="totalUnits">QTY</label>
+                            <input name="totalUnits" id="totalUnits" class="form-control" required onkeypress="return isNumDot(event);" onchange="getBalance()"/>                                 
+                            <span class="error-text" id="bookingBagUnits-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="bookingBagUnits">Bag Unit</label>
+                            <select name="bookingBagUnits" id="bookingBagUnits" class="form-select" onchange="emptyTable()">
+                                <option value="">Select</option>
+                                <option value="Kg">Kg</option>
+                                <option value="Piece">Piece</option>
+                            </select>                                    
+                            <span class="error-text" id="bookingBagUnits-error"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3"> 
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="brokerId">Agent</label>
+                            <div class="col-md-12">
+                                <select name="brokerId" id="brokerId" class="form-select" required> 
+                                    <option value="">Select</option>                                     
+                                    @foreach($broker as $val)
+                                    <option value="{{$val->id}}">{{$val->broker_name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>                                                                                                          
+                            <span class="error-text" id="brokerId-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="ratePerUnit">Rate Per Unit</label>
+                            <input type="text" name="ratePerUnit" id="ratePerUnit" class="form-control" required onkeypress="return isNumDot(event);" />                                                     
+                            <span class="error-text" id="ratePerUnit-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="rateTypeId">Rate Type </label>
+                            <select name="rateTypeId" id="rateTypeId" class="form-select" required>
+                                <option value="">Select</option>
+                                @foreach($rateType as $val)
+                                <option value="{{$val->id}}">{{$val->rate_type}}</option>
+                                @endforeach                                    
+                            </select>                                                                       
+                            <span class="error-text" id="rateTypeId-error"></span>
+                        </div>
+                    </div> 
+                </div>
+                <div class="row mb-3"> 
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="stereoTypeId">Stereo</label>
+                            <select name="stereoTypeId" id="stereoTypeId" class="form-select" required>
+                                <option value="">Select</option>
+                                @foreach($stereo as $val)
+                                <option value="{{$val->id}}">{{$val->stereo_type}}</option>
+                                @endforeach                                  
+                            </select>                                                                       
+                            <span class="error-text" id="stereoTypeId-error"></span>
+                        </div>
+                    </div>  
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="fareTypeId">Fare</label>
+                            <select name="fareTypeId" id="fareTypeId" class="form-select" required>
+                                <option value="">Select</option>
+                                @foreach($fare as $val)
+                                <option value="{{$val->id}}">{{$val->fare_type}}</option>
+                                @endforeach                                    
+                            </select>                                                                       
+                            <span class="error-text" id="fareTypeId-error"></span>
+                        </div>
+                    </div>     
                 </div>
                 <div class="row">
                     <div class="row mt-3">

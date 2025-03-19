@@ -1,5 +1,13 @@
 <!-- Modal Form -->
- 
+ <style>
+    #rollBookForUnbookedOrderModel .select2-container {
+        z-index: 99999 !important;  /* Ensures Select2 dropdown appears above modal */
+    }
+
+    #rollBookForUnbookedOrderModel.select2-container--open {
+        z-index: 1050 !important;  /* Bootstrap modal z-index fix */
+    }
+ </style>
 <div class="modal fade modal-lg" id="rollBookForUnbookedOrderModel" tabindex="-1" aria-labelledby="rollBookForUnbookedOrderModelLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -8,45 +16,16 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                
-                <!-- <div id="suggestion" style="display: none;">
-                    <div style="text-align: center;" id="suggestion1">
-                        <div class="example-box movable" style="background-color: rgb(238, 80, 96); right: 20px; width:450px">
-                            <div class="header">
-                                <span>Roll Stock</span>
-                                <span class="icons">▼</span>
-                            </div>
-                            <div class="content">
-                                <div id="suggestionRoll"> a
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="text-align: center;" id="suggestion2">
-                        <div class="example-box movable" style="background-color: rgb(89, 199, 208); width:400px">
-                            <div class="header">
-                                <span>Roll Transit</span>
-                                <span class="icons">▼</span>
-                            </div>
-                            <div class="content">
-                                <div id="suggestionRollTransit">b
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
-
                 <form action="" id="myForm" class="row g-3">                
                     @csrf
                     <input type="hidden" name="id" id="id" />
                     <input type="hidden" name="booked" id="booked" />
                     <div class="row">                    
-                        <div class="row mt-3">
+                        <div class="row mb-3">
                             <div class="col-sm-4">
                                 <div class="form-group">
                                     <label class="form-label" for="clientName">Book For Client</label>
-                                    <input name="clientName" id="clientName" class="form-control"  readonly />
-                                    
+                                    <input name="clientName" id="clientName" class="form-control"  readonly />                                    
                                 </div>
                             </div>
                             <div class="col-sm-4">
@@ -62,54 +41,35 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="row mt-3"> 
+                        <div class="row mb-3">
                             <div class="col-sm-4">
                                 <div class="form-group">
-                                    <label class="form-label" for="bagQuality">Bag Quality </label>
-                                    <input name="bagQuality" id="bagQuality" class="form-control" readonly />                                        
+                                    <label class="form-label" for="w">W</label>
+                                    <input name="w" id="w" class="form-control" readonly />
                                 </div>
                             </div>
                             <div class="col-sm-4">
                                 <div class="form-group">
-                                    <label class="form-label" for="grade">Roll Grade</label>
-                                    <input name="grade" id="grade" class="form-control" readonly />  
+                                    <label class="form-label" for="l">L </label>
+                                    <input name="l" id="l" class="form-control" readonly />
                                 </div>
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-sm-4" id="gussetDiv">
                                 <div class="form-group">
-                                    <label class="form-label" for="ratePerUnit">Rate Per Unit</label>
-                                    <input type="text" name="ratePerUnit" id="ratePerUnit" class="form-control" readonly />
+                                    <label class="form-label" for="g">G </label>
+                                    <input name="g" id="g" class="form-control" readonly />
                                 </div>
                             </div>
                         </div>
-
-                        <div class="row mt-3"> 
+                        <div class="row mb-3">    
                             <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="rateType">Rate Type </label>
-                                    <input type="text" name="rateType" id="rateType" class="form-control" readonly />
+                                <div class="form-group" id='singleGsm'>
+                                    <label class="form-label" for="bagGsm">GSM</label>
+                                    <input name="bagGsm" id="bagGsm" class="form-control" readonly /> 
                                 </div>
-                            </div> 
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="fareType">Fare</label>
-                                    <input type="text" name="fareType" id="fareType" class="form-control" readonly />
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="stereoType">Stereo</label>
-                                    <input type="text" name="stereoType" id="stereoType" class="form-control" readonly />                                        
-                                </div>
-                            </div>       
-                        </div>
-
-                        <div class="row mt-3">                            
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="bookingBagTypeId">Bag Type </label>
-                                    <input type="text" name="bookingBagTypeId" id="bookingBagTypeId" class="form-control" readonly />
+                                <div class="form-group" id='multipleGsm' style="display: none;">
+                                    <label class="form-label" for="bagGsmJson">GSM</label>
+                                    <input name="bagGsmJson" id="bagGsmJson" class="form-control" readonly /> 
                                 </div>
                             </div>
                             <div class="col-sm-4">
@@ -120,69 +80,81 @@
                             </div>
                             <div class="col-sm-4">
                                 <div class="form-group">
-                                    <label class="form-label" for="bookingBagUnits">Bag Unit</label>
-                                    <input name="bookingBagUnits" id="bookingBagUnits" class="form-control" readonly />
-                                </div>
-                            </div>                        
-                        </div>
-
-                        <div class="row mt-3"> 
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label class="form-label" for="totalUnits">QTY</label>
-                                    <input name="totalUnits" id="totalUnits" class="form-control" readonly />
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="form-group" id='singleGsm'>
-                                    <label class="form-label" for="bagGsm">GSM</label>
-                                    <input name="bagGsm" id="bagGsm" class="form-control" readonly /> 
-                                </div>
-                                <div class="form-group" id='multipleGsm' style="display: none;">
-                                    <label class="form-label" for="bagGsmJson">GSM</label>
-                                    <input name="bagGsmJson" id="bagGsmJson" class="form-control" readonly /> 
+                                    <label class="form-label" for="bookingBagTypeId">Bag Type </label>
+                                    <input type="text" name="bookingBagTypeId" id="bookingBagTypeId" class="form-control" readonly />
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="row mt-3">    
-                            <div class="col-sm-6">
+                        <div class="row mb-3">
+                            <div class="col-sm-4">
                                 <div class="form-group">
-                                    <label class="form-label" for="w">W</label>
-                                    <input name="w" id="w" class="form-control" readonly />
+                                    <label class="form-label" for="bagQuality">Roll Configuration </label>
+                                    <input name="bagQuality" id="bagQuality" class="form-control" readonly />                                        
                                 </div>
                             </div>
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <div class="form-group">
-                                    <label class="form-label" for="l">L </label>
-                                    <input name="l" id="l" class="form-control" readonly />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mt-3" id="loopColorDiv"> 
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label class="form-label" for="looColor">Loop Color</label>
-                                    <input name="looColor" id="looColor" class="form-control" readonly />
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label class="form-label" for="g">G </label>
-                                    <input name="g" id="g" class="form-control" readonly />
+                                    <label class="form-label" for="grade">Roll Quality</label>
+                                    <input name="grade" id="grade" class="form-control" readonly />  
                                 </div>
                             </div>
                         </div>
-                        <div class="row mt-3">      
+                        <div class="row mb-3">
                             <div class="col-sm-6">
                                 <div class="form-group">
                                     <label class="form-label" for="bookingPrintingColor">Printing Color</label>
                                     <input name="bookingPrintingColor" id="bookingPrintingColor" class="form-control" readonly /> 
                                 </div>
                             </div>
-                            
+                            <div class="col-sm-6" id="loopColorDiv">
+                                <div class="form-group">
+                                    <label class="form-label" for="looColor">Loop Color</label>
+                                    <input name="looColor" id="looColor" class="form-control" readonly />
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="totalUnits">QTY</label>
+                                    <input name="totalUnits" id="totalUnits" class="form-control" readonly />
+                                </div>
+                            </div> 
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="bookingBagUnits">Bag Unit</label>
+                                    <input name="bookingBagUnits" id="bookingBagUnits" class="form-control" readonly />
+                                </div>
+                            </div>
                         </div>
+                        <div class="row mb-3"> 
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="rateType">Rate Type </label>
+                                    <input type="text" name="rateType" id="rateType" class="form-control" readonly />
+                                </div>
+                            </div> 
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="ratePerUnit">Rate Per Unit</label>
+                                    <input type="text" name="ratePerUnit" id="ratePerUnit" class="form-control" readonly />
+                                </div>
+                            </div>               
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="stereoType">Stereo</label>
+                                    <input type="text" name="stereoType" id="stereoType" class="form-control" readonly />                                        
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="fareType">Fare</label>
+                                    <input type="text" name="fareType" id="fareType" class="form-control" readonly />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--  -->
                     </div>
                     
                     <div class="row">
