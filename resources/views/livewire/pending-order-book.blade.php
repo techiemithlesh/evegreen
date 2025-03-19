@@ -253,6 +253,20 @@
                     <span class="error-text" id="altBagGsm-error"></span>
                 </div>
             </div>
+            <div class="row mt-3">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="form-label" for="balance">Balance</label>
+                        <input type="text" id="balance" readonly>                   
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="form-label" for="possibleProduction">Possible Units</label>
+                        <input type="text" id="possibleProduction" readonly>                   
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="col-12">

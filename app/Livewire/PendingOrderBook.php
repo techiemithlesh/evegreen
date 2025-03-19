@@ -46,6 +46,7 @@ class PendingOrderBook extends Component
                 $val->fare_type = $val->getFare()->fare_type ?? '';
                 $val->stereo = $val->getStereo()->stereo ?? '';
                 $val->bag_printing_color = (json_decode($val->bag_printing_color,true));
+                $val->balance_units = round($val->total_units -( $val->booked_units + $val->disbursed_units));
                 return $val;
             })->sortBy("client_name");
 

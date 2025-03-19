@@ -154,6 +154,8 @@
         $("#rateTypeId").val(item?.rate_type_id);
         $("#fareTypeId").val(item?.fare_type_id);
         $("#stereoTypeId").val(item?.stereo_type_id);
+        $("#balance").val(item?.balance_units + item?.units);
+        $("#possibleProduction").val("");
         showHidePrintingColorDiv();
         getBalance();
 
@@ -212,7 +214,9 @@
             success:function(data){                
                 $("#loadingDiv").hide();                
                 console.log(data);
+                $("#balance").val(data?.data?.balance);
                 if(data?.status && data?.data?.test){
+                    $("#possibleProduction").val(data?.data?.units);                    
                     modelInfo(data?.message)
                     $("#submit").attr("disabled",false);
                 }

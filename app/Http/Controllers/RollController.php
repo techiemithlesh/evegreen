@@ -3057,17 +3057,28 @@ class RollController extends Controller
                 throw new Exception($result["message"]);                
             }
             $test = false;
+            $production =0;
+            $units="";
             if($roll && $roll->getTable()=="roll_details"){
                 $test = collect($result["data"]["roll"])->where("id",$rollId)->count()>0 ? true : false;
+                $testedRoll = collect($result["data"]["roll"])->where("id",$rollId)->first();
+                $production = $testedRoll->result??0;
+                $units=$testedRoll->unit??"";
             }
             if($roll && $roll->getTable()=="roll_transits"){
                 $test = collect($result["data"]["rollTransit"])->where("id",$rollId)->count()>0 ? true : false;
+                $testedRoll = collect($result["data"]["rollTransit"])->where("id",$rollId)->first();
+                $production = $testedRoll->result??0;
+                $units=$testedRoll->unit??"";
             }
             $message="Roll is tested and suitable for this order";
             if(!$test){
                 $message="Roll is tested and not suitable for this order";
             }
             $data["test"]=$test;
+            $data["production"]=$production;
+            $data["units"]=$units;
+            $data["balance"]= round($order->total_units -( $order->booked_units + $order->disbursed_units)). " ".$order->units;
             return responseMsgs(true,$message,$data);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
