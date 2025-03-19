@@ -82,7 +82,7 @@
     </div>
 
     <!-- transportModel -->
-    <div class="modal fade" id="transportModel" tabindex="-1" aria-labelledby="transportModelLabel" aria-hidden="true">
+    <div class="modal fade modal-lg" id="transportModel" tabindex="-1" aria-labelledby="transportModelLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -116,16 +116,29 @@
                                     <span class="error-text" id="autoId-error"></span>
                                 </div>
                             </div>
-                            <div class="col-sm-4" id="transposerDiv">
+                            <div class="col-sm-4" id="isLocalTransportDiv">
+                                <label class="form-label" for="isLocalTransport">Is Local Transport</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="isLocalTransport" name="isLocalTransport" onclick="toggleTransporterDiv()" />
+                                </div>                        
+                            </div>
+                            <div class="col-sm-4 transposerDiv">
                                 <div class="form-group">
                                     <label class="form-label" for="transporterId">Transporter<span class="text-danger">*</span></label>
-                                    <select name="transporterId" id="transporterId" class="form-select"  required >
-                                        <option value="">select</option>
+                                    <select name="transporterId" id="transporterId" class="form-select"  required onchange="toggleBusNoDiv()" >
+                                        <option value="" data-item="">select</option>
                                         @foreach($transporterList as $val)
-                                            <option value="{{$val->id}}">{{$val->transporter_name}}</option>
+                                            <option value="{{$val->id}}" data-item="{{$val->is_bus}}" >{{$val->transporter_name}}</option>
                                         @endforeach
                                     </select>
                                     <span class="error-text" id="transporterId-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-sm-4 transposerDiv BussNo">
+                                <div class="form-group">
+                                    <label class="form-label" for="busNo">Buss No<span class="text-danger">*</span></label>
+                                    <input name="busNo" id="busNo" class="form-control" placeholder="Enter Bus No"/>                                        
+                                    <span class="error-text" id="busNo-error"></span>
                                 </div>
                             </div>
                             <div class="col-sm-4" id="rateTypeDiv">
@@ -260,6 +273,26 @@
         });
     });
 
+    function toggleTransporterDiv(){
+        $(".transposerDiv").show();
+        $("#transporterId").attr("required",true);
+        if($("#isLocalTransport").is(":checked")){
+            $(".transposerDiv").hide();
+            $("#transporterId").val("").trigger("change");
+            $("#transporterId").attr("required",false);
+        }
+    }
+
+    function toggleBusNoDiv(){
+        let option= $("#transporterId").find("option:selected");
+        $(".BussNo").show();
+        $("#busNo").attr("required",true);
+        if(!option.attr("data-item")){
+            $(".BussNo").hide();
+            $("#busNo").attr("required",false).val("");
+        }
+    }
+
     function searchData(){
         $('#postsTable').DataTable().ajax.reload(function(){
             addFilter('postsTable',[0]);
@@ -369,18 +402,21 @@
             popupAlert("Please select at least one bag");
             return;
         }
+        $("#isLocalTransportDiv").show();
+        if(transportType=="For Godown" || transportType=="For Factory"){
+            $("#isLocalTransportDiv").hide();
+            $("#isLocalTransport").attr("checked",true).trigger("click");
+        }
 
         let hidden = "";
-        let is_local_order=true;
+        let is_local_order=$("#isLocalTransport").is(":checked");;
         let rateType = [];
         let client=[];
         let rate = "";
 
         // ✅ Fix: Use `forEach` correctly
         sequence.forEach((item) => {
-            if(!item.is_local_order && is_local_order){
-                is_local_order=false;
-            }
+            
             rate=item.rate_type_id;
             if (!rateType[item.rate_type_id]) {
                 rateType[item.rate_type_id] = item.rate_type;
@@ -403,12 +439,12 @@
             popupAlert("Cannot generate Chalan for more then one client");
             return;
         }
-        $("#transposerDiv").show();
+        $(".transposerDiv").show();
         $("#transporterId").attr("required",true);
         $("#rateTypeDiv").show();
         $("#rateTypeId").val(rate);
         if(is_local_order || transportType=="For Godown" || transportType=="For Factory"){
-            $("#transposerDiv").hide();            
+            $(".transposerDiv").hide();            
             $("#transporterId").attr("required",false);
             $("#rateTypeDiv").hide();
         }

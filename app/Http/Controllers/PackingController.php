@@ -531,6 +531,8 @@ class PackingController extends Controller
             $data["table"]=$table;
             $data["chalan_date"]=Carbon::now()->format("d-m-Y");
             $data["transposer"]=$transposer;
+            $data["bus_no"]=$request->busNo;
+            $data["is_local"]=$request->isLocalTransport;
             $data["auto"]=$auto;
             $data["chalan_no"] = $chalanNo;
             $data["client"] = $client;

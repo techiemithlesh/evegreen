@@ -2,7 +2,7 @@
 <html>
 <head>
     <title></title>
-    <style>
+    <style>        
         table {
             width: 100%;
             border-collapse: collapse;
@@ -19,7 +19,7 @@
 
 </head>
 <body>
-    <table>
+    <table style="border: 1.5px black dotted;">
         <tr>
             <td></td>
             <td></td>
@@ -39,8 +39,17 @@
             <td colspan="2">
                 Date            : <b> {{$chalan_date}}</b><br>
                 Auto Name       : <b>{{$auto['auto_name']??"N/A"}}</b><br>
+                Auto No         : <b>{{$auto['auto_no']??"N/A"}}</b><br>
                 Auto Mobile No  : <b>{{$auto['mobile_no']??"----------"}}</b> <br>
-                Transposer Name : <b>{{$transposer['transporter_name']??"N/A"}}</b><br>
+                @if(!$is_local)
+                    @if($bus_no)
+                        Bus Name          : <b>{{$transposer['transporter_name']??"N/A"}}</b><br>
+                        Bus No            : <b>{{$bus_no??"N/A"}}</b><br>
+                    @else
+                        Transporter Name  : <b>{{$transposer['transporter_name']??"N/A"}}</b><br>
+                        GST No            : <b>{{$transposer['gst_no']??"N/A"}}</b><br>
+                    @endif
+                @endif
             </td>
         </tr>
         <tr>
