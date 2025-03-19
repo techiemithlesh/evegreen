@@ -17,6 +17,20 @@
                         <label class="form-label" for="transporterName">Transporter Name<span class="text-danger">*</span></label>
                         <input type="text" maxlength="100" id="transporterName" name="transporterName" class="form-control" placeholder="Enter Transporter Name" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="mobileNo">Mobile No<span class="text-danger">*</span></label>
+                        <input type="text" maxlength="100" id="mobileNo" name="mobileNo" class="form-control" placeholder="Enter Contact No" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="isBus" name="isBus" checked>
+                            <label class="form-check-label" for="isBus">Is Bus</label>
+                        </div>                        
+                    </div>
+                    <div class="mb-3" id="gstDiv">
+                        <label class="form-label" for="gstNo">GST No<span class="text-danger">*</span></label>
+                        <input type="text" maxlength="100" id="gstNo" name="gstNo" class="form-control" placeholder="Enter GST No" >
+                    </div>
 
                     <!-- Submit Button -->
                     <div class="row mt-4">

@@ -12,7 +12,7 @@ class AutoDetail extends Model
     use HasFactory;
     protected $fillable = [
         "auto_name",
-        // "auto_no",
+        "auto_no",
         "mobile_no",
         'lock_status',
     ];

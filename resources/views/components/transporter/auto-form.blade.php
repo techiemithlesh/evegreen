@@ -19,13 +19,13 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="autoName">Auto No<span class="text-danger">*</span></label>
-                        <input type="text" maxlength="100" id="autoName" name="autoName" class="form-control" placeholder="Enter Auto Name" required>
+                        <label class="form-label" for="MobileNo">Mobile No<span class="text-danger">*</span></label>
+                        <input type="text" maxlength="15" id="MobileNo" name="MobileNo" class="form-control" placeholder="Enter Mobile No" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="autoName">Auto Name<span class="text-danger">*</span></label>
-                        <input type="text" maxlength="100" id="autoName" name="autoName" class="form-control" placeholder="Enter Auto Name" required>
+                        <label class="form-label" for="autoNo">Auto No<span class="text-danger">*</span></label>
+                        <input type="text" maxlength="100" id="autoNo" name="autoNo" class="form-control" placeholder="Enter Auto No" required>
                     </div>
 
                     <!-- Submit Button -->

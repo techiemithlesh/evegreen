@@ -162,7 +162,6 @@
 
                     // CSRF token mismatch usually returns a 419 status
                     if (xhr.status === 419) {
-                        alert("Session expired. Redirecting to login.");
                         window.location.href = "{{ route('login') }}"; // Redirect to login
                     }
                 }

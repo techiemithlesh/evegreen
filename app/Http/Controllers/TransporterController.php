@@ -92,7 +92,11 @@ class TransporterController extends Controller
     }
 
     public function addTransporter(Request $request){
-        try{
+        try{ 
+            $request->merge(["isBus"=>$request->isBus?true:false]);
+            if($request->isBus){
+                $request->merge(["gstNo"=>null]);
+            }
             $message = "New Transporter Add";
             if($request->id){
                 $this->_M_TransporterDetails->edit($request);

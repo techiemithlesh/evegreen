@@ -13,6 +13,8 @@ class TransporterDetail extends Model
     protected $fillable = [
         "transporter_name",        
         "mobile_no",
+        "is_bus",
+        "gst_no",
         'lock_status',
     ];
 

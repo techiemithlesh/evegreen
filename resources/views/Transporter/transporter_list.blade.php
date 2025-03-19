@@ -26,6 +26,9 @@
                 <tr>
                     <th>#</th>
                     <th>Transporter Name</th>
+                    <th>Contact No</th>
+                    <th>Is Bus</th>
+                    <th>GST No</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -41,6 +44,10 @@
 
 <script>
     $(document).ready(function(){
+        toggleGstDiv();
+        $("#isBus").on("change",function(){
+            toggleGstDiv();
+        })
         $('#postsTable').DataTable({
             processing: true,
             serverSide: true,
@@ -54,6 +61,18 @@
                 {
                     data: "transporter_name",
                     name: "transporter_name"
+                },
+                {
+                    data: "mobile_no",
+                    name: "mobile_no"
+                },
+                {
+                    data: "is_bus",
+                    name: "is_bus",render:function(row,type,item){return `${item?.is_bus?'Yes':'No'}`}
+                },
+                {
+                    data: "gst_no",
+                    name: "gst_no"
                 },
                 {
                     data: "action",
@@ -75,6 +94,14 @@
             }
         });
     });
+    function toggleGstDiv(){
+        $("#gstDiv").show();
+        $("#gstNo").attr("required",true);
+        if($("#isBus").is(":checked")){
+            $("#gstDiv").hide();
+            $("#gstNo").attr("required",false);
+        }
+    }
     function addTransporter(){
         $.ajax({
                 type: "POST",
@@ -117,6 +144,9 @@
                     console.log(bagDtl); 
                     $("#id").val(bagDtl?.id);
                     $("#transporterName").val(bagDtl?.transporter_name);
+                    $("#mobileNo").val(bagDtl?.mobile_no);
+                    $("#isBus").attr("checked",bagDtl?.is_bus?true:false).trigger("change");
+                    $("#gstNo").val(bagDtl?.gst_no);
                     $("#transporterModal").modal("show");                    
                     $("#submit").html("Edit");
                     $("#transporterModalLabel").html("Edit Transporter");

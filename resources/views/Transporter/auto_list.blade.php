@@ -26,6 +26,8 @@
                 <tr>
                     <th>#</th>
                     <th>Auto Name</th>
+                    <th>Mobile No</th>
+                    <th>Auto No</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -54,6 +56,14 @@
                 {
                     data: "auto_name",
                     name: "auto_name"
+                },
+                {
+                    data: "mobile_no",
+                    name: "mobile_no"
+                },
+                {
+                    data: "auto_no",
+                    name: "auto_no"
                 },
                 {
                     data: "action",
@@ -117,6 +127,8 @@
                     console.log(bagDtl); 
                     $("#id").val(bagDtl?.id);
                     $("#autoName").val(bagDtl?.auto_name);
+                    $("#mobileNo").val(bagDtl?.mobile_no);
+                    $("#autoNo").val(bagDtl?.auto_no);
                     $("#autoModal").modal("show");
                     $("#submit").html("Edit");
                     $("#autoModalLabel").html("Edit Auto");
