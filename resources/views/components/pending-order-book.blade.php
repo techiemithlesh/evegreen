@@ -217,8 +217,16 @@
                 $("#balance").val(data?.data?.balance);
                 if(data?.status && data?.data?.test){
                     $("#possibleProduction").val(data?.data?.units);                    
-                    modelInfo(data?.message)
+                    modelInfo(data?.message);
                     $("#submit").attr("disabled",false);
+                    if((data?.data?.balance - data?.data?.production) < 12 && item?.units=='Kg' ){
+                        $("#submit").attr("disabled",true);
+                        showConfirmDialog("Are you sure want to book access quantity ",function(){$("#submit").attr("disabled",false);});
+                    }
+                    else if((data?.data?.balance - data?.data?.production) < 50 && item?.units!='Kg' ){
+                        $("#submit").attr("disabled",true);
+                        showConfirmDialog("Are you sure want to book access quantity ",function(){$("#submit").attr("disabled",false);});
+                    }
                 }
                 else if(data?.status && !data?.data?.test){
                     modelInfo(data?.message,"warning");
