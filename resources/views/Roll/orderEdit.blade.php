@@ -893,7 +893,13 @@
                 bookedQtr += parseFloat(value);
             }
         });
-        $("#balance").html(($("#totalUnits").val()-bookedQtr)+" "+$("#bookingBagUnits").val());        
+
+        let totalUnits = parseFloat($("#totalUnits").val()) || 0;
+        let bookingBagUnits = $("#bookingBagUnits").val() || ""; // If it's not a number, keep as string
+
+        $("#balance").html((totalUnits - bookedQtr) + " " + bookingBagUnits); 
+
+        // $("#balance").html(($("#totalUnits").val()-bookedQtr)+" "+$("#bookingBagUnits").val());        
         return bookedQtr;
     }
 

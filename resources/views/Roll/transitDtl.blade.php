@@ -41,8 +41,8 @@
                         <th>Net Weight</th>
                         <th>Bag Size</th>
                         <th>Bag Type</th>
-                        <th>Client Name</th>
                         <th>Unit</th>
+                        <th>Client Name</th>
                         <th>Purchase Date</th>
                         <th>Vendor Name</th>
                         <th>Hardness</th>
@@ -102,8 +102,8 @@
                 { data: "net_weight", name: "net_weight" ,render:function(row,type,data){return (data.net_weight ? data.net_weight :"N/A")}},
                 { data: "bag_size", name: "bag_size" ,render:function(row,type,data){return (data.bag_size ? "<pre>"+data.bag_size+"</pre>" :"N/A")}},
                 { data: "bag_type", name: "bag_type" ,render:function(row,type,data){return (data.bag_type ? data.bag_type :"N/A")}},
-                { data: "client_name", name: "client_name" ,render:function(row,type,data){return (data.client_name ? data.client_name :"N/A")}},
                 { data: "bag_unit", name: "bag_unit" ,render:function(row,type,data){return (data.bag_unit ? data.bag_unit :"N/A")}},
+                { data: "client_name", name: "client_name" ,render:function(row,type,data){return (data.client_name ? data.client_name :"N/A")}},
                 { data: "purchase_date", name: "purchase_date" ,render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")}},
                 { data: "vendor_name", name: "vendor_name",render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")} },
                 { data: "hardness", name: "hardness" ,render:function(row,type,data){return (data.hardness ? data.hardness :"N/A")} },

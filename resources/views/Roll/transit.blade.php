@@ -19,9 +19,9 @@
         <div class="panel-heading">
             <h5 class="panel-title">List</h5>
             <div class="panel-control">
-                <button id="addRoll" type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#rollModal">
+                <!-- <button id="addRoll" type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#rollModal">
                     Add <ion-icon name="add-circle-outline"></ion-icon>
-                </button>
+                </button> -->
                 <a href="{{ route('download.roll.import.template') }}" class="btn btn-info">Template</a>
                 <button id="addRollImport" type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#fileImportModal">
                     Import Roll<ion-icon name="add-circle-outline"></ion-icon>

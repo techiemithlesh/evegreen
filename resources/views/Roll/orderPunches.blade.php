@@ -970,7 +970,7 @@
                         option+=`<option value='${val}'>${val}</option>`;
                     });
                     $("#altBagGsm").append(option);                    
-                    if(selectedAlternateBagGsm.length>0){
+                    if(selectedAlternateBagGsm && selectedAlternateBagGsm.length>0){
                         $("#altBagGsm").val(selectedAlternateBagGsm);
                     }
                 }
@@ -1070,10 +1070,14 @@
         });
         let towevePer = 0;
         if($("#bookingBagTypeId").val()==3){
-            let towevePer = $("#totalUnits").val() * 0.12;
+            towevePer = $("#totalUnits").val() * 0.12;
         }
         console.log($("#bookingBagTypeId").val()==3);
-        $("#balance").html(($("#totalUnits").val()+ towevePer-bookedQtr)+" "+$("#bookingBagUnits").val());        
+
+        let totalUnits = parseFloat($("#totalUnits").val()) || 0;
+        let bookingBagUnits = $("#bookingBagUnits").val() || ""; // If it's not a number, keep as string
+
+        $("#balance").html((totalUnits + towevePer - bookedQtr) + " " + bookingBagUnits);     
         return ($("#totalUnits").val()-bookedQtr);
     }
 

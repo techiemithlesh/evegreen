@@ -3094,7 +3094,8 @@ class RollController extends Controller
             $data["test"]=$test;
             $data["production"]=$production;
             $data["units"]=$units;
-            $data["balance"]= round($order->total_units -( $order->booked_units + $order->disbursed_units)). " ".$order->units;
+            $data["balanceUnit"]= round($order->total_units -( $order->booked_units + $order->disbursed_units)). " ".$order->units;
+            $data["balance"]= round($order->total_units -( $order->booked_units + $order->disbursed_units));
             return responseMsgs(true,$message,$data);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
