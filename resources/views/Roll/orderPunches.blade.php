@@ -937,7 +937,7 @@
                         option+=`<option value='${val}'>${val}</option>`;
                     });
                     $("#altBagColor").append(option);
-                    if(selectedAlternateBagColor.length>0){
+                    if(selectedAlternateBagColor && selectedAlternateBagColor.length>0){
                         $("#altBagColor").val(selectedAlternateBagColor);
                     }
                 }

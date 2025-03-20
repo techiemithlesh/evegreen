@@ -3527,7 +3527,7 @@ class RollController extends Controller
                         $columnsToMatch = [
                             'vendor_id', 'gsm', 'gsm_json', 
                             'roll_color', //'length', 
-                            'size', 
+                            // 'size', 
                             "quality_id",
                             //'net_weight', 
                             'hardness', 
@@ -3556,6 +3556,235 @@ class RollController extends Controller
                 $rollId2 = $request->roll["secondRoll"][$index];
                 $roll1 = $this->_M_RollDetail->where("id",$rollId1)->first();
                 $roll2 = $this->_M_RollDetail->where("id",$rollId2)->first();
+
+                $testSize1 = false;
+                $testSize2 = false;
+                $order_filed=["client_detail_id","estimate_delivery_date","printing_color","loop_color","bag_type_id","bag_unit","w","l","g"];
+                $avg1 = $avgNew1 = 0;
+                $avg2 = $avgNew2 = 0;
+                $bag1 = $this->_M_BagType->find($roll1->bag_type_id);
+                $bag2 = $this->_M_BagType->find($roll2->bag_type_id);
+                if($bag1){
+                    $newRequest = new Request();
+                    $newRequest->merge([
+                        "formula"=>$bag1->roll_size_find,
+                        "bookingBagUnits"=>"M",                    
+                        // "gsm" => $request->bagGsm,
+                        "bagL"=> $roll1->l,
+                        "bagW"=> $roll1->w,
+                        "bagG"=> $roll1->g,
+                    ]);
+                    $result = $this->calculatePossibleProduction($newRequest);
+                    $fromSize1 = (int)($result["result"]??0);
+                    $uptoSize1 = $fromSize1+3;
+                    if(is_between($roll2->size,$fromSize1,$uptoSize1)){
+                        $testSize1=true;
+                    }
+
+                    // possible production 
+
+                    $bestFind = "";
+                    $bestFind2 = ""; 
+                    if($roll1->bag_unit=="Kg"){
+                        $bestFind = "RW";
+                        $bestFind2 = "RW";
+                    }elseif($roll1->bag_unit=="Piece"){
+                        $bestFind = $bag1->roll_find;                    
+                        $bestFind2 = $bag1->roll_find_as_weight;
+                    }
+
+                    $newRequestOld = new Request($roll1->toArray());
+                    $newRequestOld->merge([
+                        "formula"=>$bestFind,
+                        "bookingBagUnits"=>$roll1->bag_unit,
+                        "length" => $roll1->length,
+                        "netWeight" => $roll1->net_weight,
+                        "size" => $roll1->size,
+                        "gsm" => $roll1->gsm,
+                        "bagL"=> $roll1->l,
+                        "bagW"=> $roll1->w,
+                        "bagG"=> $roll1->g,
+                    ]);
+                    $newRequestOld2 = new Request($newRequestOld->all());
+                    $newRequestOld2->merge([
+                        "formula"=>$bestFind2
+                    ]);
+                    $result = $this->calculatePossibleProduction($newRequestOld);
+                    $result1 = $this->calculatePossibleProduction($newRequestOld2);
+                    $avg1 = round((($result["result"]??0)+($result1["result"]??0))/2);
+
+                    if($bag2){
+                        $newRequestNew = new Request($roll2->toArray());
+                        $newRequestNew->merge([
+                            "formula"=>$bestFind,
+                            "bookingBagUnits"=>$roll2->bag_unit,
+                            "length" => $roll2->length,
+                            "netWeight" => $roll2->net_weight,
+                            "size" => $roll2->size,
+                            "gsm" => $roll2->gsm,
+                            "bagL"=> $roll2->l,
+                            "bagW"=> $roll2->w,
+                            "bagG"=> $roll2->g,
+                        ]);
+                        $newRequestNew2 = new Request($newRequestNew->all());
+                        $newRequestNew2->merge([
+                            "formula"=>$bestFind2
+                        ]);
+                        $result = $this->calculatePossibleProduction($newRequestNew);
+                        $result1 = $this->calculatePossibleProduction($newRequestNew2);
+                        $avgNew1 = round((($result["result"]??0)+($result1["result"]??0))/2);
+                    }
+                }
+                if($bag2){
+                    $newRequest = new Request();
+                    $newRequest->merge([
+                        "formula"=>$bag2->roll_size_find,
+                        "bookingBagUnits"=>"M",                    
+                        // "gsm" => $request->bagGsm,
+                        "bagL"=> $roll2->l,
+                        "bagW"=> $roll2->w,
+                        "bagG"=> $roll2->g,
+                    ]);
+                    $result = $this->calculatePossibleProduction($newRequest);
+                    $fromSize2 = (int)($result["result"]??0);
+                    $uptoSize2 = $fromSize2+3;
+                    if(is_between($roll1->size,$fromSize2,$uptoSize2)){
+                        $testSize2=true;
+                    }
+
+                    // possible production 
+
+                    $bestFind = "";
+                    $bestFind2 = ""; 
+                    if($roll2->bag_unit=="Kg"){
+                        $bestFind = "RW";
+                        $bestFind2 = "RW";
+                    }elseif($roll2->bag_unit=="Piece"){
+                        $bestFind = $bag1->roll_find;                    
+                        $bestFind2 = $bag1->roll_find_as_weight;
+                    }
+
+                    $newRequestOld = new Request($roll2->toArray());
+                    $newRequestOld->merge([
+                        "formula"=>$bestFind,
+                        "bookingBagUnits"=>$roll2->bag_unit,
+                        "length" => $roll2->length,
+                        "netWeight" => $roll2->net_weight,
+                        "size" => $roll2->size,
+                        "gsm" => $roll2->gsm,
+                        "bagL"=> $roll2->l,
+                        "bagW"=> $roll2->w,
+                        "bagG"=> $roll2->g,
+                    ]);
+                    $newRequestOld2 = new Request($newRequestOld->all());
+                    $newRequestOld2->merge([
+                        "formula"=>$bestFind2
+                    ]);
+                    $result = $this->calculatePossibleProduction($newRequestOld);
+                    $result1 = $this->calculatePossibleProduction($newRequestOld2);
+                    $avg2 = round((($result["result"]??0)+($result1["result"]??0))/2);
+
+                    if($bag1){
+                        $newRequestNew = new Request($roll1->toArray());
+                        $newRequestNew->merge([
+                            "formula"=>$bestFind,
+                            "bookingBagUnits"=>$roll1->bag_unit,
+                            "length" => $roll1->length,
+                            "netWeight" => $roll1->net_weight,
+                            "size" => $roll1->size,
+                            "gsm" => $roll1->gsm,
+                            "bagL"=> $roll1->l,
+                            "bagW"=> $roll1->w,
+                            "bagG"=> $roll1->g,
+                        ]);
+                        $newRequestNew2 = new Request($newRequestNew->all());
+                        $newRequestNew2->merge([
+                            "formula"=>$bestFind2
+                        ]);
+                        $result = $this->calculatePossibleProduction($newRequestNew);
+                        $result1 = $this->calculatePossibleProduction($newRequestNew2);
+                        $avgNew2 = round((($result["result"]??0)+($result1["result"]??0))/2);
+                    }
+                }
+                
+                $order1=[];
+                $order2=[];
+                foreach($order_filed as $key){
+                    $order1[$key]=$roll1[$key];
+                    $order2[$key]=$roll2[$key];
+                }
+                $orderRollBag1 = $this->_M_OrderRollBagType->where("roll_id",$roll1->id)->where("lock_status",false)->orderBy("id","DESC")->first();
+                $orderRollBag2 = $this->_M_OrderRollBagType->where("roll_id",$roll2->id)->where("lock_status",false)->orderBy("id","DESC")->first();
+                if($testSize1){
+                    foreach($order1 as $key=>$orderVal){
+                        $roll2[$key] = $orderVal;
+                    }
+
+                    if($orderRollBag1){
+                        $order1 = $this->_M_OrderPunches->find($orderRollBag1->order_id);
+                        $order1->booked_units = $order1->booked_units - $avg1 + $avgNew1;
+                        
+                        $total_units = $order1->total_units;
+                        $newDisbursed_units = $order1->total_units - $order1->booked_units;
+                        if($newDisbursed_units<=0 || !$order1->disbursed_units){
+                            $order1->disbursed_units = 0 ;
+                        }
+                        elseif($order1->disbursed_units && $newDisbursed_units>0 && $newDisbursed_units >= round(($total_units)/100*95)){
+                            $order1->disbursed_units = $newDisbursed_units ;
+                        }
+                        elseif($order1->disbursed_units && $newDisbursed_units>0 && $newDisbursed_units < round(($total_units)/100*95)){
+                            $order1->disbursed_units = 0;
+                        }
+                        $order1->update();
+                    } 
+                }
+                else{
+                    // remover from booking;  
+                    if($orderRollBag1){
+                        $order1 = $this->_M_OrderPunches->find($orderRollBag1->order_id);
+                        $order1->booked_units = $order1->booked_units - $avg1 ;
+                        $order1->disbursed_units = 0;
+                        $orderRollBag1->lock_status= true;
+                        
+                        $orderRollBag1->update();
+                        $order1->update();
+                    }                  
+                }
+
+                if($testSize2){
+                    foreach($order2 as $key=>$orderVal){
+                        $roll1[$key] = $orderVal;
+                    }
+                    if($orderRollBag2){
+                        $order2 = $this->_M_OrderPunches->find($orderRollBag2->order_id);
+                        $order2->booked_units = $order2->booked_units - $avg2 + $avgNew2;
+
+                        $total_units = $order2->total_units;
+                        $newDisbursed_units = $order2->total_units - $order2->booked_units;
+                        if($newDisbursed_units<=0 || !$order2->disbursed_units){
+                            $order2->disbursed_units = 0 ;
+                        }
+                        elseif($order2->disbursed_units && $newDisbursed_units>0 && $newDisbursed_units >= round(($total_units)/100*95)){
+                            $order2->disbursed_units = $newDisbursed_units ;
+                        }
+                        elseif($order2->disbursed_units && $newDisbursed_units>0 && $newDisbursed_units < round(($total_units)/100*95)){
+                            $order2->disbursed_units = 0;
+                        }
+                        $order2->update();
+                    } 
+                }
+                else{
+                    if($orderRollBag2){
+                        $order2 = $this->_M_OrderPunches->find($orderRollBag2->order_id);
+                        $order2->booked_units = $order2->booked_units - $avg2 ;
+                        $order2->disbursed_units = 0;
+                        $orderRollBag2->lock_status= true;
+                        
+                        $orderRollBag2->update();
+                        $order2->update();
+                    }
+                }
+                dd($order1,$order2);
                 $rollNo1 = $roll1->roll_no;
                 $rollNo2 = $roll2->roll_no;
                 if($roll1->is_printed){
