@@ -2393,7 +2393,11 @@ class RollController extends Controller
             return redirect()->back();
         }
         if($order->deceived_by){
-            flashToast("message","Data Order is Delved");
+            flashToast("message","Data Order is Deactivated");
+            return redirect()->back();
+        }
+        if($order->is_delivered){
+            flashToast("message","Order is Delivered. So that you can not edit");
             return redirect()->back();
         }
         if($request->post()){
@@ -2422,6 +2426,9 @@ class RollController extends Controller
                 $this->_M_OrderPunches->edit($request);
                 DB::commit();
                 flashToast("message","Order Updated");
+                if($priv=request()->session()->pull("back")){
+                    return redirect($priv["prevUrl"]);
+                }
                 return redirect()->route('order.unbook');
             }catch (Exception $e) {
                 return redirect()->back()->withErrors(['error' => 'Order update failed.']);
@@ -2436,7 +2443,8 @@ class RollController extends Controller
             return (int) $val;
         })->toArray();
         $order->bookRoll = $order->getOrderRollBagTypes()->count()?true:false;
-        $data["prevUrl"] = url()->previous();
+        $data["prevUrl"] = $request->priv_url??url()->previous();
+        $data["prevUrlName"] = $request->priv_url_name??"Back";
         $data["order"] = $order;
         $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->orderBy("client_name","ASC")->get();
         $data["bagType"] = $this->_M_BagType->getBagListOrm()->orderBy("id")->get();
@@ -2451,6 +2459,7 @@ class RollController extends Controller
         $rollStockGsm = $this->_M_RollDetail->select('gsm')->distinct()->pluck('gsm');
         $rollTransitGsm = $this->_M_RollTransit->select('gsm')->where("gsm",">",2)->distinct()->pluck('gsm');
         $data["gsm"] = $rollStockGsm->union($rollTransitGsm)->unique()->sort()->values();
+        request()->session()->put('back', ["prevUrl"=>$data['prevUrl'],"prevUrlName"=>$data["prevUrlName"]]);
         return view("Roll/orderEdit",$data);
     }
 
@@ -2644,6 +2653,13 @@ class RollController extends Controller
                 })
                 ->addColumn('delivery_date', function ($val) {                    
                     return $val->delivery_date ? Carbon::parse($val->delivery_date)->format("d-m-Y") : "";                    
+                })
+                ->addColumn('action', function ($val) {  
+                    $button="";
+                    if(in_array(Auth()->user()->user_type_id,[1,2]) && $val->client_detail_id==1){
+                        $button .='<a href = "'.route('order.punches.edit',['orderId' => $val->id,"priv_url"=>request()->path(),"priv_url_name"=>"Not Delivered"]).'" class="btn btn-sm btn-primary mx-2">E</a>';
+                    }
+                    return '<div style="display:flex">'.$button.'</div>';                    
                 })
                 ->make(true);
             return $list;
@@ -2953,7 +2969,7 @@ class RollController extends Controller
                 })
                 ->addColumn('action', function ($val) {     
                     $button ='<i class="btn btn-sm btn-success mx-2" onClick="openBookingModel('.$val->id.')">S</i>'; 
-                    $button .='<a href = "'.route('order.punches.edit',['orderId' => $val->id]).'" class="btn btn-sm btn-primary mx-2">E</a>';      
+                    $button .='<a href = "'.route('order.punches.edit',['orderId' => $val->id,"priv_url"=>request()->path(),"priv_url_name"=>"Order Punches"]).'" class="btn btn-sm btn-primary mx-2">E</a>';      
                     $button .= '<i class="btn btn-sm btn-warning mx-2" onClick="disbursedOrder('.$val->id.')" >D</i>';
                     $button .= '<i class="btn btn-sm btn-danger mx-2" onClick="deactivate('.$val->id.')" >X</i>';         
                     return '<div style="display:flex">'.$button.'</div>';                    

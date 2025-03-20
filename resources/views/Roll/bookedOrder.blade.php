@@ -59,6 +59,7 @@
                         <th>Bag Unit</th>
                         <!-- <th>Roll No</th>
                         <th>Is Delivered</th> -->
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -110,6 +111,7 @@
                 { data: "units", name: "units" },
                 // { data: "roll_no", name: "roll_no" },
                 // { data: "is_delivered", name: "is_delivered" },
+                { data: "action", name: "action" },
                 
             ],
             dom: 'lBfrtip', // This enables the buttons
@@ -139,7 +141,7 @@
                 },
             ],
             initComplete: function () {
-                addFilter('postsTable',[0]);
+                addFilter('postsTable',[0,($('#postsTable thead tr:nth-child(1) th').length - 1)]);
             },     
         });
 
