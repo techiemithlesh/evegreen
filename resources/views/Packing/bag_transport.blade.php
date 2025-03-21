@@ -102,7 +102,8 @@
         const table = $('#postTable').DataTable({
             processing: true,
             serverSide: false,
-            searching:false,
+            ordering:false,
+            searching:true,
             ajax: {
                 url: "{{route('packing.transport.register')}}", // The route where you're getting data from  
                 data: function(d) {

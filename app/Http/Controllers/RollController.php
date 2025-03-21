@@ -2931,6 +2931,12 @@ class RollController extends Controller
                 ->addColumn("balance_units",function($val){
                     return round($val->total_units -( $val->booked_units + $val->disbursed_units));
                 })
+                ->addColumn("balance_units_kg",function($val){
+                    return $val->units=='Kg' ? round($val->total_units -( $val->booked_units + $val->disbursed_units)) : "N/A";
+                })
+                ->addColumn("balance_units_pcs",function($val){
+                    return $val->units!='Kg' ? round($val->total_units -( $val->booked_units + $val->disbursed_units)) : "N/A";
+                })
                 ->addColumn("balance_units_in_kg",function($val){
                     $balance = round($val->total_units -( $val->booked_units + $val->disbursed_units));
                     $bag = $val->getBagType();
@@ -2964,6 +2970,9 @@ class RollController extends Controller
                 })
                 ->addColumn('estimate_delivery_date', function ($val) {                    
                     return $val->estimate_delivery_date ? Carbon::parse($val->estimate_delivery_date)->format("d-m-Y") : "";                    
+                })
+                ->addColumn("order_date",function($val){
+                    return $val->order_date ? Carbon::parse($val->order_date)->format("d-m-Y"):"";
                 })
                 ->addColumn('delivery_date', function ($val) {                    
                     return $val->delivery_date ? Carbon::parse($val->delivery_date)->format("d-m-Y") : "";                    

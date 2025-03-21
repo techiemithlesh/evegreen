@@ -23,6 +23,22 @@
             <table id="postsTable" class="table table-striped table-bordered text-center table-fixed">
                 <thead>
                     <tr>
+                        <th>Order No</th>
+                        <th>Order Date</th>
+                        <th>Delivery Date</th>
+                        <th>Client Name</th>
+                        <th>Bag Size</th>
+                        <th>Bag Type</th>
+                        <th>Bag Color</th>
+                        <th>GSM</th>
+                        <th>Total Order</th>
+                        <th>Booked Qty</th>
+                        <th>Un-Booked Qty (Kg)</th>
+                        <th>Un-Booked Qty (Pcs)</th>
+                        <th>Grade</th>
+                        <th>Action</th>
+                    </tr>
+                    <!-- <tr>
                         <th >#</th>
                         <th>Booking Date</th>
                         <th>Estimate Delivery Date</th>
@@ -38,7 +54,7 @@
                         <th>Gsm</th>
                         <th>Grade</th>
                         <th>Action</th>
-                    </tr>
+                    </tr> -->
                 </thead>
                 <tbody>
 
@@ -73,6 +89,7 @@
             processing: true,
             serverSide: false,
             // searching:false,
+            ordering:false,
             ajax: {
                 url: "{{route('order.unbook')}}", // The route where you're getting data from
                 data: function(d) {
@@ -92,21 +109,22 @@
             },
 
             columns: [
-                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                // { data: "order_no", name: "order_no" },
-                { data: "created_at", name: "created_at" },
+                // { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
+                { data: "order_no", name: "order_no" },
+                { data: "order_date", name: "order_date" },
                 { data: "estimate_delivery_date", name: "estimate_delivery_date" },
                 { data: "client_name", name: "client_name" },
+                { data: "bag_size", name: "bag_size",render: function(item) {  return `<pre>${item}</pre>`; } },
                 { data: "bag_type", name: "bag_type" },
                 { data: "bag_color", name: "bag_color" },
-                { data: "bag_size", name: "bag_size",render: function(item) {  return `<pre>${item}</pre>`; } },
+                { data: "bag_gsm", name: "bag_gsm" },
                 { data: "total_units", name: "total_units" },
                 { data: "booked_units", name: "booked_units" },
-                { data: "balance_units", name: "balance_units" },
-                { data: "balance_units_in_kg", name: "balance_units_in_kg",render: function(item){ return Object.entries(item).map(([key, value]) => `${value?.key}=>${value?.val}`).join(", ")} },
-                { data: "units", name: "units" },
-                { data: "bag_gsm", name: "bag_gsm" },
-                { data: "grade", name: "grade" },
+                { data: "balance_units_kg", name: "balance_units_kg" },
+                { data: "balance_units_pcs", name: "balance_units_pcs" },
+                // { data: "balance_units_in_kg", name: "balance_units_in_kg",render: function(item){ return Object.entries(item).map(([key, value]) => `${value?.key}=>${value?.val}`).join(", ")} },
+                // { data: "units", name: "units" },
+                { data: "grade", name: "grade",render:function(row,type,data){ return `${data?.grade ? data?.grade : 'N/A'}`;} },
                 // { data: "roll_no", name: "roll_no" },
                 { data: "action", name: "action" },
                 
@@ -138,7 +156,7 @@
                 },
             ],                        
             initComplete: function () {
-                addFilter('postsTable',[0,($('#postsTable thead tr:nth-child(1) th').length - 1)]);
+                addFilter('postsTable',[($('#postsTable thead tr:nth-child(1) th').length - 1)]);
             },
         });
 
