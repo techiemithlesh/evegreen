@@ -203,6 +203,89 @@ function addFilter(tableName,indexNo=[]){
   });
 
 }
+/*
+    function addFilter(tableName, indexNo = []) {
+        var table = $('#' + tableName);
+        var filterRow = $('<tr></tr>');
+        $("#" + tableName + " tr").has("th.filter-header").remove();
+
+        table.find('thead tr:nth-child(1) th').each(function (index) {
+            if (indexNo.includes(index)) {
+                filterRow.append('<th></th>');
+            } else {
+                var filterCell = $(`  
+                    <th class="filter-header">
+                        <select class="filter-select" data-column="${index}" style="width: 100%" multiple="multiple">
+                            <option value="">All</option>
+                        </select>
+                    </th>
+                `);
+                filterRow.append(filterCell);
+            }
+        });
+
+        table.find('thead').append(filterRow);
+        var dataTable = table.DataTable();
+
+        // Store column data for dependency filtering
+        var columnDataMap = {};
+
+        dataTable.columns().every(function () {
+            var column = this;
+            var index = column.index();
+            var select = $('.filter-select[data-column="' + index + '"]');
+
+            var uniqueValues = column.data().unique().sort();
+            columnDataMap[index] = uniqueValues;
+
+            uniqueValues.each(function (d) {
+                select.append('<option value="' + d + '">' + d + '</option>');
+            });
+
+            select.select2({
+                placeholder: 'Select one or more values',
+                allowClear: false,
+                width: '100%'
+            }).on('change', function () {
+                var columnIndex = $(this).data('column');
+                var selectedValues = $(this).val() || [];
+
+                // Apply filtering logic
+                var regex = selectedValues.length ? selectedValues.map(val => `^${val}$`).join('|') : '';
+                dataTable.column(columnIndex).search(regex, true, false).draw();
+
+                // Update dependent dropdowns
+                updateDependentFilters(dataTable, columnIndex, selectedValues, columnDataMap);
+            });
+        });
+
+        function updateDependentFilters(dataTable, changedIndex, selectedValues, columnDataMap) {
+            console.log(columnDataMap);
+        
+            dataTable.columns().every(function () {
+                var index = this.index();
+                if (index !== changedIndex) {
+                    var select = $('.filter-select[data-column="' + index + '"]');
+        
+                    // Get unique values from the filtered table data
+                    var visibleData = dataTable.rows({ search: "applied" }).data().toArray();
+                    var uniqueFilteredValues = [...new Set(visibleData.map(row => row[index] || ''))]
+                        .filter(v => v !== '') // Remove empty/undefined values
+                        .sort();
+        
+                    select.empty().append('<option value="">All</option>');
+        
+                    uniqueFilteredValues.forEach(value => {
+                        select.append(`<option value="${value}">${value}</option>`);
+                    });
+        
+                    select.trigger('change.select2');
+                }
+            });
+        }
+        
+    }
+*/
 
 function base64Encode(str) {
     return btoa(unescape(encodeURIComponent(str)));
