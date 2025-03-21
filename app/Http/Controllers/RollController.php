@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\MyException;
 use App\Exports\ExportRoll;
 use App\Imports\RollDetailsImport;
 use App\Models\BagType;
@@ -3784,20 +3785,23 @@ class RollController extends Controller
                         $order2->update();
                     }
                 }
-                dd($order1,$order2);
+                
                 $rollNo1 = $roll1->roll_no;
                 $rollNo2 = $roll2->roll_no;
+                if((!($testSize1 || $testSize2)) && ($bag1 || $bag2)){
+                    throw new MyException("Roll are not suitable for swapping");
+                }
                 if($roll1->is_printed){
-                    throw new Exception("Roll No. ".$roll1->roll_no." is printed");
+                    throw new MyException("Roll No. ".$roll1->roll_no." is printed");
                 }
                 if($roll1->is_cut){
-                    throw new Exception("Roll No. ".$roll1->roll_no." is cut");
+                    throw new MyException("Roll No. ".$roll1->roll_no." is cut");
                 }
                 if($roll2->is_printed){
-                    throw new Exception("Roll No. ".$roll2->roll_no." is printed");
+                    throw new MyException("Roll No. ".$roll2->roll_no." is printed");
                 }
                 if($roll2->is_cut){
-                    throw new Exception("Roll No. ".$roll2->roll_no." is cut");
+                    throw new MyException("Roll No. ".$roll2->roll_no." is cut");
                 }
                 $roll1->roll_no = null;
                 $roll2->roll_no = null;
@@ -3810,8 +3814,10 @@ class RollController extends Controller
             }
             DB::commit();
             return responseMsgs(true,"Roll No. Swap","");
-        }catch(Exception $e){
+        }catch(MyException $e){
             return responseMsgs(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            return responseMsgs(false,"server error!!!","");
         }
     }
     
