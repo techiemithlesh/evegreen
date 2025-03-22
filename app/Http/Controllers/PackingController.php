@@ -345,7 +345,9 @@ class PackingController extends Controller
                     ->join("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")
                     ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")
                     ->where("bag_packings.packing_status",1)
-                    ->where("bag_packings.lock_status",false);
+                    ->where("bag_packings.lock_status",false)
+                    ->orderBy("bag_packings.order_id","DESC")
+                    ->orderBy("bag_packings.id","DESC");
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('packing_date', function ($val) { 
@@ -382,6 +384,7 @@ class PackingController extends Controller
         $data["autoList"] =$this->_M_Auto->where("lock_status",false)->orderBy("id","ASC")->get();
         $data["transporterList"] = $this->_M_Transporter->where("lock_status",false)->orderBy("id","ASC")->get();
         $data["rateType"] = $this->_M_RateType->all();
+        $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->where("id","<>",1)->orderBy("client_name","ASC")->get();
         return view("Packing/stock",$data);
     }
 
@@ -494,7 +497,7 @@ class PackingController extends Controller
 
             $firstBag = $bags->first();
             $order = $firstBag->getOrderDtl();
-            $client = $order->getClient();
+            $client = $order->client_detail_id==1 && $request->bookingForClientId ? $this->_M_ClientDetails->find($request->bookingForClientId): $order->getClient();
             $rateType = $order->getRateType();
             if($request->rateTypeId){
                 $rateType= $this->_M_RateType->find($request->rateTypeId);
@@ -586,7 +589,9 @@ class PackingController extends Controller
                     ->join("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")
                     ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")
                     ->where("bag_packings.packing_status",2)
-                    ->where("bag_packings.lock_status",false);
+                    ->where("bag_packings.lock_status",false)
+                    ->orderBy("bag_packings.order_id","DESC")
+                    ->orderBy("bag_packings.id","DESC");
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('packing_date', function ($val) { 
@@ -617,6 +622,7 @@ class PackingController extends Controller
         $data["autoList"] =$this->_M_Auto->where("lock_status",false)->orderBy("id","ASC")->get();
         $data["transporterList"] = $this->_M_Transporter->where("lock_status",false)->orderBy("id","ASC")->get();
         $data["rateType"] = $this->_M_RateType->all();
+        $data["clientList"] = $this->_M_ClientDetails->getClientListOrm()->where("id","<>",1)->orderBy("client_name","ASC")->get();
         return view("Packing/godown",$data);
     }
 
@@ -837,40 +843,25 @@ class PackingController extends Controller
                         ]);
                         $result = $this->calculatePossibleProduction($newPiecesRequest);
                         $garbagePec = (($acceptedGarbage+$notAcceptedGarbage)/$roll->net_weight);
-                        // $garbagePossibleBagPiece =0;
+                        
                         if($garbagePec){
                             $garbagePossibleBagPiece += $result["result"] * $garbagePec;
                         }
 
-                        // dd($result,$garbagePossibleBagPiece,$roll->net_weight,$acceptedGarbage+$notAcceptedGarbage,$garbagePec);
-
-                        // $formula = "(W X RS X GSM)/1550";
-                        // $bag = $
-                        // $request->merge(
-                        //     [
-                        //         "length"=>$roll->length,
-                        //         "netWeight"=>$roll->net_weight,
-                        //         "size"=>$roll->size,
-                        //         "gsm"=>$roll->gsm,
-                        //         "bagL"=>$order->bag_l,
-                        //         "bagW"=>$order->bag_w,
-                        //         "bagG"=>$order->bag_g,
-                        //         "formula"=>$formula
-                        //     ]
-                        // );
-                        // $result = $this->calculatePossibleProduction($request);
-                        // dd($result,$roll,$acceptedGarbage,$notAcceptedGarbage);
                     }
                     if(($order->total_units - $order->disbursed_units)<=round($totalUnit + ($order->units=="Kg" ? $totalGarbage : $garbagePossibleBagPiece))){
                         $order->is_delivered = true;
                         $order->delivery_date = Carbon::now()->format("Y-m-d");
+                    }
+                    if($order->client_detail_id==1 && $request->bookingForClientId){
+                        $order->client_detail_id = $request->bookingForClientId;
                     }
                     if($request->rateTypeId){
                         $order->rate_type_id=$request->rateTypeId;
                     }
                     $order->update();
                 }
-            }
+            }  
             DB::commit();
             return responseMsgs(true,"Dag is Dispatched","");
         }catch(Exception $e){

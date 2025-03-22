@@ -141,6 +141,21 @@
                                     <span class="error-text" id="busNo-error"></span>
                                 </div>
                             </div>
+                            <div class="col-sm-4 client">
+                                <div class="form-group">
+                                    <label class="form-label" for="bookingForClientId">Client Name<span class="text-danger">*</span></label>
+                                    <div class="col-md-12">
+                                        <select name="bookingForClientId" id="bookingForClientId" class="form-control">
+                                            <option value="">Select</option>
+                                            @foreach ($clientList as $val)
+                                                <option value="{{ $val->id }}">{{ $val->client_name }}</option>
+                                            @endforeach
+                                        </select><br>
+                                        <label class="error-text" id="bookingForClientId-error"></label>
+                                    </div>                                       
+                                    <span class="error-text" id="busNo-error"></span>
+                                </div>
+                            </div>
                             <div class="col-sm-4" id="rateTypeDiv">
                                 <div class="form-group">
                                     <label class="form-label" for="rateTypeId">Rate Type</label>
@@ -244,6 +259,10 @@
                 addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1]);
             },
         });
+        $('#bookingForClientId').select2({
+            width:"100%",
+            dropdownParent: $('#transportModel'),
+        }); 
         $("#submitEditForm").on("click",function(){
             $("#editBagForm").submit();
         });
@@ -412,12 +431,14 @@
         let is_local_order=$("#isLocalTransport").is(":checked");;
         let rateType = [];
         let client=[];
+        let clientId="";
         let rate = "";
 
         // ✅ Fix: Use `forEach` correctly
         sequence.forEach((item) => {
             
             rate=item.rate_type_id;
+            clientId = item.client_detail_id;
             if (!rateType[item.rate_type_id]) {
                 rateType[item.rate_type_id] = item.rate_type;
             }
@@ -447,6 +468,12 @@
             $(".transposerDiv").hide();            
             $("#transporterId").attr("required",false);
             $("#rateTypeDiv").hide();
+        }
+        $("#bookingForClientId").attr({"disabled":true,"required":false});
+        $(".client").hide();
+        if(clientId==1 && !(transportType=="For Godown" || transportType=="For Factory")){
+            $("#bookingForClientId").attr({"disabled":false,"required":true});
+            $(".client").show();
         }
         $("#hiddenDiv").html(hidden);
         $("#transportModelLabel").html(transportType);
