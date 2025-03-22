@@ -2604,9 +2604,9 @@ class RollController extends Controller
                     ->where("order_punch_details.lock_status",false)
                     ->where("order_punch_details.is_delivered",false)
                     ->where("order_punch_details.booked_units",">",0)
-                    // ->where(function($where){
-                    //     $where->where(DB::raw("order_punch_details.total_units"),"<=",DB::raw("order_punch_details.booked_units + order_punch_details.disbursed_units"));
-                    // })
+                    ->where(function($where){
+                        $where->where(DB::raw("order_punch_details.total_units"),"<=",DB::raw("order_punch_details.booked_units + order_punch_details.disbursed_units"));
+                    })
                     ->orderBy("order_punch_details.estimate_delivery_date","ASC");                               
 
             if($fromDate && $uptoDate){             
@@ -2622,7 +2622,8 @@ class RollController extends Controller
 
             if($orderNo){
                 $data->where("order_punch_details.order_no",$orderNo);
-            }         
+            }   
+                
             $list = DataTables::of($data)
                 ->addIndexColumn()                
                 ->addColumn('is_delivered', function ($val) {                    
@@ -2764,6 +2765,227 @@ class RollController extends Controller
 
         }
         return view("Roll/bookedOrderDelivered");
+    }
+
+    public function orderStatus(Request $request){
+
+        if($request->ajax())
+        {
+            $fromDate = $request->fromDate;
+            $uptoDate = $request->uptoDate;
+            $orderNo = $request->orderNo;            
+            $data = $this->_M_OrderPunches
+                    ->select(
+                                "order_punch_details.*","order_roll_bag_types.*","bg.total_delivered","bg.total_not_delivered","bg.total_bag",
+                                "client_detail_masters.client_name",  
+                                "bag_type_masters.bag_type" ,                       
+                    )
+                    ->leftJoin(
+                        DB::raw("(
+                            SELECT *
+                            FROM(
+                                    SELECT order_id, STRING_AGG(roll_no,' , ') as roll_no, 
+                                        SUM(total_booked_roll) AS total_booked_roll, 
+                                        SUM(total_printed_roll) AS total_printed_roll, 
+                                        SUM(total_cut_roll) AS total_cut_roll
+
+                                    FROM(
+                                        (
+                                            SELECT order_roll_bag_types.order_id, STRING_AGG(roll_details.roll_no,' , ') as roll_no ,
+                                                count( roll_details.id ) as total_booked_roll, 
+                                                count( CASE WHEN roll_details.is_printed OR roll_details.printing_color IS NULL THEN roll_details.id END ) as total_printed_roll,
+                                                count( CASE WHEN roll_details.is_cut THEN roll_details.id END ) as total_cut_roll
+                                            FROM order_roll_bag_types
+                                            JOIN roll_details on roll_details.id = order_roll_bag_types.roll_id
+                                            WHERE order_roll_bag_types.lock_status = false
+                                            GROUP BY order_roll_bag_types.order_id
+                                        )
+                                        UNION ALL(
+                                            SELECT order_roll_bag_types.order_id, STRING_AGG(roll_transits.roll_no,' , ') as roll_no ,
+                                                count( roll_transits.id ) as total_booked_roll, 
+                                                count( CASE WHEN roll_transits.is_printed OR roll_transits.printing_color IS NULL THEN roll_transits.id END ) as total_printed_roll,
+                                                count( CASE WHEN roll_transits.is_cut THEN roll_transits.id END ) as total_cut_roll
+                                            FROM order_roll_bag_types
+                                            JOIN roll_transits on roll_transits.id = order_roll_bag_types.roll_id
+                                            WHERE order_roll_bag_types.lock_status = false
+                                            GROUP BY order_roll_bag_types.order_id
+                                        )
+                                    ) AS orders
+                                    GROUP BY order_id 
+                            )
+                        ) AS order_roll_bag_types"),
+                        "order_roll_bag_types.order_id","order_punch_details.id"
+                    )
+                    ->leftJoin(DB::raw("(select order_id , count(id) as total_bag,count(case when packing_status=4 then id end) as total_delivered,
+                                            count(case when packing_status!=4 then id end) as total_not_delivered
+                                        from bag_packings
+                                        where bag_packings.lock_status = false
+                                        group by order_id) AS bg"),"bg.order_id","order_punch_details.id")                
+                    ->leftJoin("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id") 
+                    ->leftJoin("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")                   
+                    ->where("order_punch_details.lock_status",false)
+                    ->orderBy("order_punch_details.order_date","DESC");                               
+
+            if($fromDate && $uptoDate){             
+                $data->whereBetween(DB::raw("order_punch_details.order_date::date"),[$fromDate,$uptoDate]);
+            }
+
+            elseif($fromDate){
+                $data->where(DB::raw("order_punch_details.order_date::date"),">=",$fromDate);
+            }
+            elseif($uptoDate){
+                $data->where(DB::raw("order_punch_details.order_date::date"),"<=",$uptoDate);
+            } 
+
+            if($orderNo){
+                $data->where("order_punch_details.order_no",$orderNo);
+            } 
+            $data = $data->get()->map(function($val) {
+                $bookAndDisbursed = $val->booked_units + $val->disbursed_units;
+                $totalUnits = $val->total_units;
+            
+                // Step 1: Roll Booking Status
+                $isRollBook = $val->total_booked_roll > 0;
+                $isRollNotBook = !$isRollBook;
+            
+                // Initialize status variables
+                $isFullBook = $isPartBook = false;
+                $isFullBookFullPrint = $isFullBookPartPrint = false;
+                $isFullBookFullPrintFullCut = $isFullBookFullPrintPartCut = false;
+                $isFullBookPartPrintFullCut = $isFullBookPartPrintPartCut = false;
+                $isPartBookFullPrint = $isPartBookPartPrint = false;
+                $isPartBookFullPrintFullCut = $isPartBookFullPrintPartCut = false;
+                $isPartBookPartPrintFullCut = $isPartBookPartPrintPartCut = false;
+                $isFullDelivered = false;
+                $isPartDelivered = false;
+            
+                // Step 2: Check Full or Partial Booking (Only if Roll Booking is done)
+                if ($isRollBook) {
+                    $isFullBook = $totalUnits <= $bookAndDisbursed;
+                    $isPartBook = !$isFullBook && $val->booked_units > 0;
+                }
+            
+                // Step 3: Check Printing Status (Only if Booking is done)
+                if ($isFullBook && $val->total_printed_roll) {
+                    $isFullBookFullPrint = $val->total_printed_roll == $val->total_booked_roll;
+                    $isFullBookPartPrint = !$isFullBookFullPrint;
+                }
+            
+                if ($isPartBook && $val->total_printed_roll) {
+                    $isPartBookFullPrint = $val->total_printed_roll == $val->total_booked_roll;
+                    $isPartBookPartPrint = !$isPartBookFullPrint;
+                }
+            
+                // Step 4: Check Cutting Status (Only if **Printing is fully completed** and **Roll is actually Cut**)
+                if ($isFullBookFullPrint && $val->total_cut_roll > 0) { 
+                    $isFullBookFullPrintFullCut = $val->total_cut_roll == $val->total_booked_roll;
+                    $isFullBookFullPrintPartCut = !$isFullBookFullPrintFullCut;
+                }
+            
+                if ($isFullBookPartPrint && $val->total_cut_roll > 0) {
+                    $isFullBookPartPrintFullCut = $val->total_cut_roll == $val->total_booked_roll ;
+                    $isFullBookPartPrintPartCut = !$isFullBookPartPrintFullCut;
+                }
+            
+                if ($isPartBookFullPrint && $val->total_cut_roll > 0) {
+                    $isPartBookFullPrintFullCut = $val->total_cut_roll == $val->total_booked_roll;
+                    $isPartBookFullPrintPartCut = !$isPartBookFullPrintFullCut;
+                }
+            
+                if ($isPartBookPartPrint && $val->total_cut_roll > 0) {
+                    $isPartBookPartPrintFullCut = $val->total_cut_roll == $val->total_booked_roll;
+                    $isPartBookPartPrintPartCut = !$isPartBookPartPrintFullCut;
+                }
+
+                // Step 5: Check Delivery Status (Only if **Cutting is completed**)
+                if ($val->total_delivered > 0) {
+                    if ($isFullBookFullPrintFullCut || $isFullBookPartPrintFullCut) {
+                        $isFullDelivered = $val->total_delivered == $val->total_bag;
+                        $isPartDelivered = !$isFullDelivered;
+                    }
+
+                    if ($isPartBookFullPrintFullCut || $isPartBookPartPrintFullCut) {
+                        $isPartDelivered = $val->total_not_delivered == $val->total_bag;
+                        $isFullDelivered = !$isPartDelivered;
+                    } 
+                    if($isFullBookFullPrintPartCut || $isFullBookPartPrintPartCut){
+                        $isPartDelivered = $val->total_not_delivered == $val->total_bag;
+                        $isFullDelivered = !$isPartDelivered;
+                    }
+                    if($isPartBookFullPrintPartCut || $isPartBookPartPrintPartCut){
+                        $isPartDelivered = $val->total_not_delivered == $val->total_bag;
+                        $isFullDelivered = !$isPartDelivered;
+                    }
+                }
+            
+                // Assign final statuses
+                $val->isRollBook = $isRollBook;
+                $val->isRollNotBook = $isRollNotBook;
+                $val->isFullBook = $isFullBook;
+                $val->isPartBook = $isPartBook;
+                $val->isFullBookFullPrint = $isFullBookFullPrint;
+                $val->isFullBookPartPrint = $isFullBookPartPrint;
+                $val->isPartBookFullPrint = $isPartBookFullPrint;
+                $val->isPartBookPartPrint = $isPartBookPartPrint;
+                $val->isFullBookFullPrintFullCut = $isFullBookFullPrintFullCut;
+                $val->isFullBookFullPrintPartCut = $isFullBookFullPrintPartCut;
+                $val->isFullBookPartPrintFullCut = $isFullBookPartPrintFullCut;
+                $val->isFullBookPartPrintPartCut = $isFullBookPartPrintPartCut;
+                $val->isPartBookFullPrintFullCut = $isPartBookFullPrintFullCut;
+                $val->isPartBookFullPrintPartCut = $isPartBookFullPrintPartCut;
+                $val->isPartBookPartPrintFullCut = $isPartBookPartPrintFullCut;
+                $val->isPartBookPartPrintPartCut = $isPartBookPartPrintPartCut;
+                $val->isFullDelivered = $isFullDelivered;
+                $val->isPartDelivered = $isPartDelivered;
+            
+                return $val;
+            });
+            
+            $list = DataTables::of($data)
+                ->addIndexColumn()                
+                ->addColumn('is_delivered', function ($val) {                    
+                    return $val->is_delivered ? "YES" : "NO";
+                })
+                ->addColumn("bag_color",function($val){
+                    return $val->bag_color ? collect(json_decode($val->bag_color,true))->implode(",") : "";
+                })
+                ->addColumn("bag_color",function($val){
+                    return collect(json_decode($val->bag_color,true))->implode(", ") ;
+                })
+                ->addColumn("bag_gsm",function($val){
+                    return collect(json_decode($val->bag_gsm,true))->implode(", ") ;
+                })
+                ->addColumn("total_units",function($val){
+                    return round($val->total_units);
+                })
+                ->addColumn("booked_units",function($val){
+                    return round($val->booked_units);
+                })
+                ->addColumn("bag_size",function($val){
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
+                })
+                ->addColumn('created_at', function ($val) {                    
+                    return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    
+                })
+                ->addColumn('estimate_delivery_date', function ($val) {                    
+                    return $val->estimate_delivery_date ? Carbon::parse($val->estimate_delivery_date)->format("d-m-Y") : "";                    
+                })
+                ->addColumn('delivery_date', function ($val) {                    
+                    return $val->delivery_date ? Carbon::parse($val->delivery_date)->format("d-m-Y") : Carbon::parse($val->updated_at)->format("d-m-Y") ;                    
+                })
+                ->addColumn('status', function ($order) {
+                    return view('Roll.partials.order_status', compact('order'))->render();
+                })
+                ->addColumn('flowchart', function ($order) {
+                    return view('Roll.partials.order_flowchart', compact('order'))->render();
+                })
+                ->rawColumns(['status', 'flowchart'])
+                ->make(true);
+            return $list;
+
+        }
+
+        return view("Roll/orderStatus");
     }
 
     public function unBookedOrder_old1(Request $request){
