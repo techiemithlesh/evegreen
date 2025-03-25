@@ -45,31 +45,33 @@
 
         </div>
         <div class="panel-body">
-            <table id="postsTable" class="table table-striped table-bordered table-fixed">
-                <thead>
-                    <tr>
-                        <th>Cutting Date</th>
-                        <th>Roll No</th>
-                        <th>Vendor Name</th>
-                        <th>Roll Size</th>
-                        <th>GSM</th>
-                        <th>Roll Color</th>
-                        <th>Net Weight</th>
-                        <th>Weight After Print</th>
-                        <th>Bag Size</th>
-                        <th>Bag Type</th>
-                        <th>Client Name</th>
-                        <th>Loop Color</th>
-                        <th>Possible Piece</th>
-                        <th>Operator Name</th>
-                        <th>Helper Name</th>
-                        <th>Shift</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="tableStickyDiv">
+                <table id="postsTable" class="table table-striped table-bordered table-fixed">
+                    <thead>
+                        <tr>
+                            <th>Cutting Date</th>
+                            <th>Roll No</th>
+                            <th>Vendor Name</th>
+                            <th>Roll Size</th>
+                            <th>GSM</th>
+                            <th>Roll Color</th>
+                            <th>Net Weight</th>
+                            <th>Weight After Print</th>
+                            <th>Bag Size</th>
+                            <th>Bag Type</th>
+                            <th>Client Name</th>
+                            <th>Loop Color</th>
+                            <th>Possible Piece</th>
+                            <th>Operator Name</th>
+                            <th>Helper Name</th>
+                            <th>Shift</th>
+                        </tr>
+                    </thead>
+                    <tbody>
 
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
