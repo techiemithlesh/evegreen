@@ -993,6 +993,10 @@ class RollController extends Controller
                     })
                     ->where("roll_details.lock_status",false)
                     ->orderBy("roll_details.id","DESC"); 
+            $loop = $this->_M_LoopDetail->select("loop_details.*","vendor_detail_masters.vendor_name",)
+                    ->join("vendor_detail_masters","vendor_detail_masters.id","loop_details.vender_id")
+                    ->where("loop_details.lock_status",false)
+                    ->orderBy("loop_details.id","DESC"); 
 
             if($fromDate && $uptoDate){              
                 $data->whereBetween("purchase_date",[$fromDate,$uptoDate]);
@@ -1003,6 +1007,20 @@ class RollController extends Controller
             elseif($uptoDate){
                 $data->where("purchase_date","<=",$uptoDate);
             } 
+
+            if($fromDate && $uptoDate){              
+                $data->whereBetween("purchase_date",[$fromDate,$uptoDate]);
+                $loop->whereBetween("purchase_date",[$fromDate,$uptoDate]);
+            }
+            elseif($fromDate){
+                $data->where("purchase_date",">=",$fromDate);
+                $loop->where("purchase_date",">=",$fromDate);
+            }
+            elseif($uptoDate){
+                $data->where("purchase_date","<=",$uptoDate);
+                $loop->where("purchase_date","<=",$uptoDate);
+            }
+            $data = collect($data->get())->merge($loop->get());
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('row_color', function ($val) use($flag) {

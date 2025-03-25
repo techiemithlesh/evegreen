@@ -124,6 +124,7 @@
             processing: true,
             serverSide: false,
             // responsive: true,
+            ordering:false,
             ajax: {
                 url: "{{route('roll.list',':flag')}}".replace(':flag', flag), // The route where you're getting data from
                 data: function(d) {

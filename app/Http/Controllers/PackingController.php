@@ -163,7 +163,12 @@ class PackingController extends Controller
                 if(in_array($val->bag_type_id,[2,4,5])){
                     $val->loop_weight = (($totalPieces*3.4)/1000); # convert it in kg
                 }
-                $val->balance = roundFigure($val->roll_weight + $val->loop_weight - $val->packing_weight - $val->total_garbage);
+                $loopBagGar = 0;
+                if($val->bag_type_id==4){
+                    $loopBagGar = ($val->roll_weight - $val->roll_weight*0.1);
+                }
+                $val->loop_garbage = $loopBagGar;
+                $val->balance = roundFigure($val->roll_weight + $val->loop_weight - $val->packing_weight - $val->total_garbage -$loopBagGar);
                 $gsm = collect(json_decode($gsm_json,true));
                 $rs = Config::get("customConfig.BagTypeIdealWeightFormula.".$val->bag_type_id)["RS"]??"";
                 $val->valueObject = [
