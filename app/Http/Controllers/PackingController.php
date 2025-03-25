@@ -165,7 +165,7 @@ class PackingController extends Controller
                 }
                 $loopBagGar = 0;
                 if($val->bag_type_id==3){
-                    $loopBagGar = ($val->roll_weight*0.1);
+                    $loopBagGar = (($val->roll_weight-$val->total_garbage)*0.1);
                 }
                 $val->loop_garbage = $loopBagGar;
                 $val->balance = roundFigure($val->roll_weight + $val->loop_weight - $val->packing_weight - $val->total_garbage -$loopBagGar);
