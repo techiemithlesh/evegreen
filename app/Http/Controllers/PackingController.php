@@ -164,7 +164,7 @@ class PackingController extends Controller
                     $val->loop_weight = (($totalPieces*3.4)/1000); # convert it in kg
                 }
                 $loopBagGar = 0;
-                if($val->bag_type_id==4){
+                if($val->bag_type_id==3){
                     $loopBagGar = ($val->roll_weight - $val->roll_weight*0.1);
                 }
                 $val->loop_garbage = $loopBagGar;
