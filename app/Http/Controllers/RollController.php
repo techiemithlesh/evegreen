@@ -993,7 +993,7 @@ class RollController extends Controller
                     })
                     ->where("roll_details.lock_status",false)
                     ->orderBy("roll_details.id","DESC"); 
-            $loop = $this->_M_LoopDetail->select("loop_details.*","vendor_detail_masters.vendor_name",)
+            $loop = $this->_M_LoopDetail->select("loop_details.*","vendor_detail_masters.vendor_name",DB::raw("loop_color as roll_color , null as w , null as l , null as g , null as bag_type , null as bag_unit , null as client_name"))
                     ->join("vendor_detail_masters","vendor_detail_masters.id","loop_details.vender_id")
                     ->where("loop_details.lock_status",false)
                     ->orderBy("loop_details.id","DESC"); 
@@ -1041,6 +1041,9 @@ class RollController extends Controller
                         $color="tr-client";
                     }                    
                     return $color;
+                })
+                ->addColumn('purchase_date', function ($val) {                    
+                    return $val->purchase_date ? Carbon::parse($val->purchase_date)->format("d-m-Y"):"";
                 })
                 ->addColumn('print_color', function ($val) {                    
                     return collect(json_decode($val->printing_color,true))->implode(",");
