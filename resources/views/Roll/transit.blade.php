@@ -53,7 +53,7 @@
                             <td>{{ $item->vendor_name }}</td>
                             <td>{{ $item->purchase_date }}</td>
                             <td>{{ $item->vehicle_no }}</td>
-                            <td>{{ $item->total_count - $item->total_loop}}</td>
+                            <td>{{ $item->total_count}}</td>
                             <td>{{ $item->total_loop}}</td>
                             <td class="text-info">{{ $item->total_book }}</td>
                             <td>{{ $item->total_deviation }}</td>

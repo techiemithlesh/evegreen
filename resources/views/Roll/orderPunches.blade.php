@@ -49,7 +49,7 @@
                     <div class="row mt-3">
                         <div class="col-sm-4">
                             <div class="form-group">
-                                <label class="form-label" for="bookingForClientId">Book For Client 
+                                <label class="form-label" for="bookingForClientId">Client 
                                     <span onclick="openRollBookingClineModel()"  style="font-weight: bolder; font-size:small; text-decoration: underline;"> 
                                         <i class="bi bi-person-add"></i> Add Client
                                     </span> 

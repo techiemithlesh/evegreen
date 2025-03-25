@@ -32,12 +32,12 @@
                 <table id="postsTable" class="table table-striped table-bordered table-fixed" >
                     <thead>
                         <tr>
-                            <th >#</th>                    
+                            <!-- <th >#</th>                     -->
+                            <th>Roll No</th>
                             <th>Quality</th>
                             <th>Roll Size</th>
                             <th>GSM</th>
                             <th>Roll Color</th>
-                            <th>Roll No</th>
                             <th>Net Weight</th>
                             <th>Bag Size</th>
                             <th>Bag Type</th>
@@ -45,7 +45,7 @@
                             <th>Client Name</th>
                             <th>Purchase Date</th>
                             <th>Vendor Name</th>
-                            <th>Hardness</th>
+                            <!-- <th>Hardness</th> -->
                             <th>Roll Type</th>
                             <th>Grade</th>
                             <th>Length</th>
@@ -94,12 +94,12 @@
                 },
             },
             columns: [
-                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },                      
-                { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality :"N/A")}},
+                // { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },                      
+                { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no :"N/A")} },
+                { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality+` (${data.hardness})` :"N/A")}},
                 { data: "size", name: "size" ,render:function(row,type,data){return (data.size ? data.size :"N/A")}},
                 { data: "gsm", name: "gsm",render:function(row,type,data){return (data.gsm ? data.gsm :"N/A")} },
                 { data: "roll_color", name: "roll_color" ,render:function(row,type,data){return (data.roll_color ? data.roll_color :"N/A")}},
-                { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no :"N/A")} },
                 { data: "net_weight", name: "net_weight" ,render:function(row,type,data){return (data.net_weight ? data.net_weight :"N/A")}},
                 { data: "bag_size", name: "bag_size" ,render:function(row,type,data){return (data.bag_size ? "<pre>"+data.bag_size+"</pre>" :"N/A")}},
                 { data: "bag_type", name: "bag_type" ,render:function(row,type,data){return (data.bag_type ? data.bag_type :"N/A")}},
@@ -107,7 +107,7 @@
                 { data: "client_name", name: "client_name" ,render:function(row,type,data){return (data.client_name ? data.client_name :"N/A")}},
                 { data: "purchase_date", name: "purchase_date" ,render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")}},
                 { data: "vendor_name", name: "vendor_name",render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")} },
-                { data: "hardness", name: "hardness" ,render:function(row,type,data){return (data.hardness ? data.hardness :"N/A")} },
+                // { data: "hardness", name: "hardness" ,render:function(row,type,data){return (data.hardness ? data.hardness :"N/A")} },
                 { data: "roll_type", name: "roll_type",render:function(row,type,data){return (data.roll_type ? data.roll_type :"N/A")} },
                 { data : "grade", name: "grade" ,render:function(row,type,data){return (data.grade ? data.grade :"N/A")}},
                 { data: "length", name: "length",render:function(row,type,data){return (data.length ? data.length :"N/A")} },
@@ -151,7 +151,7 @@
             },
             initComplete: function () {
                 hideColumn(table);
-                addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1,$('#postsTable thead tr:nth-child(1) th').length - 2]);
+                addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1]);
             },
         }); 
                
@@ -165,7 +165,7 @@
     
         
     function hideColumn(table){
-        const columnsToHide = [11,12,13,14,15,16,17,18];
+        const columnsToHide = [10,11,12,13,14,15,16,17];
         columnsToHide.forEach(index => table.column(index).visible(false));
     }
 

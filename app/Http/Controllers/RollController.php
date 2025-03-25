@@ -4019,6 +4019,7 @@ class RollController extends Controller
                 
                 $rollNo1 = $roll1->roll_no;
                 $rollNo2 = $roll2->roll_no;
+                // dd($testSize1,$testSize2,$bag1 , $bag2);
                 if((!($testSize1 || $testSize2)) && ($bag1 || $bag2)){
                     throw new MyException("Roll are not suitable for swapping");
                 }
@@ -4034,12 +4035,12 @@ class RollController extends Controller
                 if($roll2->is_cut){
                     throw new MyException("Roll No. ".$roll2->roll_no." is cut");
                 }
-                $roll1->roll_no = null;
-                $roll2->roll_no = null;
-                $roll1->update();
-                $roll2->update();
-                $roll1->roll_no = $rollNo2;
-                $roll2->roll_no = $rollNo1;
+                // $roll1->roll_no = null;
+                // $roll2->roll_no = null;
+                // $roll1->update();
+                // $roll2->update();
+                // $roll1->roll_no = $rollNo2;
+                // $roll2->roll_no = $rollNo1;
                 $roll1->update();
                 $roll2->update();
             }
