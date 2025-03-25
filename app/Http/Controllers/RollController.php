@@ -876,7 +876,7 @@ class RollController extends Controller
                 })
                 ->addColumn("quality",function($val){
                     $quality = RollQualityMaster::find($val->quality_id);
-                    return $quality->quality??"" ;                        
+                    return ($quality->quality??"").(" (".$val->hardness.")") ;                        
                 })
                 ->addColumn("gsm_json",function($val){
                     return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
