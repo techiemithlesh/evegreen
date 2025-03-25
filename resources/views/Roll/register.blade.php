@@ -48,36 +48,38 @@
 
         </div>
         <div class="panel-body">
-            <table id="postsTable" class="table table-striped table-bordered table-fixed table-nowrap">
-                <thead>
-                    <tr>
-                        <th >#</th>
-                        <th>Purchase Date</th>
-                        <th>Vendor Name</th>
-                        <th>Hardness</th>
-                        <th>Roll Type</th>
-                        <th>Roll Size</th>
-                        <th>GSM </th>
-                        <th>Roll Color</th>
-                        <th>Length</th>
-                        <th>Roll No</th>
-                        <th>Gross Weight</th>
-                        <th>Net Weight</th>
-                        <th>GSM Variation</th>
-                        <th>W</th>
-                        <th>L</th>
-                        <th>G</th>
-                        <th>Bag Type</th>
-                        <th>Unit</th>
-                        <th>Customer</th>
-                        <th>Printing Color</th>
-                        <th>Loop Color</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="tableStickyDiv">
+                <table id="postsTable" class="table table-striped table-bordered table-fixed table-nowrap">
+                    <thead>
+                        <tr>
+                            <th >#</th>
+                            <th>Purchase Date</th>
+                            <th>Vendor Name</th>
+                            <th>Hardness</th>
+                            <th>Roll Type</th>
+                            <th>Roll Size</th>
+                            <th>GSM </th>
+                            <th>Roll Color</th>
+                            <th>Length</th>
+                            <th>Roll No</th>
+                            <th>Gross Weight</th>
+                            <th>Net Weight</th>
+                            <th>GSM Variation</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>G</th>
+                            <th>Bag Type</th>
+                            <th>Unit</th>
+                            <th>Customer</th>
+                            <th>Printing Color</th>
+                            <th>Loop Color</th>
+                        </tr>
+                    </thead>
+                    <tbody>
 
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </main>

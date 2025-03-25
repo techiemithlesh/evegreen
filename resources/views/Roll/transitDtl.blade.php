@@ -28,36 +28,37 @@
             </div>            
         </div>
         <div class="panel-body">
-            
-            <table id="postsTable" class="table table-striped table-bordered table-fixed" >
-                <thead>
-                    <tr>
-                        <th >#</th>                    
-                        <th>Quality</th>
-                        <th>Roll Size</th>
-                        <th>GSM</th>
-                        <th>Roll Color</th>
-                        <th>Roll No</th>
-                        <th>Net Weight</th>
-                        <th>Bag Size</th>
-                        <th>Bag Type</th>
-                        <th>Unit</th>
-                        <th>Client Name</th>
-                        <th>Purchase Date</th>
-                        <th>Vendor Name</th>
-                        <th>Hardness</th>
-                        <th>Roll Type</th>
-                        <th>Grade</th>
-                        <th>Length</th>
-                        <th>Gross Weight</th>
-                        <th>GSM Variation</th>                        
-                        <th>Action</th>
-                        <th onclick="selectAllCheck()">Select</th>    
-                    </tr>                    
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+            <div class="tableStickyDiv">
+                <table id="postsTable" class="table table-striped table-bordered table-fixed" >
+                    <thead>
+                        <tr>
+                            <th >#</th>                    
+                            <th>Quality</th>
+                            <th>Roll Size</th>
+                            <th>GSM</th>
+                            <th>Roll Color</th>
+                            <th>Roll No</th>
+                            <th>Net Weight</th>
+                            <th>Bag Size</th>
+                            <th>Bag Type</th>
+                            <th>Unit</th>
+                            <th>Client Name</th>
+                            <th>Purchase Date</th>
+                            <th>Vendor Name</th>
+                            <th>Hardness</th>
+                            <th>Roll Type</th>
+                            <th>Grade</th>
+                            <th>Length</th>
+                            <th>Gross Weight</th>
+                            <th>GSM Variation</th>                        
+                            <th>Action</th>
+                            <th onclick="selectAllCheck()">Select</th>    
+                        </tr>                    
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>    
     

@@ -470,6 +470,30 @@ form label{
 .table-fixed td button, .table-fixed td span button{
     margin-right: 5px;
 }
+.tableStickyDiv {
+    overflow-y: auto;
+    max-height: 100vh;
+    position: relative; 
+    scrollbar-width: none; /* Firefox */
+}
+
+.tableStickyDiv::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+.tableStickyDiv tbody td:first-child, .tableStickyDiv thead th:first-child {
+    position: sticky;
+    left: 0;
+    background: white; /* Ensure it doesn't get hidden */
+    z-index: 2; /* Keeps it above other elements */
+}
+
+.tableStickyDiv thead {
+    position: sticky;
+    top: 0;
+    background: white; /* Prevent content overlap */
+    z-index: 4; /* Higher than first column */
+}
 
   
 

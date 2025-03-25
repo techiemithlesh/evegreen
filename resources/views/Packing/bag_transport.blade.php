@@ -54,26 +54,28 @@
             </form>
         </div>
         <div class="panel-body">
-            <table class="table table-bordered table-responsive table-fixed" id="postTable">
-                <thead>
-                    <tr>
-                        <th>Dispatch Date</th>
-                        <th>Bag No</th>
-                        <th>Client Name</th>
-                        <th>Bag Size</th>
-                        <th>Bag Color</th>
-                        <th>Printing Color</th>
-                        <th>GSM</th>
-                        <th>Bag Type</th>
-                        <th>Bag Weight</th>
-                        <th>Bag Pieces</th>
-                        <th>Auto Name</th>
-                        <th>Transporter Name</th>
-                        <th>Chalan No</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-            </table>
+            <div class="tableStickyDiv">
+                <table class="table table-bordered table-responsive table-fixed" id="postTable">
+                    <thead>
+                        <tr>
+                            <th>Dispatch Date</th>
+                            <th>Bag No</th>
+                            <th>Client Name</th>
+                            <th>Bag Size</th>
+                            <th>Bag Color</th>
+                            <th>Printing Color</th>
+                            <th>GSM</th>
+                            <th>Bag Type</th>
+                            <th>Bag Weight</th>
+                            <th>Bag Pieces</th>
+                            <th>Auto Name</th>
+                            <th>Transporter Name</th>
+                            <th>Chalan No</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
     </div>
 

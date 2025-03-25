@@ -14,25 +14,27 @@
     </div>
     <div class="container">
         <div class="panel-body">
-            <table id="postsTable" class="table table-striped table-bordered table-fixed">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Client Name</th>
-                        <th>Cutting Date</th>
-                        <th>Machine</th>
-                        <th>Shift</th>
-                        <th>Operator</th>
-                        <th>Helper</th>
-                        <th>Garbage</th>
-                        <th>%</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-    
-                </tbody>
-            </table>
+            <div class="tableStickyDiv">
+                <table id="postsTable" class="table table-striped table-bordered table-fixed">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Client Name</th>
+                            <th>Cutting Date</th>
+                            <th>Machine</th>
+                            <th>Shift</th>
+                            <th>Operator</th>
+                            <th>Helper</th>
+                            <th>Garbage</th>
+                            <th>%</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

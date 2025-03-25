@@ -48,28 +48,30 @@
             <div class="panel-heading">
                 <h5 class="panel-title">List</h5>            
             </div>
-            <table id="postsTable" class="table table-striped table-bordered table-fixed">
-                <thead>
-                    <tr>
-                        <th >#</th>
-                        <th>Purchase Date</th>
-                        <th>Vendor Name</th>
-                        <th>Hardness</th>
-                        <th>Roll Type</th>
-                        <th>Roll Size</th>
-                        <th>GSM </th>
-                        <th>Loop Color</th>
-                        <th>Length</th>
-                        <th>Roll No</th>
-                        <th>Gross Weight</th>
-                        <th>Net Weight</th>
-                        <th>GSM Variation</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="tableStickyDiv">
+                <table id="postsTable" class="table table-striped table-bordered table-fixed">
+                    <thead>
+                        <tr>
+                            <th >#</th>
+                            <th>Purchase Date</th>
+                            <th>Vendor Name</th>
+                            <th>Hardness</th>
+                            <th>Roll Type</th>
+                            <th>Roll Size</th>
+                            <th>GSM </th>
+                            <th>Loop Color</th>
+                            <th>Length</th>
+                            <th>Roll No</th>
+                            <th>Gross Weight</th>
+                            <th>Net Weight</th>
+                            <th>GSM Variation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
 
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </main>

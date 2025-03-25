@@ -29,42 +29,43 @@
             </div>
         </div>
         <div class="panel-body">
-            
-            <table id="example" class="table table-striped table-bordered" >
-                <thead>
-                    <tr>
-                        <th>Vendor Name</th>
-                        <th>Purchase Date</th>
-                        <th>Vehicle No.</th>
-                        <th>Total Roll</th>
-                        <th>Total Loop</th>
-                        <th>Booked Roll</th>
-                        <th>Deviation Roll</th>
-                        <th>Action</th>
-                        @if(in_array($user_type,[1,2]))
-                        <th>Delete</th>
-                        @endif
-                    </tr>
-                    
-                </thead>
-                <tbody>
-                    @foreach($items as $item)
-                    <tr>
-                        <td>{{ $item->vendor_name }}</td>
-                        <td>{{ $item->purchase_date }}</td>
-                        <td>{{ $item->vehicle_no }}</td>
-                        <td>{{ $item->total_count - $item->total_loop}}</td>
-                        <td>{{ $item->total_loop}}</td>
-                        <td class="text-info">{{ $item->total_book }}</td>
-                        <td>{{ $item->total_deviation }}</td>
-                        <td> <a  class="btn btn-sm btn-primary" href="{{ url('roll/transit/dtl/' . $item->vender_id.'?purchase_date='.$item->purchase_date.'&vehicle_no='.$item->vehicle_no) }}">View</a></td>
-                        @if(in_array($user_type,[1,2]))
-                        <td> <button type="button" class="btn btn-sm btn-danger" onclick="{{$item->deletesAction}}">Delete</button></td>
-                        @endif
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <div class="tableStickyDiv">
+                <table id="example" class="table table-striped table-bordered" >
+                    <thead>
+                        <tr>
+                            <th>Vendor Name</th>
+                            <th>Purchase Date</th>
+                            <th>Vehicle No.</th>
+                            <th>Total Roll</th>
+                            <th>Total Loop</th>
+                            <th>Booked Roll</th>
+                            <th>Deviation Roll</th>
+                            <th>Action</th>
+                            @if(in_array($user_type,[1,2]))
+                            <th>Delete</th>
+                            @endif
+                        </tr>
+                        
+                    </thead>
+                    <tbody>
+                        @foreach($items as $item)
+                        <tr>
+                            <td>{{ $item->vendor_name }}</td>
+                            <td>{{ $item->purchase_date }}</td>
+                            <td>{{ $item->vehicle_no }}</td>
+                            <td>{{ $item->total_count - $item->total_loop}}</td>
+                            <td>{{ $item->total_loop}}</td>
+                            <td class="text-info">{{ $item->total_book }}</td>
+                            <td>{{ $item->total_deviation }}</td>
+                            <td> <a  class="btn btn-sm btn-primary" href="{{ url('roll/transit/dtl/' . $item->vender_id.'?purchase_date='.$item->purchase_date.'&vehicle_no='.$item->vehicle_no) }}">View</a></td>
+                            @if(in_array($user_type,[1,2]))
+                            <td> <button type="button" class="btn btn-sm btn-danger" onclick="{{$item->deletesAction}}">Delete</button></td>
+                            @endif
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     <x-roll-form />
