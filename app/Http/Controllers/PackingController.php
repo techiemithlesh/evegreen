@@ -114,10 +114,11 @@ class PackingController extends Controller
             "),"packing.order_id","order_punch_details.id")
             ->where("order_punch_details.is_delivered",false)
             ->where("order_punch_details.is_wip_disbursed",false)
+            ->where("order_punch_details.lock_status",false)
             ->where(DB::raw("COALESCE(roll.roll_weight,0) - COALESCE(packing.packing_weight,0) - COALESCE(garbage.total_garbage,0)"),">",0)
             ->orderBy("order_punch_details.id")
             ->get()
-            ->map(function($val){
+            ->map(function($val){            
                 $gsm_json = $val->bag_gsm;
                 $val->packing_date = $val->packing_date ? Carbon::parse($val->packing_date)->format("d-m-Y") : "";
                 $val->bag_printing_color = collect(json_decode($val->bag_printing_color,true))->implode(",") ;
@@ -129,7 +130,7 @@ class PackingController extends Controller
                 $val->loop_weight = 0;
                 $rolls = $this->_M_RollDetail->whereIn("id",explode(",",$val->roll_ids))->get();
                 $totalPieces =0;
-                foreach($rolls as $roll){
+                foreach($rolls as $roll){                    
                     $bag = $this->_M_BagType->find($roll->bag_type_id);
                     $formula = $bag->roll_find;
                     $formula2 = $bag->roll_find_as_weight;
@@ -173,7 +174,7 @@ class PackingController extends Controller
                 $rs = Config::get("customConfig.BagTypeIdealWeightFormula.".$val->bag_type_id)["RS"]??"";
                 $val->valueObject = [
                     "RS"=>$rs,
-                    "GSM"=>$gsm->sum()/$gsm->count(),
+                    "GSM"=>$gsm->sum()/($gsm->count()!=0?$gsm->count():1),
                     "X"=>"*",
                     "*"=>"*",
                     "x"=>"*",
@@ -185,7 +186,7 @@ class PackingController extends Controller
                     "G"=>$val->bag_g??0,
                 ];
                 $val->formula_ideal_weight = $this->_M_BagType->find($val->bag_type_id)->weight_of_bag_per_piece;                
-                $val->weight_per_bag = ($val->roll_weight + $val->loop_weight - $val->total_garbage)/$val->total_pieces;
+                $val->weight_per_bag = ($val->roll_weight + $val->loop_weight - $val->total_garbage - $loopBagGar )/$val->total_pieces;
                 
                 return $val;
 

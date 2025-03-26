@@ -18,7 +18,8 @@
         <div class="panel-heading">
             <h5 class="panel-title">Roll List</h5>
             <!-- <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rollSwapSwapModal">Swap The Roll</button> -->
-            <button class="btn btn-primary" onclick="swapSelectedRoll()">Swap The Roll</button>
+            <button class="panel-control btn btn-primary" onclick="swapSelectedRoll()">Swap The Roll</button>
+            <!-- <input ty class="panel-control btn btn-primary" onclick="swapSelectedRoll()">Swap The Roll</button> -->
         </div>
         <div class="panel-body">
             <input type="hidden" id="selectedRollId">

@@ -454,6 +454,16 @@
                         return $("#bagQuality").val()!=="BOPP"
                     },
                 },
+                // bagGsm:{
+                //     required: function(){
+                //         return $("#bagQuality").val()!=="BOPP"
+                //     },
+                // },
+                // bagGsmJson:{
+                //     required: function(){
+                //         return $("#bagQuality").val()=="BOPP"
+                //     },
+                // },
                 roll_id:{
                     required:true,
                 }
@@ -1082,16 +1092,20 @@
     }
 
     function showHidePrintingColorDiv(){
+        $("#bagGsm").attr("required",false);
+        $("#bagGsmJson").attr("required",false);
         if($("#bagQuality").val()=="BOPP" || $("#bagQuality").val()=="LAM"){
             $("#bookingPrintingColorDiv").hide();
             $("#singleGsm").hide();
             $("#multipleGsm").show();
             $("#bagGsm").val("");
+            $("#bagGsmJson").attr("required",true);
         }else{
             $("#bookingPrintingColorDiv").show();
             $("#singleGsm").show();
             $("#multipleGsm").hide();
             $("#bagGsmJson").val("");
+            $("#bagGsm").attr("required",true);
         }
         setGsm();
     }
