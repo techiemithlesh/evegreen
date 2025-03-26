@@ -104,10 +104,12 @@
                             <table class="table table-striped table-bordered table-responsive table-fixed">
                                 <thead>
                                     <th>Roll No</th>
-                                    <th>Punches Date</th>
+                                    <!-- <th>Punches Date</th> -->
                                     <th>Roll Size</th>
                                     <th>Roll Color</th>
                                     <th>Client Name</th>
+                                    <th>Bag Size</th>
+                                    <th>Bag Type</th>
                                     <th>Printing Color</th>
                                     <!-- <th>Garbage In Kg</th>                         -->
                                     <th>Remove</th>
@@ -259,10 +261,11 @@
                                 <td>
                                     <input type='hidden' name='roll[${sl}][id]' value='${roll.id}' />${roll.roll_no}
                                 </td>
-                                <td>${roll.purchase_date}</td>
                                 <td>${roll.size}</td>
                                 <td>${roll.roll_color}</td>
                                 <td>${roll.client_name}</td>
+                                <td>${roll.bag_size}</td>
+                                <td>${roll.bag_type}</td>
                                 <td>${roll.printing_color}</td>
                                 <!-- <td>
                                     <input type='text' name='roll[${sl}][totalQtr]' id='totalQtr${rowId}' class='form-control dynamic-field' onkeypress="return isNumDot(event);" required />

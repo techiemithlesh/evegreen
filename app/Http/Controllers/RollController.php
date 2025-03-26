@@ -1640,6 +1640,8 @@ class RollController extends Controller
             }
             if($data){
                 $data->printing_color = collect(json_decode($data->printing_color,true))->implode(",");
+                $data->bag_type = $data->getBagType()->first()->bag_type??"";
+                $data->bag_size = (float)$data->w." x ".(float)$data->l.($data->g ?(" x ".(float)$data->g) :"");
             }
             return responseMsgs(true,$message,$data);
         }catch(Exception $e){
@@ -1689,6 +1691,8 @@ class RollController extends Controller
                     $message = "Roll Already Cut";
                 }
             }
+            $data->bag_type = $data->getBagType()->first()->bag_type??"";
+            $data->bag_size = (float)$data->w." x ".(float)$data->l.($data->g ?(" x ".(float)$data->g) :"");
             return responseMsgs(true,$message,$data);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
