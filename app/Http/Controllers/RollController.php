@@ -734,7 +734,10 @@ class RollController extends Controller
                         $join->on("cutting_schedule_details.roll_id","=","roll_details.id")
                         ->where("cutting_schedule_details.lock_status",false);
                     })
-                    ->where("roll_details.lock_status",false);                    
+                    ->where("roll_details.lock_status",false);  
+            if($request->printedRollOnly){
+                $data->where("roll_details.is_printed",true);
+            }                  
             if($flag!="register"){
                 $data->where("roll_details.is_cut",false);
             }
@@ -784,9 +787,7 @@ class RollController extends Controller
             else{
                 $data->orderBy("roll_details.id","DESC");
             }
-            // if($flag=="booking"){
-            //     $data->whereNull("roll_details.for_client_id");
-            // }
+            
             if ($request->has('export')) {
                 // Skip pagination when exporting
                 $data = $data->get();
@@ -811,6 +812,10 @@ class RollController extends Controller
                         ->orWhere('bag_type_masters.bag_type', 'LIKE', "%$search%");  // Assuming ststop is a field to search
                 });
             }
+            $data = $data->get();
+            $summary=[
+                "totalWeight"=>roundFigure($data->sum("net_weight")),
+            ];
             // DB::enableQueryLog();
             $list = DataTables::of($data)
                 ->addIndexColumn()
@@ -923,6 +928,7 @@ class RollController extends Controller
                     return $button;
                 })
                 ->rawColumns(['row_color', 'action'])
+                ->with($summary)
                 ->make(true);
                 // dd(DB::getQueryLog());
             return $list;

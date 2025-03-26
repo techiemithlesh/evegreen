@@ -18,10 +18,19 @@
         <div class="panel-heading">
             <h5 class="panel-title">Roll List</h5>
             <!-- <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rollSwapSwapModal">Swap The Roll</button> -->
-            <button class="panel-control btn btn-primary" onclick="swapSelectedRoll()">Swap The Roll</button>
-            <!-- <input ty class="panel-control btn btn-primary" onclick="swapSelectedRoll()">Swap The Roll</button> -->
+             <div class="panel-control">
+
+                 <div class="form-check form-switch" style="cursor:pointer">
+                    <label class="form-check-label" for="printedRollOnly">Only Printed</label> <input class="form-check-input" type="checkbox" id="printedRollOnly" name="printedRollOnly" onclick="searchData()" />
+                 </div>
+                 <button class="btn btn-primary" onclick="swapSelectedRoll()">Swap The Roll</button>
+             </div>
+            
         </div>
         <div class="panel-body">
+            <div class="panel-control justify-content-end">
+                <span class="fw-bold">Total Weight: </span><span id="total_weight">0</span>
+            </div>
             <input type="hidden" id="selectedRollId">
             <div class="tableStickyDiv">
                 <table id="postsTable" class="table table-striped table-bordered text-center table-fixed">
@@ -135,7 +144,16 @@
                     $.each(formData, function(i, field) {
                         d[field.name] = field.value; // Corrected: use d[field.name] instead of d.field.name
                     });
+                    if($("#printedRollOnly").is(":checked")){
+                        d["printedRollOnly"] = $("#printedRollOnly").is(":checked");
+                    }
 
+                },
+                dataSrc: function (json) {
+                    // Get extra data from server
+                    // $('#totalAmount').text(json?.totalAmount.toFixed(2)); 
+                    $('#total_weight').text(json?.totalWeight); 
+                    return json.data;
                 },
                 beforeSend: function() {
                     $("#btn_search").val("LOADING ...");
