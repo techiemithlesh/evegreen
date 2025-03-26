@@ -183,6 +183,7 @@ class RollController extends Controller
                         ->select("roll_transits.vender_id","roll_transits.purchase_date","roll_transits.vehicle_no",
                             "vendor_detail_masters.vendor_name",
                             DB::raw("count(roll_transits.id) as total_count,
+                                    sum(roll_transits.net_weight) as total_net_weight,
                                     count(CASE WHEN roll_transits.size <=2 then roll_transits.id END) as total_loop,
                                     COUNT(CASE WHEN roll_transits.gsm_variation <= (-8/100.0) OR roll_transits.gsm_variation >= (8/100.0)  THEN roll_transits.id END) AS total_deviation,
                                     count( CASE WHEN roll_transits.client_detail_id IS NOT NULL THEN roll_transits.id END ) as total_book 
@@ -257,6 +258,10 @@ class RollController extends Controller
                             ->orWhere('bag_type_masters.bag_type', 'LIKE', "%$search%");  // Assuming ststop is a field to search
                     });
                 }
+                $data = $data->get();
+                $summary=[
+                    "totalWeight"=> roundFigure($data->sum("net_weight")),
+                ];
                 $list = DataTables::of($data)
                     ->addIndexColumn()
                     ->addColumn("check",function ($val) {
@@ -330,6 +335,7 @@ class RollController extends Controller
                         return $button;
                     })
                     ->rawColumns(['action','color',"check"])
+                    ->with($summary)
                     ->make(true);
                 return $list;
 

@@ -18,7 +18,7 @@
     </div>
     <div class="container">
         <div class="panel-heading">
-            <h5 class="panel-title">List  (<span style="color:aliceblue"> {{$vender->vendor_name??""}} <i style="font-size: small;">{{$purchase_date}}</i></span>) </h5>
+            <h5 class="panel-title">List  (<span style="color:aliceblue"> {{$vender->vendor_name??""}} <i style="font-size: small;">{{$purchase_date}}</i> <i style="font-size: small;">total Weight :</i> <i id="total_weight" style="font-size: small;"></i> </span>) </h5>
             <div class="panel-control">
                 @if($addToRollInStock??false)
                 <button id="addRoll" type="button" class="btn btn-primary fa fa-arrow-right" onclick="transferToRollStock()">
@@ -83,6 +83,12 @@
                     $.each(formData, function (i, field) {
                         d[field.name] = field.value;
                     });
+                },
+                dataSrc: function (json) {
+                    // Get extra data from server
+                    // $('#totalAmount').text(json?.totalAmount.toFixed(2)); 
+                    $('#total_weight').text(json?.totalWeight); 
+                    return json.data;
                 },
                 beforeSend: function () {
                     $("#btn_search").val("LOADING ...");
