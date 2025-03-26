@@ -22,4 +22,10 @@ class OrderRollBagType extends Model
         $id= self::create($inputs->all())->id;
         return $id;
     }
+
+    public function getOrder()
+    {
+        return $this->belongsTo(OrderPunchDetail::class, 'order_id', 'id');
+    }
+
 }

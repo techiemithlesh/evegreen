@@ -109,4 +109,10 @@ class RollTransit extends Model
     public function getQualityType(){
         return $this->belongsTo(RollQualityMaster::class,"quality_id","id");
     }
+    public function getOrderRollBagType(){
+        return $this->belongsTo(OrderRollBagType::class,"id",'roll_id')->where("lock_status",false);
+    }
+    public function getOrder(){
+        return $this->hasOneThrough(OrderPunchDetail::class,OrderRollBagType::class,"order_id","id","id","id")->where("order_roll_bag_types.lock_status",false);
+    }
 }

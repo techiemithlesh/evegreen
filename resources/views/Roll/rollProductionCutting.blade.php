@@ -220,7 +220,7 @@
             ignore: [],
             rules: {
                 id: { required: true },
-                "client[][clientId]": { required: true },
+                "client[][orderId]": { required: true },
                 "client[][rollId]": { required: true },
                 "client[][garbage]": { required: true },
             },
@@ -331,7 +331,7 @@
                         return $("<tr>").append(
                             `<td>${val?.client_name}</td>`,
                             `<td>
-                                <input type='hidden' name='client[${index}][clientId]' value='${val?.client_detail_id}' />
+                                <input type='hidden' name='client[${index}][orderId]' value='${val?.order_id}' />
                                 ${rollInput}
                                 <input data-id='${index}' data-item='${val?.total_weight}'  type='text' name='client[${index}][garbage]' id='garbage${index}' class='form-control dynamic-field' 
                                     onkeypress="return isNumDot(event);" onkeyup="calculateGarbagePer(event)" required />

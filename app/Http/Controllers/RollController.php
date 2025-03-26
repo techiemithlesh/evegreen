@@ -1715,17 +1715,24 @@ class RollController extends Controller
         try{
             $rolls = $this->_M_RollDetail->select("*")
                     ->whereIn("id",$request->rollIds)
-                    ->get();
-            $clintIds = $rolls->pluck("client_detail_id")->unique();
+                    ->get()
+                    ->map(function($val){DB::enableQueryLog();
+                        $orderRollBag = $val->getOrderRollBagType()->first();
+                        $val->order_id = $orderRollBag->order_id??"";
+                        $val->client_name = $val->getClient()->first()->client_name??"";
+                        return $val;
+                    });
+            $orderIds = $rolls->pluck("order_id")->unique();
             $data=[];
-            foreach($clintIds as $val){
-                $roll = $rolls->where("client_detail_id",$val)->map(function($item){
+            foreach($orderIds as $val){
+                $roll = $rolls->where("order_id",$val)->map(function($item){
                     $item->weight = $item->weight_after_print ? $item->weight_after_print : $item->net_weight;
                     return $item;
                 });
+                $client_name = $roll->pluck("client_name")->unique();
                 $data[]=[
-                    "client_detail_id"=>$val,
-                    "client_name"=>$this->_M_ClientDetails->find($val)->client_name??"",
+                    "order_id"=>$val,
+                    "client_name"=>$client_name,
                     "roll_ids"=>$roll->pluck("id")->toArray(),
                     "total_weight"=>$roll->sum("weight") ,
                 ];
@@ -1797,7 +1804,7 @@ class RollController extends Controller
                 "roll" => "required|array",
                 "roll.*.id"=>"required|exists:".$this->_M_RollDetail->getTable().",id,lock_status,false,is_cut,false",
                 // "roll.*.totalQtr"=>"required",
-                "client.*.clientId"=>"required",
+                "client.*.orderId"=>"required",
                 "client.*.rollId.*.id"=>"required",
                 "client.*.garbage"=>"required|numeric"
             ];
@@ -1805,7 +1812,7 @@ class RollController extends Controller
             if($validate->fails()){
                 return validationError($validate);
             }
-            // dd($request->all());
+            
             DB::beginTransaction();
             foreach($request->client as $val){
                 $newRequest = new Request();
@@ -1816,13 +1823,15 @@ class RollController extends Controller
                         return $item;
                     });
                 $garbagePercent = (($val["garbage"]/$rolls->sum("weight"))/100);
+                $clientId = ($rolls->pluck("client_detail_id")->unique())->first();
                 $newRequest->merge([
                     "machine_id"=>$request->id,
                     "cutting_date"=>$request->cuttingUpdate,
                     "operator_id" => $request->operatorId,
                     "helper_id" => $request->helperId,
                     "shift" => $request->shift,
-                    "client_id" => $val["clientId"],
+                    "client_id" => $clientId,
+                    "order_id" => $val["orderId"],
                     "user_id" => Auth()->user()->id,
                     "garbage" => $val["garbage"],
                     "roll_weight"=>$rolls->sum("weight"),
@@ -1847,7 +1856,6 @@ class RollController extends Controller
                     $id = $this->_M_GarbageAcceptRegister->store($newRequest);
                 }
             }
-            
             DB::commit();
             return responseMsgs(true,"Cutting Roll Enter","");
 
