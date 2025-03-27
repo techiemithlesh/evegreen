@@ -28,6 +28,7 @@
                                 <th>Bag Color</th>
                                 <th>Bag GSM</th>
                                 <th>Total Bag Weight</th>
+                                <th>Total Bag In Pieces</th>
                                 <th>Unit</th>
                                 <th>Action</th>
                             </tr>
@@ -78,6 +79,7 @@
                 { data: "bag_color", name: "bag_color" },
                 { data: "bag_gsm", name: "bag_gsm" },
                 { data: null,name: "balance",render: function(row, type, data) { return parseFloat(data.balance).toFixed(2);}},
+                { data: null,name: "balance_in_pieces",render: function(row, type, data) { return (data.balance_in_pieces ? data?.balance_in_pieces : "N/A");}},
                 { data: "units", name: "units" },
                 { data: null, orderable: false, searchable: false, render: function(row, type, data) {
                         return `
@@ -121,9 +123,36 @@
                 },
             },
             submitHandler: function(form) {
-                entryFormSubmit();
+                let testIdealWeight = false;
+                let message = "";
+
+                $(".idealWeight").each((index, element) => { 
+                    let $element = $(element);
+                    console.log($element.attr("id"));  // Logs the ID of the idealWeight input
+                    
+                    // Get values and convert them to numbers
+                    let bagWeight = parseFloat($element.closest("tr").find('input[name*="[weight]"]').val()) || 0;
+                    let idealWeight = parseFloat($element.val()) || 0;
+                    
+                    // Check if the absolute difference is greater than 1
+                    if (Math.abs(bagWeight - idealWeight) > 1) {
+                        testIdealWeight = true;
+                        message = "Bag weight and Ideal weight mismatch. Are you sure you want to submit?";
+                    }
+                });
+
+                if (testIdealWeight) {
+                    if (confirm(message)) {                        
+                        entryFormSubmit();
+                    } else {
+                        return false; // Prevents form submission
+                    }
+                } else {                    
+                    entryFormSubmit();
+                }
             }
         });
+
     });
 
     let sl = 0;
@@ -139,22 +168,30 @@
         let formula = item?.formula_ideal_weight;
         let valueObj = item?.valueObject;
  
-
-        let tr = $("<tr>").attr("data-id", item.id)
-            .append(`
+        let is_piece = item.units === 'Piece'?true:false;
+        let colspan = 2;
+        let td = "";
+        if(is_piece){
+            colspan=0;
+            td+=` 
                 <td>
+                    <input data-id="${sl}" type='text' class="form-control" style="width:100px" placeholder="Piece" id='roll_${sl}_pieces' name='roll[${sl}][pieces]' ${item.units === 'Piece' ? 'required' : ''} onkeypress="return isNumDot(event);" onkeyup="calculateIdealWeight(event,${id})" />
+                    <span class="error-text" id="roll_${sl}_pieces-error"></span>
+                </td>                
+                <td>
+                    <input type='text' class="form-control idealWeight" style="width:100px" placeholder="IdealWeight" id='roll_${sl}_idealWeight' name='roll[${sl}][idealWeight]' readonly value='' />
+                </td>
+            `;
+        }
+        td+=`
+                <td colspan='${colspan}'>
                     <input type='hidden' name='roll[${sl}][id]' value='${item.id}' />
                     <input type='text' class="form-control" style="width:100px" placeholder="Weight" id='roll_${sl}_weight' name='roll[${sl}][weight]' required onkeypress="return isNumDot(event);" onkeyup="addColorInput(${sl})" />
                     <span class="error-text" id="roll_${sl}_weight-error"></span>
                 </td>
-                <td>
-                    <input type='text' class="form-control" style="width:100px" placeholder="IdealWeight" id='roll_${sl}_idealWeight' name='roll[${sl}][idealWeight]' readonly value='' />
-                </td> 
-                <td>
-                    <input data-id="${sl}" type='text' class="form-control" style="width:100px" placeholder="Piece" id='roll_${sl}_pieces' name='roll[${sl}][pieces]' ${item.units === 'Piece' ? 'required' : ''} onkeypress="return isNumDot(event);" onkeyup="calculateIdealWeight(event,${id})" />
-                    <span class="error-text" id="roll_${sl}_pieces-error"></span>
-                </td>
-                                               
+        `;
+        let tr = $("<tr>").attr("data-id", item.id)
+            .append(`${td}                           
                 <td><button type='button' onclick='removeTr(this, ${id})' class='btn btn-sm btn-warning'>X</button></td>
             `);
         
@@ -222,7 +259,7 @@
             url:"{{route('packing.wip.disburse.order')}}",
             type:"post",
             dataType:"json",
-            data:{"id":orderId,"balance":item.balance},
+            data:{"id":orderId,"balance":item.balance,"balance_pieces":item.balance_in_pieces,"roll_ids":item.roll_ids},
             beforeSend:function(){
                 $("#loadingDiv").show();
             },

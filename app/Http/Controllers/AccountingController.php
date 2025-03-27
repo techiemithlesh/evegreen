@@ -30,7 +30,7 @@ class AccountingController extends Controller
 
     public function garbageVerification(Request $request){
         if($request->ajax()){
-            $data = $this->_M_GarbageEntry->select("garbage_entries.*","c.client_name")
+            $data = $this->_M_GarbageEntry->select("garbage_entries.*","c.client_name","(garbage/ (CASE WHEN roll_weight=0 THEN 1 ELSE roll_weight END))*100) AS garbage_per")
                     ->join("client_detail_masters as c","c.id","garbage_entries.client_id")
                     ->where("garbage_entries.lock_status",false)
                     ->where("garbage_entries.is_verify",false)

@@ -10,6 +10,7 @@ use App\Models\BagPackingTransportDetail;
 use App\Models\BagTypeMaster;
 use App\Models\ChalanDtl;
 use App\Models\ClientDetailMaster;
+use App\Models\GarbageEntry;
 use App\Models\OrderPunchDetail;
 use App\Models\RateTypeMaster;
 use App\Models\RollDetail;
@@ -44,6 +45,7 @@ class PackingController extends Controller
     protected $_M_Transporter;
     protected $_M_RateType;
     protected $_M_ChalanDtl;
+    protected $_M_GarbageEntry;
     function __construct()
     {
         $this->_M_RollDetail = new RollDetail();
@@ -57,6 +59,7 @@ class PackingController extends Controller
         $this->_M_Transporter = new TransporterDetail();
         $this->_M_RateType = new RateTypeMaster();
         $this->_M_ChalanDtl = new ChalanDtl();
+        $this->_M_GarbageEntry = new GarbageEntry();
     }
 
     public function packingEnter(Request $request){
@@ -115,11 +118,14 @@ class PackingController extends Controller
             ->where("order_punch_details.is_delivered",false)
             ->where("order_punch_details.is_wip_disbursed",false)
             ->where("order_punch_details.lock_status",false)
+            // ->where("order_punch_details.id",261)
             ->where(DB::raw("COALESCE(roll.roll_weight,0) - COALESCE(packing.packing_weight,0) - COALESCE(garbage.total_garbage,0)"),">",0)
             ->orderBy("order_punch_details.id")
             ->get()
             ->map(function($val){            
                 $gsm_json = $val->bag_gsm;
+                $val->alt_bag_gsm = collect(json_decode($val->alt_bag_gsm,true))->implode(",");
+                $val->alt_bag_color = collect(json_decode($val->alt_bag_color,true))->implode(",");
                 $val->packing_date = $val->packing_date ? Carbon::parse($val->packing_date)->format("d-m-Y") : "";
                 $val->bag_printing_color = collect(json_decode($val->bag_printing_color,true))->implode(",") ;
                 $val->bag_color = collect(json_decode($val->bag_color,true))->implode(",") ;
@@ -159,34 +165,28 @@ class PackingController extends Controller
                     $result2 = $this->calculatePossibleProduction($newRequest2);
                     $totalPieces += ((($result["result"]??0)+($result2["result"]??0))/2);
                 }
-                $val->total_pieces =  $totalPieces ;
+                $oneKg = $totalPieces/$val->roll_weight;
+                $garbagePec = $oneKg * $val->total_garbage;
+                $totalProductPieces = round($totalPieces - $garbagePec);                
+                $val->total_pieces =  $totalProductPieces ;
                 $val->loop_weight = 0;
                 if(in_array($val->bag_type_id,[2,4,5])){
-                    $val->loop_weight = (($totalPieces*3.4)/1000); # convert it in kg
+                    $val->loop_weight = (($totalProductPieces*3.4)/1000); # convert it in kg
                 }
-                $loopBagGar = 0;
+                $uCuteGarbage = 0;
                 if($val->bag_type_id==3){
-                    $loopBagGar = (($val->roll_weight-$val->total_garbage)*0.1);
+                    $uCuteGarbage = (($val->roll_weight - $val->total_garbage)*0.1);
                 }
-                $val->loop_garbage = $loopBagGar;
-                $val->balance = roundFigure($val->roll_weight + $val->loop_weight - $val->packing_weight - $val->total_garbage -$loopBagGar);
+                $val->u_cute_garbage = $uCuteGarbage;
+                $val->balance = roundFigure($val->roll_weight + $val->loop_weight - $val->packing_weight - $val->total_garbage -$uCuteGarbage);
+                $val->balance_in_pieces = 0;
+                if($val->units!="Kg"){
+                    $val->balance_in_pieces = $val->total_pieces - $val->packing_bag_pieces;
+                }
                 $gsm = collect(json_decode($gsm_json,true));
-                $rs = Config::get("customConfig.BagTypeIdealWeightFormula.".$val->bag_type_id)["RS"]??"";
-                $val->valueObject = [
-                    "RS"=>$rs,
-                    "GSM"=>$gsm->sum()/($gsm->count()!=0?$gsm->count():1),
-                    "X"=>"*",
-                    "*"=>"*",
-                    "x"=>"*",
-                    "/"=>"/",
-                    "+"=>"+",
-                    "-"=>"-",
-                    "L"=>$val->bag_l,
-                    "W"=>$val->bag_w,
-                    "G"=>$val->bag_g??0,
-                ];
+                $rs = Config::get("customConfig.BagTypeIdealWeightFormula.".$val->bag_type_id)["RS"]??"";                
                 $val->formula_ideal_weight = $this->_M_BagType->find($val->bag_type_id)->weight_of_bag_per_piece;                
-                $val->weight_per_bag = ($val->roll_weight + $val->loop_weight - $val->total_garbage - $loopBagGar )/$val->total_pieces;
+                $val->weight_per_bag = ($val->roll_weight + $val->loop_weight - $val->total_garbage - $uCuteGarbage )/$val->total_pieces;
                 
                 return $val;
 
@@ -212,11 +212,30 @@ class PackingController extends Controller
             $order = $this->_M_OrderPunchDetail->find($request->id);
             $order->is_wip_disbursed = true;
             $order->wip_disbursed_units =$request->balance;
+            $order->wip_disbursed_pieces = $request->balance_pieces ? $request->balance_pieces : null ;
             $order->wip_disbursed_by = Auth::user()->id??null;
             $order->wip_disbursed_date= Carbon::now();
-
+            $garbageEnter = $this->_M_GarbageEntry->where("order_id",$order->id)->where('lock_status',false)->first();
+            $rolls = $this->_M_RollDetail->whereIn("id",explode(",",$request->roll_ids))->get()->map(function($item){
+                $item->weight = $item->weight_after_print ? $item->weight_after_print : $item->net_weight;
+                return $item;
+            });
+            if(!$garbageEnter){
+                $this->_M_GarbageEntry->where("client_id ",$order->client_detail_id)->whereNull("wip_disbursed_in_kg")->where('lock_status',false)->first();
+            }
+            if($garbageEnter){
+                $garbageEnter->wip_disbursed_in_kg = $request->balance;
+                $garbageEnter->wip_disbursed = $request->wip_disbursed_pieces ? $request->wip_disbursed_pieces : null ;
+                $garbagePercent = ((($garbageEnter->garbage + $garbageEnter->wip_disbursed_in_kg) / $rolls->sum("weight"))*100);
+                if(!is_between($garbagePercent,-2,2)){
+                    $garbageEnter->is_verify = false;
+                }
+            }
             DB::beginTransaction();
             $order->update();
+            if($garbageEnter){
+                $garbageEnter->update();
+            }
             DB::commit();
             return responseMsgs(true,"Data Update","");
         }catch(Exception $e){
@@ -253,7 +272,7 @@ class PackingController extends Controller
                 $newRequest = new Request();
                 $newRequest->merge([
                     "packing_weight"=>$val["weight"],
-                    "packing_bag_pieces"=>$val["pieces"],
+                    "packing_bag_pieces"=>$val["pieces"]??null,
                     "order_id"=>$val["id"],
                     "user_id"=>$user->id,
                 ]);
@@ -322,7 +341,7 @@ class PackingController extends Controller
                 $newRequest = new Request();
                 $newRequest->merge([
                     "packing_weight"=>$val["weight"],
-                    "packing_bag_pieces"=>$val["pieces"],
+                    "packing_bag_pieces"=>$val["pieces"]??null,
                     "roll_id"=>$val["id"],
                     "user_id"=>$user->id,
                 ]);

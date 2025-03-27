@@ -1822,7 +1822,7 @@ class RollController extends Controller
                         $item->weight = $item->weight_after_print ? $item->weight_after_print : $item->net_weight;
                         return $item;
                     });
-                $garbagePercent = (($val["garbage"]/$rolls->sum("weight"))/100);
+                $garbagePercent = (($val["garbage"]/$rolls->sum("weight"))*100);
                 $clientId = ($rolls->pluck("client_detail_id")->unique())->first();
                 $newRequest->merge([
                     "machine_id"=>$request->id,
@@ -1835,7 +1835,7 @@ class RollController extends Controller
                     "user_id" => Auth()->user()->id,
                     "garbage" => $val["garbage"],
                     "roll_weight"=>$rolls->sum("weight"),
-                    "is_verify" => is_between($garbagePercent,-2,2) ? false : true,
+                    "is_verify" => is_between($garbagePercent,-2,2) ? true : false,
                 ]);
                 $garbageId = $this->_M_GarbageEntry->store($newRequest);
                 $averageGarbage = $val["garbage"]/$rolls->count();
