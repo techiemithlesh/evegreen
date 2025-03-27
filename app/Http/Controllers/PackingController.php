@@ -227,7 +227,7 @@ class PackingController extends Controller
                 $garbageEnter->wip_disbursed_in_kg = $request->balance;
                 $garbageEnter->wip_disbursed = $request->wip_disbursed_pieces ? $request->wip_disbursed_pieces : null ;
                 $garbagePercent = ((($garbageEnter->garbage + $garbageEnter->wip_disbursed_in_kg) / $rolls->sum("weight"))*100);
-                if(!is_between($garbagePercent,-2,2)){
+                if(!is_between($garbagePercent,-2,2) && $garbageEnter->is_verify){
                     $garbageEnter->is_verify = false;
                 }
             }

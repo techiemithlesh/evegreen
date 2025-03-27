@@ -30,7 +30,9 @@ class AccountingController extends Controller
 
     public function garbageVerification(Request $request){
         if($request->ajax()){
-            $data = $this->_M_GarbageEntry->select("garbage_entries.*","c.client_name","(garbage/ (CASE WHEN roll_weight=0 THEN 1 ELSE roll_weight END))*100) AS garbage_per")
+            $data = $this->_M_GarbageEntry->select("garbage_entries.*","c.client_name",
+                        DB::raw("((garbage/ (CASE WHEN roll_weight=0 THEN 1 ELSE roll_weight END))*100) AS garbage_per")
+                    )
                     ->join("client_detail_masters as c","c.id","garbage_entries.client_id")
                     ->where("garbage_entries.lock_status",false)
                     ->where("garbage_entries.is_verify",false)
@@ -51,12 +53,18 @@ class AccountingController extends Controller
                 ->addColumn("percent",function($val){
                     return roundFigure($val->roll_weight ? ($val->garbage/$val->roll_weight)*100 :0)." %";
                 })
+                ->addColumn("wip_percent",function($val){
+                    return roundFigure($val->roll_weight ? ($val->wip_disbursed_in_kg/$val->roll_weight)*100 :0)." %";
+                })
+                ->addColumn("total_garbage",function($val){
+                    return roundFigure($val->garbage +  $val->wip_disbursed_in_kg);
+                })
                 ->addColumn("machine",function($val) use($machine){
                     return $machine->where("id",$val->machine_id)->first()->name??"";                       
                 })
                 ->addColumn('action', function ($val){                    
                     $button = "";
-                    if(!$val->is_cut){
+                    if(is_between($val->garbage_per,-2,2) && $val->wip_disbursed_in_kg){
                         $button .= '<button class="btn btn-sm btn-warning" onClick="openModel('.$val->id.')" >Update</button>';
                     }                    
                     return $button;

@@ -27,6 +27,9 @@
                             <th>Helper</th>
                             <th>Garbage</th>
                             <th>%</th>
+                            <th>WIP Garbage</th>
+                            <th>%</th>
+                            <th>Total Garbage</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -79,6 +82,9 @@
                 { data: "helper_name", name: "helper_name"},
                 { data: "garbage", name: "garbage"},
                 { data: "percent", name: "percent"},
+                { data: "wip_disbursed_in_kg", name: "wip_disbursed_in_kg"},
+                { data: "wip_percent", name: "wip_percent"},
+                { data: "total_garbage", name: "total_garbage"},
                 { data: "action", name: "action", orderable: false, searchable: false},
             ],
             initComplete: function () {
