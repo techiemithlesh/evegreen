@@ -93,6 +93,7 @@
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
+            ordering:false,
             ajax: {
                 // url: "{{route('roll.list',':flag')}}".replace(':flag', flag), // The route where you're getting data from
                 url:"{{route('roll.register')}}",

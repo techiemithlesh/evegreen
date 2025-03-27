@@ -1060,6 +1060,9 @@ class RollController extends Controller
                 ->addColumn('print_color', function ($val) {                    
                     return collect(json_decode($val->printing_color,true))->implode(",");
                 })
+                ->addColumn('size', function ($val) {                    
+                    return $val->size<=2?"loop":$val->size;
+                })
                 ->addColumn("loop_color",function($val){
                     return"";
                 })
