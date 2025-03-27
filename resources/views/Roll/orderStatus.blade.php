@@ -43,7 +43,7 @@
         </div>
 
         <div class="panel-body">
-            <table id="ordersTable" class="table table-bordered">
+            <table id="ordersTable" class="table table-striped table-bordered text-center table-fixed">
                 <thead class="table-dark">
                     <tr>
                         <th>Order No</th>
@@ -51,7 +51,7 @@
                         <th>Order Date</th>
                         <th>Dispatch Date</th>
                         <th>Status</th>
-                        <th>Flowchart</th>
+                        <th style="width: 100%;">Flowchart</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -116,7 +116,7 @@
             drawCallback: function () {
                 mermaid.init(); // Reinitialize Mermaid on DataTable redraw
                 $(".status-cell").each(function () {
-                    $(this).click();
+                    // $(this).click();
                 });
             },
             initComplete: function () {
@@ -126,7 +126,7 @@
         });
 
         // Toggle flowchart on clicking status
-        $(document).on("click", ".status-cell", function () {
+        $(document).on("click", ".status-cell1", function () {
             let orderId = $(this).data("order-id");
             let flowchartCell = $(".flowchart-cell[data-order-id='" + orderId + "']");
 

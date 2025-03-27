@@ -47,7 +47,7 @@
                 <thead>
                     <tr>
                         <th >#</th>
-                        <!-- <th>Order No</th> -->
+                        <th>Order No</th>
                         <th>Booking Date</th>
                         <th>Estimate Delivery Date</th>
                         <th>Client Name</th>
@@ -99,7 +99,7 @@
 
             columns: [
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                // { data: "order_no", name: "order_no" },
+                { data: "order_no", name: "order_no" },
                 { data: "created_at", name: "created_at" },
                 { data: "estimate_delivery_date", name: "estimate_delivery_date" },
                 { data: "client_name", name: "client_name" },
