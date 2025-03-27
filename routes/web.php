@@ -235,6 +235,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::get("roll/dtl-full/{id}", "rollDtlFull")->name("roll.dtl.full");
         Route::post("roll/schedule/printing", "rollPrintingSchedule")->name("roll.printing.schedule");
         Route::post("roll/printing/update", "rollPrintingUpdate")->name("roll.printing.update");
+        Route::post("roll/printing/delete", "rollPrintingDelete")->name("roll.printing.delete");
         Route::post("roll/schedule/cutting", "rollCuttingSchedule")->name("roll.cutting.schedule");
         Route::post("roll/cutting/update", "rollCuttingUpdate")->name("roll.cutting.update");
 
@@ -265,6 +266,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     Route::controller(PackingController::class)->group(function () {
         Route::get("packing/entry", "packingEnter")->name("packing.entry");
         Route::get("packing/wip", "WIPVerification")->name("packing.wip");
+        Route::post("packing/wip/delete", "deleteWIP")->name("packing.wip.delete");
         Route::post("packing/wip/disburse/order", "disburseOrder")->name("packing.wip.disburse.order");
         Route::post("packing/entry-wip/add", "packingEnterWipAdd")->name("packing.entry.wip.add");
         Route::post("packing/entry/search", "searchRoll")->name("packing.entry.search");

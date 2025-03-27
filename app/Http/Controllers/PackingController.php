@@ -10,6 +10,7 @@ use App\Models\BagPackingTransportDetail;
 use App\Models\BagTypeMaster;
 use App\Models\ChalanDtl;
 use App\Models\ClientDetailMaster;
+use App\Models\GarbageAcceptRegister;
 use App\Models\GarbageEntry;
 use App\Models\OrderPunchDetail;
 use App\Models\RateTypeMaster;
@@ -46,6 +47,7 @@ class PackingController extends Controller
     protected $_M_RateType;
     protected $_M_ChalanDtl;
     protected $_M_GarbageEntry;
+    protected $_M_GarbageAcceptRegister;
     function __construct()
     {
         $this->_M_RollDetail = new RollDetail();
@@ -60,6 +62,7 @@ class PackingController extends Controller
         $this->_M_RateType = new RateTypeMaster();
         $this->_M_ChalanDtl = new ChalanDtl();
         $this->_M_GarbageEntry = new GarbageEntry();
+        $this->_M_GarbageAcceptRegister = new GarbageAcceptRegister();
     }
 
     public function packingEnter(Request $request){
@@ -207,6 +210,47 @@ class PackingController extends Controller
         return view("Packing/wip");
     }
 
+    public function deleteWIP(Request $request){
+        try{
+            $order = $this->_M_OrderPunchDetail->find($request->orderId);
+            $cuttingUpdate = ["is_cut"=>false,"cutting_date"=>null,"weight_after_cutting"=>null,"cutting_machine_id"=>null];
+            $testBag = $this->_M_BagPacking->where("order_id",$order->id)->where("lock_status",false)->get();
+            if($testBag->count()){
+                throw new MyException("All Bag Are Note Delete kindly Delete it first. Bag No are ".$testBag->pluck("packing_no")->implode(","));
+            }
+            $garbageEnter = $this->_M_GarbageEntry->where("order_id",$order->id)->where('lock_status',false)->first();
+            if(!$garbageEnter){
+                $garbageEnter = $this->_M_GarbageEntry->where("client_id",$order->client_detail_id)->whereNotNull("wip_disbursed_in_kg")->where('lock_status',false)->first();
+            }
+            DB::beginTransaction();
+            if($garbageEnter){
+                $garbageEnter->lock_status = true;
+                $garbageEnter->update();
+                $garbageRoll = $this->_M_GarbageAcceptRegister->where("garbage_entry_id",$garbageEnter->id)->get();
+                foreach($garbageRoll as $gr){
+                    $gr->lock_status =true;
+                    $gr->update();
+                }
+            }
+            foreach(explode(",",$request->roll_ids) as $id){
+                $roll = $this->_M_RollDetail->find($id);
+                foreach($cuttingUpdate as $key => $val){
+                    $roll->$key = $val;
+                }
+                $roll->update();
+            }
+            DB::commit();
+            return responseMsg(true,"WIP Deleted","");
+        }catch(MyException $e){
+            DB::rollBack();
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            DB::rollBack();
+            dd($e);
+            return responseMsg(false,"Server Error!!!",'');
+        }
+    }
+
     public function disburseOrder(Request $request){
         try{
             $order = $this->_M_OrderPunchDetail->find($request->id);
@@ -215,13 +259,13 @@ class PackingController extends Controller
             $order->wip_disbursed_pieces = $request->balance_pieces ? $request->balance_pieces : null ;
             $order->wip_disbursed_by = Auth::user()->id??null;
             $order->wip_disbursed_date= Carbon::now();
-            $garbageEnter = $this->_M_GarbageEntry->where("order_id",$order->id)->where('lock_status',false)->first();
             $rolls = $this->_M_RollDetail->whereIn("id",explode(",",$request->roll_ids))->get()->map(function($item){
                 $item->weight = $item->weight_after_print ? $item->weight_after_print : $item->net_weight;
                 return $item;
             });
+            $garbageEnter = $this->_M_GarbageEntry->where("order_id",$order->id)->where('lock_status',false)->first();
             if(!$garbageEnter){
-                $this->_M_GarbageEntry->where("client_id ",$order->client_detail_id)->whereNull("wip_disbursed_in_kg")->where('lock_status',false)->first();
+                $garbageEnter = $this->_M_GarbageEntry->where("client_id",$order->client_detail_id)->whereNull("wip_disbursed_in_kg")->where('lock_status',false)->first();
             }
             if($garbageEnter){
                 $garbageEnter->wip_disbursed_in_kg = $request->balance;
@@ -473,13 +517,20 @@ class PackingController extends Controller
                 throw new MyException("Bag is Dispatch");
             }
             if($order && $order->is_wip_disbursed){
-                throw new MyException("can't Delete the roll because order is verified");
+                throw new MyException("can't Delete the bag because order is verified");
             }
-            $bag->lock_status = true;
+            $message = "Bag Deleted";
+            if($bag->packing_status==$bagStatus["in godown"]){
+                $bag->packing_status = $bagStatus["in factory"];
+                $message.=" From Godown";
+            }else{
+                $bag->lock_status = true;
+                $message.=" From Stock";
+            }
             DB::beginTransaction();
             $bag->update();
             DB::commit();
-            return responseMsg(true,"Bag Deleted","");
+            return responseMsg(true,$message,"");
         }catch(MyException $e){
             return responseMsg(false,$e->getMessage(),"");
         }catch(Exception $e){

@@ -88,6 +88,7 @@
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
+            ordering:false,
             ajax: {
                 url: "{{route('roll.register.cutting',':machineId')}}".replace(':machineId', machineId), // The route where you're getting data from
                 data: function(d) {

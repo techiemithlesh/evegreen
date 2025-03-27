@@ -61,6 +61,7 @@
                             <th>Bag Type</th>
                             <th>Client Name</th>
                             <th>Printing Color</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -84,6 +85,7 @@
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
+            ordering:false,
             ajax: {
                 url: "{{route('roll.register.printing',':machineId')}}".replace(':machineId', machineId), // The route where you're getting data from
                 data: function(d) {
@@ -117,6 +119,7 @@
                 { data : "bag_type", name: "bag_type" },
                 { data : "client_name", name: "client_name" },
                 { data : "print_color", name: "print_color" },
+                { data : "action", name: "action" },
             ],
             dom: 'lBfrtip', // This enables the buttons
             language: {
@@ -149,7 +152,7 @@
                 td.attr("title", data?.gsm_json);
             },     
             initComplete: function () {
-                addFilter('postsTable');
+                addFilter('postsTable',[$("#postsTable thead tr:nth-child(1) th").length - 1]);
             },
         });
 
@@ -157,6 +160,36 @@
 
     function searchData(){
         $('#postsTable').DataTable().ajax.reload();
+    }
+
+    function deletePrintingConform(rollId){
+        showConfirmDialog("Are You Sure Delete From Printing??",function(){ 
+            deletePrinting(rollId);
+        });
+    }
+    function deletePrinting(rollId){
+        $.ajax({
+            url:"{{route('roll.printing.delete')}}",
+            type:"post",
+            dataType:"json",
+            data:{id:rollId},
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(response){
+                $("#loadingDiv").hide();
+                if(response.status){
+                    modelInfo(response?.message);
+                    searchData();
+                }
+                else{
+                    modelInfo(response?.message||"Server Error","Warning");
+                }
+            },
+            error:function(error){
+                $("#loadingDiv").hide();
+            }
+        })
     }
 </script>
 @include("layout.footer")

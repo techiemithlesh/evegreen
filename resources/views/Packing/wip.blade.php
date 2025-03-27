@@ -85,11 +85,16 @@
                         return `
                             <table class="mt-2 table table-bordered table-fixed" style="display:none;" id="table_${data.id}">
                             </table>
-                            <button type="button" data-item='${JSON.stringify(data)}' 
+                            <button type="button" data-item='${JSON.stringify(data)}' title="${parseFloat(parseFloat(data.roll_weight)-parseFloat(data.total_garbage)+parseFloat(data.loop_weight)).toFixed(2)}"
                                     id="button_${data.id}" 
                                     onclick="addTr('${data.id}')" 
-                                    class="btn btn-sm btn-primary">+</button>
+                                    class="btn btn-sm btn-primary">+
+                            </button>
                             <button type="button" class="btn btn-sm btn-danger" onclick="disburseOrderConform(${data.id},'${parseFloat(data.balance).toFixed(2)} Kg')">D</button>
+                            ${
+                            (parseFloat(parseFloat(data.roll_weight)-parseFloat(data.total_garbage)+parseFloat(data.loop_weight)).toFixed(2) == parseFloat(data.balance).toFixed(2))
+                            ?`<button class="btn btn-sm btn-warning" onclick="deleteWipConform(${data.id})">delete</button>`
+                            :""}
                         `;
                     }
                 }
@@ -250,6 +255,42 @@
         showConfirmDialog("Are You Sure Discard "+message+"??",function(){ 
             disburseOrder(orderId);
         });
+    }
+
+    function deleteWipConform(orderId){
+        showConfirmDialog("Are You Sure Delete??",function(){ 
+            deleteWip(orderId);
+        });
+    }
+
+    function deleteWip(orderId){
+        let buttonElement = document.getElementById("button_" + orderId); 
+        let item = JSON.parse(buttonElement.getAttribute('data-item'));
+        $.ajax({
+            url:"{{route('packing.wip.delete')}}",
+            type:"post",
+            dataType:"json",
+            data:{"orderId":orderId,"roll_ids":item.roll_ids},
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(response){
+                console.log(response);                
+                $("#loadingDiv").hide();
+                if(response.status){
+                    modelInfo(response.message);
+                    searchData();
+                }else{
+                    modelInfo(response?.message||"server error!!","error");
+                }
+            },
+            error:function(errors){
+                console.log(errors);
+                modelInfo("server error!!","error");
+                $("#loadingDiv").hide();
+            }
+        });
+
     }
 
     function disburseOrder(orderId){

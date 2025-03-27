@@ -1178,6 +1178,14 @@ class RollController extends Controller
                 ->addColumn("gsm_json",function($val){
                     return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
                 })
+                ->addColumn("action",function($val){
+                    $user = Auth::user();
+                    $action="";
+                    if(in_array($user->user_type_id,[1,2]) && !$val->is_cut){
+                        $action="<button class='btn btn-sm btn-warning' onclick='deletePrintingConform(".$val->id.")'>Delete</button>";
+                    }
+                    return $action;
+                })
                 ->rawColumns(['row_color', 'action'])
                 ->make(true);
             return $list;
@@ -1789,6 +1797,42 @@ class RollController extends Controller
         }catch(Exception $e){
             DB::rollBack();
             return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function rollPrintingDelete(Request $request){
+        try{
+            $roll = $this->_M_RollDetail->find($request->id);
+            if($roll->is_cut){
+                throw new MyException("Roll is cut. Please remove it first.");
+            }
+            $updateCutting = ["is_printed"=>false,"printing_date"=>null,"weight_after_print"=>null,"printing_machine_id"=>null];
+            foreach($updateCutting as $key => $val){
+                $roll->$key = $val;
+            }
+            $printingRegisterDtl = $this->_M_PrintingRegister->where("roll_id",$roll->id)->where("lock_status",false)->first();
+            if($printingRegisterDtl){
+                $printingRegisterDtl->lock_status = true;
+                $printingResistor = $this->_M_PrintingEntry->find($printingRegisterDtl->printing_id);
+                if($this->_M_PrintingRegister->where("id","<>",$printingRegisterDtl->id)->where("printing_id",$printingRegisterDtl->printing_id)->where("lock_status",false)->count()){
+                    $printingResistor->lock_status = true;
+                }
+            }
+            
+            DB::beginTransaction();
+            $roll->update();
+            if($printingRegisterDtl){
+                $printingRegisterDtl->update();
+                $printingResistor->update();
+            }
+            DB::commit();
+            return responseMsg(true,"Roll Printing Deleted","");
+        }catch(MyException $e){
+            DB::rollBook();
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            DB::rollBook();
+            return responseMsg(false,"Server Error!!!","");
         }
     }
 
