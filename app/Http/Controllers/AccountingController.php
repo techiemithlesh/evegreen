@@ -64,7 +64,8 @@ class AccountingController extends Controller
                 })
                 ->addColumn('action', function ($val){                    
                     $button = "";
-                    if(is_between($val->garbage_per,-2,2) && $val->wip_disbursed_in_kg){
+                    $totalGarbege = ($val->roll_weight ? ($val->garbage/$val->roll_weight)*100 :0) + roundFigure($val->roll_weight ? ($val->wip_disbursed_in_kg/$val->roll_weight)*100 :0);
+                    if((!is_between($totalGarbege,-2,2)) && $val->wip_disbursed_in_kg){
                         $button .= '<button class="btn btn-sm btn-warning" onClick="openModel('.$val->id.')" >Update</button>';
                     }                    
                     return $button;

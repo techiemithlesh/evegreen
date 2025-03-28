@@ -78,8 +78,8 @@
                 { data: "bag_type", name: "bag_type" },
                 { data: "bag_color", name: "bag_color" },
                 { data: "bag_gsm", name: "bag_gsm" },
-                { data: null,name: "balance",render: function(row, type, data) { return parseFloat(data.balance).toFixed(2);}},
-                { data: null,name: "balance_in_pieces",render: function(row, type, data) { return (data.balance_in_pieces ? data?.balance_in_pieces : "N/A");}},
+                { data: "balance",name: "balance",render: function(row, type, data) { return parseFloat(data.balance).toFixed(2);}},
+                { data: "balance_in_pieces",name: "balance_in_pieces",render: function(row, type, data) { return (data.balance_in_pieces ? data?.balance_in_pieces : "N/A");}},
                 { data: "units", name: "units" },
                 { data: null, orderable: false, searchable: false, render: function(row, type, data) {
                         return `
