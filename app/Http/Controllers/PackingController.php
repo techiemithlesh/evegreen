@@ -79,7 +79,9 @@ class PackingController extends Controller
     }
 
     public function WIPVerification(Request $request){
-        if($request->ajax()){
+        if($request->ajax())
+        {
+            DB::enableQueryLog();
             $data = $this->_M_OrderPunchDetail
             ->select(DB::raw("order_punch_details.*,client_detail_masters.client_name,bag_type_masters.bag_type,
                             COALESCE(roll_weight,0) as roll_weight,
@@ -122,7 +124,7 @@ class PackingController extends Controller
             ->where("order_punch_details.is_wip_disbursed",false)
             ->where("order_punch_details.lock_status",false)
             // ->where("order_punch_details.id",261)
-            ->where(DB::raw("COALESCE(roll.roll_weight,0) - COALESCE(packing.packing_weight,0) - COALESCE(garbage.total_garbage,0)"),">",0)
+            // ->where(DB::raw("COALESCE(roll.roll_weight,0) - COALESCE(packing.packing_weight,0) - COALESCE(garbage.total_garbage,0)"),">",0)
             ->orderBy("order_punch_details.id")
             ->get()
             ->map(function($val){            
@@ -193,6 +195,8 @@ class PackingController extends Controller
                 
                 return $val;
 
+            })->filter(function ($val) { 
+                return $val->balance > 0 || $val->balance_in_pieces > 0;
             });
             
             $list = DataTables::of($data)
@@ -686,7 +690,7 @@ class PackingController extends Controller
                     $button="";
                     if((!$val->is_wip_disbursed) && (!$val->is_delivered) ){
                         $button.='<button class="btn btn-sm btn-primary" onClick="editBag('.$val->id.')" >E</button>';
-                        $button.='<button class="btn btn-sm btn-danger" onClick="showConfirmDialog('."'Are you sure you want to deactivate this item?', function() { deleteBag($val->id); })".'" >D</button>';
+                        $button.='<button class="btn btn-sm btn-danger" onClick="showConfirmDialog('."'Are you sure you want to Delete this item?', function() { deleteBag($val->id); })".'" >D</button>';
                     } 
                     return $button;
                 })

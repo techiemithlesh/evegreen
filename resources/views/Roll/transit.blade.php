@@ -40,6 +40,7 @@
                             <th>Total Loop</th>
                             <th>Booked Roll</th>
                             <th>Deviation Roll</th>
+                            <th>Total Roll Weight</th>
                             <th>Action</th>
                             @if(in_array($user_type,[1,2]))
                             <th>Delete</th>
@@ -57,6 +58,7 @@
                             <td>{{ $item->total_loop}}</td>
                             <td class="text-info">{{ $item->total_book }}</td>
                             <td>{{ $item->total_deviation }}</td>
+                            <td>{{ $item->total_net_weight }}</td>
                             <td> <a  class="btn btn-sm btn-primary" href="{{ url('roll/transit/dtl/' . $item->vender_id.'?purchase_date='.$item->purchase_date.'&vehicle_no='.$item->vehicle_no) }}">View</a></td>
                             @if(in_array($user_type,[1,2]))
                             <td> <button type="button" class="btn btn-sm btn-danger" onclick="{{$item->deletesAction}}">Delete</button></td>

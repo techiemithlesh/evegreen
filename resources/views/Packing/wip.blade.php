@@ -92,7 +92,7 @@
                             </button>
                             <button type="button" class="btn btn-sm btn-danger" onclick="disburseOrderConform(${data.id},'${parseFloat(data.balance).toFixed(2)} Kg')">D</button>
                             ${
-                            (parseFloat(parseFloat(data.roll_weight)-parseFloat(data.total_garbage)+parseFloat(data.loop_weight)).toFixed(2) == parseFloat(data.balance).toFixed(2))
+                            (parseFloat(parseFloat(data.roll_weight)-parseFloat(data.total_garbage) - parseFloat(data.u_cute_garbage) +parseFloat(data.loop_weight)).toFixed(2) == parseFloat(data.balance).toFixed(2))
                             ?`<button class="btn btn-sm btn-warning" onclick="deleteWipConform(${data.id})">delete</button>`
                             :""}
                         `;
