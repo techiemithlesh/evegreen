@@ -148,9 +148,14 @@
                 dataType: "json",
                 delay: 250, // Delay to reduce requests
                 data: function (params) {
+                    let rollId = [];
+                    $("input[type='hidden'][id^='roll_id_']").each(function () {
+                        rollId.push($(this).val());
+                    });
                     return {
                         rollNo: params.term, // Send search term to the server
-                        machineId:machineId
+                        machineId:machineId,
+                        rollId:rollId,
                     };
                 },
                 processResults: function (response) {
@@ -185,10 +190,36 @@
             },
             submitHandler: function (form) {
                 // If form is valid, submit it
-                updateRollPrinting();
+                if(testRatio()){
+                    updateRollPrinting();
+                }
             }
         });
     });
+
+    function testRatio(){
+        let isValid = true;
+        $("#printingRoll table tr").each(function () {
+            let totalPercent = 100;
+            let dataId = $(this).attr("data-id");
+            console.log(dataId);
+            let id = $(this).attr("id");
+            if (!dataId) {
+                return; // Continue to the next iteration
+            }
+
+            $(`#${id} input[data-id='${dataId}']`).each(function () {
+                totalPercent -= ($(this).val() ? parseFloat($(this).val()) : 0);
+            });
+
+            if (totalPercent !== 0) {
+                alert($(this).attr("data-item") + " has no valid color ratio");
+                isValid = false;
+                return false; // Break `.each()` loop
+            }
+        });
+        return isValid;
+    }
 
     function searchPrinting(){
         let rollNo = $("#rollNo").val();
@@ -217,13 +248,13 @@
                         const rowId = `row${sl}`;
                         const colors = roll.printing_color.split(",");
                         const colorInputs = colors.map((color, index) => {
-                            return `<input value="${colors.length==1?100:''}" ${colors.length==1?'readonly':''} type='text' name='roll[${sl}][color][${index}]' id='color${index}_${rowId}' class='form-control dynamic-field' required onkeypress="return isNumDot(event);" placeholder='${color}' /> <input type='hidden' name='roll[${sl}][colorName][${index}]' value='${color}' />`;
+                            return `<input data-id="${sl}" value="${colors.length==1?100:''}" ${colors.length==1?'readonly':''} type='text' name='roll[${sl}][color][${index}]' id='color${index}_${rowId}' class='form-control dynamic-field' required onkeypress="return isNumDot(event);" onchange="calculatePercentNext(event)" placeholder='${color}' /> <input type='hidden' name='roll[${sl}][colorName][${index}]' value='${color}' />`;
                         }).join("");
 
                         let row = `
-                            <tr id='${rowId}'>
+                            <tr id='${rowId}' data-id="${sl}" data-item="${roll.roll_no}">
                                 <td>
-                                    <input type='hidden' name='roll[${sl}][id]' value='${roll.id}' />${roll.roll_no}
+                                    <input type='hidden' name='roll[${sl}][id]' id="roll_id_${sl}" value='${roll.id}' />${roll.roll_no}
                                 </td>
                                 
                                 <td>${roll.size}</td>
@@ -343,6 +374,32 @@
         $("#rollSuggestionList").html('');
         $("#rollNo").focus();
     }
+
+    function calculatePercentNext(event) {
+        let dataId = event.target.getAttribute("data-id");
+        let inputVal = event.target.value;
+        let totalPercent = 100;
+        let emptyInput = [];
+
+        $(`input[data-id='${dataId}']`).each(function () {
+            let values = $(this).val();
+            if (values === "") {
+                emptyInput.push($(this).attr("id"));
+            } else {
+                totalPercent -= parseFloat(values);
+            }
+        });
+
+        // if (totalPercent < 0) {
+        //     event.target.value = inputVal.slice(0, -1); // Remove last character if total is negative
+        //     return;
+        // }
+
+        if (emptyInput.length === 1) {
+            $("#" + emptyInput[0]).val(totalPercent>=0?totalPercent:0);
+        }
+    }
+
 
 </script>
 @include("layout.footer")

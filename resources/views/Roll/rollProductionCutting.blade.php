@@ -166,8 +166,13 @@
                 dataType: "json",
                 delay: 250, // Delay to reduce requests
                 data: function (params) {
+                    let rollId = [];
+                    $("input[type='hidden'][id^='roll_id_']").each(function () {
+                        rollId.push($(this).val());
+                    });
                     return {
-                        rollNo: params.term // Send search term to the server
+                        rollNo: params.term, // Send search term to the server
+                        rollId:rollId,
                     };
                 },
                 processResults: function (response) {
@@ -259,7 +264,7 @@
                         let row = `
                             <tr id='${rowId}' data-id='tr_${rowId}' data-item='${JSON.stringify(roll)}'>
                                 <td>
-                                    <input type='hidden' name='roll[${sl}][id]' value='${roll.id}' />${roll.roll_no}
+                                    <input type='hidden' name='roll[${sl}][id]' id="roll_id_${sl}" value='${roll.id}' />${roll.roll_no}
                                 </td>
                                 <td>${roll.size}</td>
                                 <td>${roll.roll_color}</td>

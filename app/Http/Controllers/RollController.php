@@ -1665,8 +1665,11 @@ class RollController extends Controller
             $machineId = $request->machineId;
             $data = $this->rollSearchPrintingOrm()
                     ->whereNotNull("roll_details.printing_color")
-                    ->where("roll_details.roll_no","ILIKE",'%'.$request->rollNo.'%')
-                    ->get();
+                    ->where("roll_details.roll_no","ILIKE",'%'.$request->rollNo.'%');
+            if($request->rollId){
+                $data->whereNotIn("roll_details.id",$request->rollId);
+            }
+            $data = $data->get();
             $data=collect($data);
             if($machineId==1){
                 $data = $data->filter(function($val){
@@ -1713,8 +1716,11 @@ class RollController extends Controller
     public function rollSearchCuttingRollList(Request $request){
         try{
             $data = $this->rollSearchCuttingOrm()
-                    ->where("roll_details.roll_no","ILIKE","%".$request->rollNo."%")                    
-                    ->get();
+                    ->where("roll_details.roll_no","ILIKE","%".$request->rollNo."%");  
+            if($request->rollId){
+                $data->whereNotIn("roll_details.id",$request->rollId);
+            }                  
+            $data = $data->get();
                     
             return responseMsgs(true,"suggested Roll",$data);
         }catch(Exception $e){
@@ -1794,7 +1800,7 @@ class RollController extends Controller
                 $newRequest = new Request(["printingId"=>$entryId,"rollId"=>$roll->id,"printing_color_json"=>$colorArr?$colorArr:null]);
                 $this->_M_PrintingRegister->store($newRequest);
             }
-            DB::commit();
+            // DB::commit();
             return responseMsgs(true,"Roll No ".$roll->roll_no." Printed","");
 
         }catch(Exception $e){
