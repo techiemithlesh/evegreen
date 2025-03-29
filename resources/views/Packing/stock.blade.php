@@ -20,7 +20,10 @@
                 <button type="button" class="btn btn-sm btn-success" onclick="openTransportModel('For Delivery')">Client</button>
             </div>           
         </div>
-        <div class="panel-body">            
+        <div class="panel-body">   
+            <div class="panel-control justify-content-end" >
+                <strong>Total Weight:</strong> (<span id="total_weight">0</span>)
+            </div>         
             <table class="table table-bordered  table-responsive table-fixed" id="postsTable">
                 <thead>
                     <tr>
@@ -215,6 +218,10 @@
                         d[field.name] = field.value; // Corrected: use d[field.name] instead of d.field.name
                     });
 
+                },
+                dataSrc: function (json) {
+                    $('#total_weight').text(json?.totalWeight); 
+                    return json.data;
                 },
                 beforeSend: function() {
                     $("#btn_search").val("LOADING ...");

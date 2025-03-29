@@ -10,9 +10,11 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Packing No</th>
+                            <th>Client Name</th>
+                            <th>Bag Size</th>
+                            <th>Bag Type</th>
+                            <th>Bag Color</th>
                             <th>Bag Weight</th>
-                            <th>Bag Piece</th>
                             <th>Verify</th>
                         </tr>
                     </thead>

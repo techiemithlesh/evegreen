@@ -18,8 +18,8 @@
                     <tr>
                         <th>#</th>
                         <th>Transport Date</th>
+                        <th>Auto</th>
                         <th>Chalan No</th>
-                        <th>Bill No</th>
                         <th>Total Bag</th>
                         <th>Total Un-Verify Bag</th>
                         <th>Action</th>
@@ -60,8 +60,8 @@
             columns: [
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
                 { data: "transport_date", name: "transport_date" },
+                { data: "auto_name", name: "auto_name" },
                 { data: "invoice_no", name: "invoice_no" },
-                { data: "bill_no", name: "bill_no" },
                 { data: "total_bag", name: "total_bag" },
                 { data: "total_unverified_bag", name: "total_unverified_bag" },                
                 { data: "action", name: "action", orderable: false, searchable: false },
@@ -106,9 +106,11 @@
                         tr.attr("id", 'tr_'+item.id);
                         tr.append(
                             `<td>${index + 1}</td>`,
-                            `<td>${item.packing_no}</td>`,
+                            `<td title="${item.packing_no}">${item.client_name}</td>`,
+                            `<td>${item.bag_size}</td>`,
+                            `<td>${item.bag_type}</td>`,
+                            `<td>${item.bag_color}</td>`,
                             `<td>${item.packing_weight}</td>`,
-                            `<td>${item.packing_bag_pieces}</td>`,
                             `<td><button data-item='${JSON.stringify(item)}' id="${item.id}" onclick="verifyBag('${item.id}')" class="btn btn-sm btn-info">Verify</button></td>`
                         );
                         $("#transportDtl tbody").append(tr);

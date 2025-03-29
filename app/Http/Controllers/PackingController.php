@@ -124,7 +124,6 @@ class PackingController extends Controller
             ->where("order_punch_details.is_wip_disbursed",false)
             ->where("order_punch_details.lock_status",false)
             // ->where("order_punch_details.id",261)
-            // ->where(DB::raw("COALESCE(roll.roll_weight,0) - COALESCE(packing.packing_weight,0) - COALESCE(garbage.total_garbage,0)"),">",0)
             ->orderBy("order_punch_details.id")
             ->get()
             ->map(function($val){            
@@ -195,10 +194,14 @@ class PackingController extends Controller
                 
                 return $val;
 
-            })->filter(function ($val) { 
-                return $val->balance > 0 || $val->balance_in_pieces > 0;
             });
-            
+            // ->filter(function ($val) { 
+            //     return $val->balance > 0 || $val->balance_in_pieces > 0;
+            // });
+            $summary=[
+                "totalWeight"=>roundFigure($data->sum("balance")),
+                "totalPieces"=>roundFigure($data->sum("balance_in_pieces")),
+            ];
             $list = DataTables::of($data)
                 ->addIndexColumn()                
                 ->addColumn('action', function ($val) {                    
@@ -207,6 +210,7 @@ class PackingController extends Controller
                     return $button;
                 })
                 ->rawColumns(['row_color', 'action'])
+                ->with($summary)
                 ->make(true);
             return $list;
 
@@ -424,6 +428,10 @@ class PackingController extends Controller
                     ->where("bag_packings.lock_status",false)
                     ->orderBy("bag_packings.order_id","DESC")
                     ->orderBy("bag_packings.id","DESC");
+            $data = $data->get();
+            $summary=[
+                "totalWeight"=>roundFigure($data->sum("packing_weight")),
+            ];
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('packing_date', function ($val) { 
@@ -453,6 +461,7 @@ class PackingController extends Controller
                     return $button;
                 })
                 ->rawColumns(['row_color', 'action'])
+                ->with($summary)
                 ->make(true);
             return $list;
 
@@ -481,6 +490,7 @@ class PackingController extends Controller
                 "id"=>"required|exists:".$this->_M_BagPacking->getTable().",id",
                 "packing_weight"=>"required|numeric",
                 "packing_bag_pieces"=>"nullable|numeric",
+                "client_id"=>"required"
             ];
             $validate = Validator::make($request->all(),$rules);
             if($validate->fails()){
@@ -497,6 +507,16 @@ class PackingController extends Controller
             }
             $bag->packing_weight = $request->packing_weight;
             $bag->packing_bag_pieces = $request->packing_bag_pieces;
+            if($order->bag_printing_color && $order->client_detail_id != $request->client_id){
+                throw new MyException("This Bag is Printed Show Client Not Change.");
+            }
+            if($order->client_detail_id != $request->client_id){
+                $bag->client_id = $request->client_id;
+                $bag->is_bag_assign = true;
+            }else{
+                $bag->client_id = null;
+                $bag->is_bag_assign = false;
+            }
             DB::beginTransaction();
             $bag->update();
             DB::commit();
@@ -674,17 +694,25 @@ class PackingController extends Controller
                     ->where("bag_packings.packing_status",2)
                     ->where("bag_packings.lock_status",false)
                     ->orderBy("bag_packings.order_id","DESC")
-                    ->orderBy("bag_packings.id","DESC");
+                    ->orderBy("bag_packings.id","DESC")
+                    ->get();
+            $summary=[
+                "totalWeight"=>roundFigure($data->sum("packing_weight")),
+                "intTransPort"=>$this->_M_BagPacking->where("packing_status",3)->count(),
+            ];
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('packing_date', function ($val) { 
                     return $val->packing_date ? Carbon::parse($val->packing_date)->format("d-m-Y") : "";
                 })
                 ->addColumn('bag_color', function ($val) { 
-                    return collect(json_decode($val->printing_color,true))->implode(",") ;
+                    return collect(json_decode($val->bag_color,true))->implode(",") ;
                 })
                 ->addColumn('bag_size', function ($val) { 
                     return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
+                })
+                ->addColumn("reiving_date",function($val){
+                    return $val->godown_reiving_date ? Carbon::parse($val->godown_reiving_date)->format("d-m-Y"):"";
                 })
                 ->addColumn('bag_gsm', function ($val) { 
                     return collect(json_decode($val->bag_gsm,true))->implode(",");
@@ -698,6 +726,7 @@ class PackingController extends Controller
                     return $button;
                 })
                 ->rawColumns(['row_color', 'action'])
+                ->with($summary)
                 ->make(true);
             return $list;
 
@@ -712,6 +741,7 @@ class PackingController extends Controller
     public function reivingGodown(Request $request){
         if($request->ajax()){
             $data = $this->_M_PackTransport->select("bag_packing_transports.id","bag_packing_transports.bill_no","bag_packing_transports.invoice_no","bag_packing_transports.transport_date",
+                        "auto_details.auto_name",
                         DB::raw(
                             "
                             COUNT(bag_packing_transport_details.bag_packing_id) AS total_bag,
@@ -720,11 +750,12 @@ class PackingController extends Controller
                         )
                     )
                     ->join("bag_packing_transport_details","bag_packing_transport_details.pack_transport_id","bag_packing_transports.id")
+                    ->leftJoin("auto_details","auto_details.id","bag_packing_transports.auto_id")
                     ->where("bag_packing_transports.transport_status",3)
                     ->where("bag_packing_transport_details.lock_status",false)
                     ->where("bag_packing_transports.is_fully_reviewed",false)
                     ->where("bag_packing_transports.lock_status",false)
-                    ->groupBy("bag_packing_transports.id","bag_packing_transports.bill_no","bag_packing_transports.invoice_no","bag_packing_transports.transport_date");
+                    ->groupBy("bag_packing_transports.id","bag_packing_transports.bill_no","bag_packing_transports.invoice_no","bag_packing_transports.transport_date","auto_details.auto_name");
                 
             $list = DataTables::of($data)
                 ->addIndexColumn()
@@ -743,12 +774,22 @@ class PackingController extends Controller
 
     public function reivingTransport(Request $request){
         try{
-            $data = $this->_M_TransportDetail->select("bag_packings.*","bag_packing_transport_details.*")
+            $client = $this->_M_ClientDetails->all();
+            $bagType = $this->_M_BagType->all();
+            $data = $this->_M_TransportDetail->select("bag_packings.*","bag_packing_transport_details.*","order_punch_details.*")
                     ->join("bag_packings","bag_packings.id","bag_packing_transport_details.bag_packing_id")
+                    ->join("order_punch_details","order_punch_details.id","bag_packings.order_id")
                     ->where("bag_packing_transport_details.pack_transport_id",$request->id)
                     ->where("bag_packing_transport_details.lock_status",false)
                     ->where("bag_packing_transport_details.is_delivered",false)
-                    ->get();
+                    ->get()
+                    ->map(function($val)use($client,$bagType){
+                        $val->client_name = $client->firstWhere("id",$val->client_detail_id)->client_name??"";
+                        $val->bag_type = $bagType->firstWhere("id",$val->bag_type_id)->bag_type??"";
+                        $val->bag_size = (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"");
+                        $val->bag_color = collect(json_decode($val->bag_color,true))->implode(",") ;
+                        return $val;
+                    });
             return responseMsgs(true,"Data Fetched",$data);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
@@ -775,6 +816,7 @@ class PackingController extends Controller
             $transportDtl->reiving_date = $currentDate;
 
             $bagPackage->packing_status = 2;
+            $bagPackage->godown_reiving_date = Carbon::now();
             
             DB::beginTransaction();
             $transportDtl->update();

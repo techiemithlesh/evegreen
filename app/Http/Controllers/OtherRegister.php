@@ -85,6 +85,7 @@ class OtherRegister extends Controller
         )
         ->orderBy("loop_stocks.loop_color","ASC")
         ->get();
+        $data["total_balance"] = $data["loop"]->sum("balance");
 
         return view("Register/loop_stock_status",$data);
     }

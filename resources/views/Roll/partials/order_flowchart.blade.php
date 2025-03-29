@@ -5,54 +5,55 @@
             $statusClass = 'pending';
 
             if ($order->isFullDelivered) {
-                $completedNodes = ['Start', ($order->isFullBook ? 'FullBooking' : 'PartBooking'), 'Printed', 'Cut', 'OutForDelivery', 'Delivered'];
+                $completedNodes = [($order->isFullBook ? 'FullBooking' : 'PartBooking'), 'Printed', 'Cut', 'OutForDelivery', 'Delivered'];
                 $statusClass = 'completed';
             } elseif ($order->isPartDelivered) {
-                $completedNodes = ['Start', ($order->isFullBook ? 'FullBooking' : 'PartBooking'), 'Printed', 'Cut', 'OutForDelivery', 'Delivered'];
+                $completedNodes = [($order->isFullBook ? 'FullBooking' : 'PartBooking'), 'Printed', 'Cut', 'OutForDelivery', 'Delivered'];
                 $statusClass = 'completed';
             } elseif ($order->isOutForDelivery) {
-                $completedNodes = ['Start', ($order->isFullBook ? 'FullBooking' : 'PartBooking'), 'Printed', 'Cut', 'OutForDelivery'];
+                $completedNodes = [($order->isFullBook ? 'FullBooking' : 'PartBooking'), 'Printed', 'Cut', 'OutForDelivery'];
                 $statusClass = 'delivery';
             } elseif ($order->isFullBookFullPrintFullCut) {
-                $completedNodes = ['Start', 'FullBooking', 'Printed', 'Cut'];
+                $completedNodes = ['FullBooking', 'Printed', 'Cut'];
                 $statusClass = 'completed';
             } elseif ($order->isFullBookFullPrintPartCut) {
-                $completedNodes = ['Start', 'FullBooking', 'Printed', 'Cut'];
+                $completedNodes = ['FullBooking', 'Printed', 'Cut'];
                 $statusClass = 'completed';
             } elseif ($order->isFullBookPartPrintFullCut) {
-                $completedNodes = ['Start', 'FullBooking', 'Printed', 'Cut'];
+                $completedNodes = ['FullBooking', 'Printed', 'Cut'];
                 $statusClass = 'completed';
             } elseif ($order->isFullBookPartPrintPartCut) {
-                $completedNodes = ['Start', 'FullBooking', 'Printed', 'Cut'];
+                $completedNodes = ['FullBooking', 'Printed', 'Cut'];
                 $statusClass = 'completed';
             } elseif ($order->isPartBookFullPrintFullCut) {
-                $completedNodes = ['Start', 'PartBooking', 'Printed', 'Cut'];
+                $completedNodes = ['PartBooking', 'Printed', 'Cut'];
                 $statusClass = 'completed';
             } elseif ($order->isPartBookFullPrintPartCut) {
-                $completedNodes = ['Start', 'PartBooking', 'Printed', 'Cut'];
+                $completedNodes = ['PartBooking', 'Printed', 'Cut'];
                 $statusClass = 'completed';
             } elseif ($order->isPartBookPartPrintFullCut) {
-                $completedNodes = ['Start', 'PartBooking', 'Printed', 'Cut'];
+                $completedNodes = ['PartBooking', 'Printed', 'Cut'];
                 $statusClass = 'completed';
             } elseif ($order->isPartBookPartPrintPartCut) {
-                $completedNodes = ['Start', 'PartBooking', 'Printed', 'Cut'];
+                $completedNodes = ['PartBooking', 'Printed', 'Cut'];
                 $statusClass = 'completed';
             } elseif ($order->isFullBookFullPrint || $order->isPartBookFullPrint) {
-                $completedNodes = ['Start', 'FullBooking', 'Printed'];
+                $completedNodes = ['FullBooking', 'Printed'];
                 $statusClass = 'printing';
             } elseif ($order->isPartBookPartPrint) {
-                $completedNodes = ['Start', 'PartBooking', 'Printed'];
+                $completedNodes = ['PartBooking', 'Printed'];
                 $statusClass = 'printing';
             } elseif ($order->isFullBook) {
-                $completedNodes = ['Start', 'FullBooking'];
+                $completedNodes = ['FullBooking'];
                 $statusClass = 'booked';
             } elseif ($order->isPartBook) {
-                $completedNodes = ['Start', 'PartBooking'];
+                $completedNodes = ['PartBooking'];
                 $statusClass = 'booked';
             } elseif ($order->isRollBook) {
-                $completedNodes = ['Start'];
+                $completedNodes = ['PartBooking'];
                 $statusClass = 'rollbooked';
             }
+            
         @endphp
         
         graph LR;
@@ -60,6 +61,8 @@
                 foreach ($completedNodes as $index => $node) {
                     if (isset($completedNodes[$index + 1])) {
                         echo "$node --> {$completedNodes[$index + 1]};\n";
+                    }else{
+                        echo "$node;\n";
                     }
                 }
             @endphp

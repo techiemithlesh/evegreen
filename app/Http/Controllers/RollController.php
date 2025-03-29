@@ -2916,6 +2916,7 @@ class RollController extends Controller
                     ->leftJoin("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id") 
                     ->leftJoin("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")                   
                     ->where("order_punch_details.lock_status",false)
+                    // ->where("order_punch_details.order_no","10")
                     ->orderBy("order_punch_details.order_date","DESC");                               
 
             if($fromDate && $uptoDate){             

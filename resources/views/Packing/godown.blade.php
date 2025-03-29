@@ -15,18 +15,21 @@
         <div class="panel-heading">
             <h5 class="panel-title">List</h5>   
             <div class="panel-control">
-                <a href="{{route('packing.godown.reiving')}}" class="btn btn-primary btn-sm">Verify</a>
+                <a href="{{route('packing.godown.reiving')}}" class="btn btn-primary btn-sm">Verify <span id="intTransPort" class="badge bg-danger"></span></a>
                 <!-- <a href="{{route('packing.transport.for','For Delivery')}}" class="btn btn-warning btn-sm">Transport Bag</a> -->
                 <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Factory')">Factory</button>
                 <button type="button" class="btn btn-sm btn-success" onclick="openTransportModel('For Delivery')">Client</button>
             </div>         
         </div>
-        <div class="panel-body">            
+        <div class="panel-body">       
+            <div class="panel-control justify-content-end" >
+                <strong>Total Weight:</strong> (<span id="total_weight">0</span>)
+            </div>     
             <table class="table table-bordered  table-responsive table-fixed" id="postsTable">
                 <thead>
                     <tr>
-                        <!-- <th>#</th>
-                        <th>Packing Date</th> -->
+                        <!-- <th>#</th> -->
+                        <th>Receiving Date</th> 
                         <th>Packing No</th>
                         <th>Client Name</th>
                         <th>Bag Size </th>
@@ -214,6 +217,11 @@
                     });
 
                 },
+                dataSrc: function (json) {
+                    $('#total_weight').text(json?.totalWeight); 
+                    $('#intTransPort').text(json?.intTransPort); 
+                    return json.data;
+                },
                 beforeSend: function() {
                     $("#btn_search").val("LOADING ...");
                     $("#loadingDiv").show();
@@ -225,6 +233,7 @@
             },
 
             columns: [
+                { data:"reiving_date",name:"reiving_date" },
                 { data: "packing_no", name: "packing_no",render: function(data, type, row, meta) {
                             const rowDataEncoded = base64Encode(JSON.stringify(row));
                             return `${row.packing_no} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;

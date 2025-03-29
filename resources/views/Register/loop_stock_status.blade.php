@@ -20,7 +20,7 @@
             <table id="postsTable" class="table table-striped table-bordered" style="text-align: center;">
                 <thead>
                     <tr>
-                        <th colspan="6" style="text-align:right; font-size:small; color:aqua"> Units - (Kg)</th>
+                        <th colspan="6" style="text-align:right; font-size:small; color:#3c00ff"> Balance Units(Kg) - {{$total_balance??0}}</th>
                     </tr>
                     <tr>
                         <th>#</th>

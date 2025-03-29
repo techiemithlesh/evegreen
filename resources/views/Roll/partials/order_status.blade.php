@@ -1,5 +1,5 @@
 
-<td class="status-cell" data-order-id="{{ $order->id }}" style="cursor: pointer;">
+
     @if($order->isFullDelivered)
         <span class="badge bg-success">Completed ({{$order->isPartBook?'Part':'Full'}} - Full Delivered)</span>
     @elseif($order->isPartDelivered)
@@ -37,4 +37,3 @@
     @else
         <span class="badge bg-danger">Pending</span>
     @endif
-</td>
