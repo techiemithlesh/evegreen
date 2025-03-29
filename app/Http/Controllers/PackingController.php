@@ -187,6 +187,9 @@ class PackingController extends Controller
                 if($val->units!="Kg"){
                     $val->balance_in_pieces = $val->total_pieces - $val->packing_bag_pieces;
                 }
+                $initRollWight = ($val->roll_weight + $val->loop_weight - $val->total_garbage -$uCuteGarbage);
+                $val->int_balance =  (float)roundFigure(($val->balance / ($initRollWight ? $initRollWight : 1)) * 100 );
+                $val->balance_prc =  $val->int_balance." %";
                 $gsm = collect(json_decode($gsm_json,true));
                 $rs = Config::get("customConfig.BagTypeIdealWeightFormula.".$val->bag_type_id)["RS"]??"";                
                 $val->formula_ideal_weight = $this->_M_BagType->find($val->bag_type_id)->weight_of_bag_per_piece;                
@@ -195,6 +198,9 @@ class PackingController extends Controller
                 return $val;
 
             });
+            if($request->dividend){
+                $data = $data->whereBetween("int_balance",[2.00,10.00]);
+            }
             // ->filter(function ($val) { 
             //     return $val->balance > 0 || $val->balance_in_pieces > 0;
             // });

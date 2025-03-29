@@ -13,7 +13,12 @@
 
     <div class="container">
         <div class="panel-heading">
-            <h5 class="panel-title">WIP List</h5>            
+            <h5 class="panel-title">WIP List</h5>  
+            <div class="panel-control">
+                <div class="form-check form-switch" style="cursor:pointer">
+                    <label class="form-check-label" for="dividend">Only 2 - 10%</label> <input class="form-check-input" type="checkbox" id="dividend" name="dividend" onclick="searchData()" />
+                </div>          
+            </div>
         </div>        
         <div class="panel-body">            
             <form action="" id="entryForm">
@@ -33,6 +38,7 @@
                                 <th>Total Bag Weight</th>
                                 <th>Total Bag In Pieces</th>
                                 <th>Unit</th>
+                                <th>%</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -63,6 +69,9 @@
                     $.each(formData, function(i, field) {
                         d[field.name] = field.value; // Corrected: use d[field.name] instead of d.field.name
                     });
+                    if($("#dividend").is(":checked")){
+                        d["dividend"] = $("#dividend").is(":checked");
+                    }
 
                 },
                 dataSrc: function (json) {
@@ -88,6 +97,7 @@
                 { data: "balance",name: "balance",render: function(row, type, data) { return parseFloat(data.balance).toFixed(2);}},
                 { data: "balance_in_pieces",name: "balance_in_pieces",render: function(row, type, data) { return (data.balance_in_pieces ? data?.balance_in_pieces : "N/A");}},
                 { data: "units", name: "units" },
+                {data : "balance_prc", name: "balance_prc"},
                 { data: null, orderable: false, searchable: false, render: function(row, type, data) {
                         return `
                             <table class="mt-2 table table-bordered table-fixed" style="display:none;" id="table_${data.id}">
