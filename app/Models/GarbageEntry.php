@@ -23,6 +23,7 @@ class GarbageEntry extends Model
         "garbage",
         "is_verify",
         "verify_by",
+        "verify_date",
         "remarks",
         "lock_status"
     ];

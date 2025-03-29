@@ -112,6 +112,7 @@ class AccountingController extends Controller
             $request->merge([
                 "is_verify"=>true,
                 "verify_by"=>Auth()->user()->id,
+                "verify_date"=>Carbon::now(),
             ]);
             DB::beginTransaction();
             $this->_M_GarbageEntry->edit($request);

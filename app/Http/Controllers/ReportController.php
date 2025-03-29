@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GarbageEntry;
 use App\Models\MachineMater;
 use App\Models\OrderBroker;
 use App\Models\OrderPunchDetail;
 use App\Models\RollDetail;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +21,8 @@ class ReportController extends Controller
     protected $_RollDetails;
     protected $_M_OrderPunches;
     protected $_M_Brokers;
+    protected $_M_User;
+    protected $_M_GarbageEntry;
 
     function __construct()
     {
@@ -26,6 +30,8 @@ class ReportController extends Controller
         $this->_RollDetails = new RollDetail();
         $this->_M_OrderPunches = new OrderPunchDetail();
         $this->_M_Brokers = new OrderBroker();
+        $this->_M_User = new User();
+        $this->_M_GarbageEntry = new GarbageEntry();
     }
 
     public function dailyProduction(Request $request){
@@ -256,5 +262,52 @@ class ReportController extends Controller
         }
         $data=[];
         return view("Reports/rollShortage",$data);
+    }
+
+    public function garbageRegister(Request $request){
+        if($request->ajax())
+        {
+            $user = $this->_M_User->all();
+            $machine = $this->_M_Machine->all();DB::enableQueryLog();
+            $data = $this->_M_GarbageEntry->select("garbage_entries.*","c.client_name",
+                        DB::raw("((garbage/ (CASE WHEN roll_weight=0 THEN 1 ELSE roll_weight END))*100) AS garbage_per")
+                    )
+                    ->join("client_detail_masters as c","c.id","garbage_entries.client_id")
+                    ->where("garbage_entries.lock_status",false)
+                    ->where("garbage_entries.is_verify",true);
+            if($request->fromDate && $request->uptoDate){
+                $data->whereBetween("garbage_entries.cutting_date",[$request->fromDate,$request->uptoDate]);
+            }elseif($request->fromDate){
+                $data->where("garbage_entries.cutting_date","<=",$request->fromDate);
+            }elseif($request->uptoDate){
+                $data->where("garbage_entries.cutting_date",">=",$request->uptoDate);
+            }
+            $data = $data->get()
+                    ->map(function($val) use($user,$machine){
+                        $val->operator_name = $user->where("id",$val->operator_id)->first()->name??"";
+                        $val->helper_name = $user->where("id",$val->helper_id)->first()->name??"";
+                        $val->machine = $machine->where("id",$val->machine_id)->first()->name??""; 
+                        $val->cutting_date = $val->cutting_date ? Carbon::parse($val->cutting_date)->format("d-m-Y"):"";
+                        $val->percent = roundFigure($val->roll_weight ? ($val->garbage/$val->roll_weight)*100 :0)." %";
+                        $val->wip_percent = roundFigure($val->roll_weight ? ($val->wip_disbursed_in_kg/$val->roll_weight)*100 :0)." %";
+                        $val->total_garbage = roundFigure($val->garbage +  $val->wip_disbursed_in_kg);
+                        $val->verify_by = $user->firstWhere("id",$val->verify_by)->name??"";
+                        $val->verify_date = $val->verify_date ? Carbon::parse($val->verify_date)->format("d-m-Y"):"";
+                        return $val;
+                    })
+                    ->sortBy([
+                        ["total_garbage", "DESC"],
+                        ["cutting_date", "asc"]
+                    ]);
+            $list = DataTables::of($data)
+                ->addIndexColumn()  
+                ->rawColumns(['row_color', 'action'])
+                ->make(true);
+            return $list;
+        }
+        list($from,$upto) = explode("-",getFY());
+        $data["fromDate"] = $from."-04-01";
+        $data["uptoDate"] = Carbon::now()->format("Y-m-d");
+        return view("Reports/garbage",$data);
     }
 }

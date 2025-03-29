@@ -310,6 +310,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
             Route::get("/agent/order/dtl", "agentOrderDtl")->name("report.agent.order.dtl");
             Route::get("/legacy/client/order", "legacyClientOrder")->name("legacy.client.order");
             Route::get("/roll/shortage", "rollShortage")->name("roll.shortage");
+            Route::get("garbage", "garbageRegister")->name("report.garbage");
         });
     });
 
