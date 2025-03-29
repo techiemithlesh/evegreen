@@ -317,6 +317,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::controller(AccountingController::class)->group(function(){
             Route::get("/garbage/verification","garbageVerification")->name("accounting.garbage.verification");
             Route::post("/close/garbage","garbageClose")->name("accounting.close.garbage");
+            Route::post("/wip/garbage/delete","deleteWIPGarbage")->name("accounting.wip.garbage.delete");
         });
     });
 

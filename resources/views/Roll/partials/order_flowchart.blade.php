@@ -37,7 +37,7 @@
             } elseif ($order->isPartBookPartPrintPartCut) {
                 $completedNodes = ['Start', 'PartBooking', 'Printed', 'Cut'];
                 $statusClass = 'completed';
-            } elseif ($order->isFullBookFullPrint) {
+            } elseif ($order->isFullBookFullPrint || $order->isPartBookFullPrint) {
                 $completedNodes = ['Start', 'FullBooking', 'Printed'];
                 $statusClass = 'printing';
             } elseif ($order->isPartBookPartPrint) {

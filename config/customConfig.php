@@ -126,4 +126,13 @@ return[
         "state"=>"Jharkhand",
     ],
 
+    "garbageVerificationRemarks"=>[
+        "Fabric Quality",
+        "Operator",
+        "Helper",
+        "Electrical Problem",
+        "Machine Problem",
+        "Other"
+    ]
+
 ];

@@ -272,6 +272,9 @@ class PackingController extends Controller
                 $garbageEnter = $this->_M_GarbageEntry->where("client_id",$order->client_detail_id)->whereNull("wip_disbursed_in_kg")->where('lock_status',false)->first();
             }
             if($garbageEnter){
+                if(!$garbageEnter->order_id){
+                    $garbageEnter->order_id = $order->id;
+                }
                 $garbageEnter->wip_disbursed_in_kg = $request->balance;
                 $garbageEnter->wip_disbursed = $request->wip_disbursed_pieces ? $request->wip_disbursed_pieces : null ;
                 $garbagePercent = ((($garbageEnter->garbage + $garbageEnter->wip_disbursed_in_kg) / $rolls->sum("weight"))*100);

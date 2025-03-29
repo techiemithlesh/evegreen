@@ -52,8 +52,16 @@
             <div class="modal-body">
                 <form action="" id="garbageUpdateForm">
                     <input type="hidden" id="id" name="id">
-                    <label for="remarks">Remark</label>
-                    <textarea name="remarks" id="remarks" class="form-control"></textarea>
+                    <div class="mb-3 row form-group">
+                        <label class="form-label col-md-2" for="remarks">Remark</label>
+                        <select name="remarks" id="remarks" class="form-select col-md-9" required>
+                            <option value="">Select</option>
+                            @foreach($remarks as $val)
+                                <option value="{{$val}}">{{$val}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <!-- <textarea name="remarks" id="remarks" class="form-control"></textarea> -->
                 </form>
             </div>
             <div class="modal-footer">
@@ -100,7 +108,7 @@
                 },
                 remarks: {
                     required: true,
-                    minlength:10,
+                    // minlength:10,
                 },
             },
             submitHandler: function(form) {
@@ -159,6 +167,34 @@
             addFilter('postsTable',[0]);
         },false);
         
+    }
+
+    function deleteConformation(id){
+        showConfirmDialog("Are sure to Delete??",function (){deleteWipGarbage(id);});
+    }
+
+    function deleteWipGarbage(id){
+        $.ajax({
+            url:"{{route('accounting.wip.garbage.delete')}}",
+            type:"post",
+            dataType:"json",
+            data:{id:id},
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(response){
+                $("#loadingDiv").hide();
+                modelInfo(response?.message,response?.status ? "success":"warning");
+                if(response?.status){
+                    searchData();
+                }
+            },
+            error:function(errors){
+                $("#loadingDiv").hide();
+                console.log(errors);
+                modelInfo("Server Error!!","error");
+            }
+        })
     }
 
 </script>
