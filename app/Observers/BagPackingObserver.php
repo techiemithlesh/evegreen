@@ -13,7 +13,7 @@ class BagPackingObserver
     public function created(BagPacking $bagPacking): void
     {
         if(!$bagPacking->packing_no){
-            $orderDate = Carbon::parse(Carbon::now());
+            $orderDate = Carbon::parse($bagPacking->packing_date);
             $rolNo = $orderDate->clone()->format("d/m/y")."-";
             $sl = BagPacking::where("packing_date",$orderDate->clone()->format('Y-m-d'))->count("id");
             $slNo ="";

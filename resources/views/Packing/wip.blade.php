@@ -22,6 +22,12 @@
         </div>        
         <div class="panel-body">            
             <form action="" id="entryForm">
+                <div class="row mb-3">
+                    <label for="packing_date" class="form-label col-md-3">Packing Date</label>
+                    <div class="col-md-4">
+                        <input type="date"  class="form-control" name="packing_date" id="packing_date" value="{{date('Y-m-d')}}" max="{{date('Y-m-d')}}" required/>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="panel-control justify-content-end" >
                         <strong>Total Weight:</strong> (<span id="total_weight">0</span>)
@@ -192,7 +198,7 @@
  
         let is_piece = item.units === 'Piece'?true:false;
         let colspan = 2;
-        let td = "";
+        let td = `<td> <input type='text' class="form-control" style="width:100px" name='roll[${sl}][sl_no]' required onkeypress="return isNum(event);" placeholder="Sl No."  /></td>`;
         if(is_piece){
             colspan=0;
             td+=` 

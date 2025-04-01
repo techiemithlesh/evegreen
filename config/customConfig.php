@@ -1,6 +1,7 @@
 <?php
 
 return[
+    "boraWeightInGram"=>300,
     "transportType"=>[
         "For Delivery"=>4,
         "For Godown"=>3,

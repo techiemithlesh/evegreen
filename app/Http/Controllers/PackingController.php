@@ -88,6 +88,7 @@ class PackingController extends Controller
                             COALESCE(total_garbage,0) as total_garbage,
                             COALESCE(packing_weight,0) as packing_weight,
                             COALESCE(packing_bag_pieces,0) as packing_bag_pieces,
+                            COALESCE(bora_weight,0) as bora_weight,
                             roll.roll_ids
                             ")
             )
@@ -114,7 +115,8 @@ class PackingController extends Controller
             "),"garbage.order_id","order_punch_details.id")
             ->leftJoin(DB::raw("
                 (
-                    select sum(packing_weight) as packing_weight, sum(packing_bag_pieces)as packing_bag_pieces,order_id
+                    select sum(packing_weight) as packing_weight, sum(packing_bag_pieces)as packing_bag_pieces,
+                        sum(bora_weight)as bora_weight,order_id
                     from bag_packings
                     where lock_status = false
                     group by order_id
@@ -126,7 +128,8 @@ class PackingController extends Controller
             // ->where("order_punch_details.id",261)
             ->orderBy("order_punch_details.id")
             ->get()
-            ->map(function($val){            
+            ->map(function($val){   
+                $val->bora_weight_in_kg = $val->bora_weight/1000;         
                 $gsm_json = $val->bag_gsm;
                 $val->alt_bag_gsm = collect(json_decode($val->alt_bag_gsm,true))->implode(",");
                 $val->alt_bag_color = collect(json_decode($val->alt_bag_color,true))->implode(",");
@@ -182,7 +185,7 @@ class PackingController extends Controller
                     $uCuteGarbage = (($val->roll_weight - $val->total_garbage)*0.1);
                 }
                 $val->u_cute_garbage = $uCuteGarbage;
-                $val->balance = roundFigure($val->roll_weight + $val->loop_weight - $val->packing_weight - $val->total_garbage -$uCuteGarbage);
+                $val->balance = roundFigure($val->roll_weight + $val->loop_weight - $val->packing_weight + $val->bora_weight_in_kg - $val->total_garbage -$uCuteGarbage);
                 $val->balance_in_pieces = 0;
                 if($val->units!="Kg"){
                     $val->balance_in_pieces = $val->total_pieces - $val->packing_bag_pieces;
@@ -329,13 +332,15 @@ class PackingController extends Controller
             }
             $user = Auth()->user();
             DB::beginTransaction();
-            foreach($request->roll as $val){
+            foreach(collect($request->roll)->sortBy("sl_no") as $val){
                 $newRequest = new Request();
                 $newRequest->merge([
                     "packing_weight"=>$val["weight"],
                     "packing_bag_pieces"=>$val["pieces"]??null,
                     "order_id"=>$val["id"],
                     "user_id"=>$user->id,
+                    "packing_date"=>Carbon::parse($request->packing_date)->format("Y-m-d"),
+                    "bora_weight"=>Config::get("customConfig.boraWeightInGram"),
                 ]);
 
                 $this->_M_BagPacking->store($newRequest);

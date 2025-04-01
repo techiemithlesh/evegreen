@@ -15,6 +15,7 @@ class BagPacking extends Model
     protected $fillable = [
         "packing_no",
         'packing_weight',
+        "bora_weight",
         "packing_bag_pieces",
         "packing_date",
         'packing_status',
