@@ -55,7 +55,7 @@
         <div class="panel-body" style="text-align: center;">
             <div class="row">
                 <div class="card text-center col-md-4" style=" box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);">
-                    <h5 class="card-header">Loop Stock2</h5>
+                    <h5 class="card-header">Loop Stock</h5>
                     <div class="card-body">
                         <p class="card-text">
                             <x-dashboard.loop-stock-status />
