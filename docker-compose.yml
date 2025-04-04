@@ -1,5 +1,10 @@
 version: '3.8'
 
+on:
+  push:
+    branches:
+      - main  # Trigger CI/CD only when pushing to the main branch
+
 services:
   app:
     image: techiemithlesh/evergreen-app:latest
