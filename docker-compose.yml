@@ -37,9 +37,11 @@ services:
       - evergreen
 
   postgres_db:
-    image: postgres:13
+    image: postgres:16
     container_name: postgres_db
     restart: always
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
