@@ -8,6 +8,9 @@ services:
       - ./:/var/www
     networks:
       - evergreen
+    depends_on:
+      - postgres_db
+      - redis_server
 
   nginx:
     image: nginx:latest
@@ -33,6 +36,29 @@ services:
     networks:
       - evergreen
 
+  postgres_db:
+    image: postgres:13
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - evergreen
+
+  redis_server:
+    image: redis:alpine
+    container_name: redis_server
+    restart: always
+    networks:
+      - evergreen
+
 networks:
   evergreen:
     driver: bridge
+
+volumes:
+  pgdata:
