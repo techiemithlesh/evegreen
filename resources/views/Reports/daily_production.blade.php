@@ -47,7 +47,7 @@
 
             </div>
         </div>
-        <div class="container">            
+        <div class="container">          
             <div class="panel-body">
                 
 
@@ -63,20 +63,23 @@
                             Machine Type <span style="font-weight: bolder;">{{$val->is_printing ? 'Printing' : ($val->is_cutting ?'Cutting' : '')}}</span>
                         </div>
                         <div class="container" style="display: flex; text-align:center;">
-                            <div class="panel-body" style="width: 33%;">
-                                <h5>Daily Production</h5>
-                                <hr>
-                                <h5>{{$val->daily}}</h5>
+                            <div class="card text-center" style="width: 33%; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);">
+                                <h5 class="card-header">Daily Production</h5>
+                                <div class="card-body">
+                                    <p class="card-text">{{$val->daily}}</p>
+                                </div>
                             </div>
-                            <div class="panel-body" style="width: 33%;">
-                                <h5>Weakly Production</h5>
-                                <hr>
-                                <h5>{{$val->weakly}}</h5>
+                            <div class="card text-center" style="width: 33%; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);">
+                                <h5 class="card-header">Weakly Production</h5>
+                                <div class="card-body">
+                                    <p class="card-text">{{$val->weakly}}</p>
+                                </div>
                             </div>
-                            <div class="panel-body" style="width: 33%;">
-                                <h5>Monthly Production</h5>
-                                <hr>
-                                <h5>{{$val->monthly}}</h5>
+                            <div class="card text-center" style="width: 33%; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);">
+                                <h5 class="card-header">Monthly Production</h5>
+                                <div class="card-body">
+                                    <p class="card-text">{{$val->monthly}}</p>
+                                </div>
                             </div>
                         </div>
                         <div class="container">

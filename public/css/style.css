@@ -2,6 +2,10 @@
 
 body {
     font-family: 'Poppins', sans-serif;
+    overflow-y: hidden;
+}
+.p-3{
+    padding: 1rem 0 !important;
 }
 
 h1 {
@@ -226,7 +230,7 @@ a.sidebar-link:hover {
 }
 .container {
     overflow-x: auto; /* Enable horizontal scrolling */
-    white-space: nowrap; /* Prevent line breaks */
+    /* white-space: nowrap; Prevent line breaks */
     flex: 1; /* Expand to fill available space */
     scroll-behavior: smooth; /* Smooth scrolling effect */
     background-color: #fff;
