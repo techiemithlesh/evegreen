@@ -487,7 +487,7 @@
         if(["2","4","5"].includes(bagType)){
             $("#loopColorDiv").show();
             $("#gussetDiv").show();
-            if(bagType=="4","5"){
+            if(["4","5"].includes(bagType)){
                 $("#gussetDiv").hide();
             }
         }else{

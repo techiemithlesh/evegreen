@@ -424,10 +424,10 @@
     function showHideLoop(){
         var bagType = $("#bookingBagTypeId").val();
         console.log(bagType);
-        if(["2","4"].includes(bagType)){
+        if(["2","4","5"].includes(bagType)){
             $("#loopColorDiv").show();
             $("#gussetDiv").show();
-            if(bagType=="4"){
+            if(["4","5"].includes(bagType)){
                 $("#gussetDiv").hide();
             }
         }else{
