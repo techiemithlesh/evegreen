@@ -54,6 +54,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::get('/home', "home")->name("home");
         Route::get("dashboard/loop-status", "loopStatus")->name("dashboard.loop.status");
         Route::get("dashboard/roll-status", "rollStatus")->name("dashboard.roll.status");
+        Route::get("dashboard/daily/production", "dailyProduction")->name("dashboard.daily.production");
     });
     Route::controller(MasterController::class)->group(function () {
         Route::get("master/fare/list", "fareList")->name("master.fare.list");
@@ -295,10 +296,10 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
             Route::get("/roll/shortage", "rollShortage")->name("roll.shortage");
         });
     });
-    // Route::get("test/test",function(){
-    //     if(request()->ajax()){
-    //         dd(request()->all());
-    //     }
-    //     return view("testFom");
-    // });
+    Route::get("test/test",function(){
+        if(request()->ajax()){
+            dd(request()->all());
+        }
+        return view("testFom");
+    });
 });
