@@ -28,4 +28,4 @@ RUN chmod -R 775 storage bootstrap/cache && chown -R www-data:www-data storage b
 EXPOSE 9000
 
 # Start PHP-FPM
-CMD ["php-fpm"]
+CMD ["php-fpm", "-F"]
