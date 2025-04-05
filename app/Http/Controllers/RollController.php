@@ -1036,7 +1036,7 @@ class RollController extends Controller
                                 DB::raw("printing_schedule_details.printing_date AS schedule_date_for_print , 
                                 cutting_schedule_details.cutting_date AS schedule_date_for_cutting")
                                 )
-                    ->join("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
+                    ->leftJoin("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
                     ->leftJoin("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")
                     ->leftJoin("printing_schedule_details",function($join){
@@ -1566,6 +1566,12 @@ class RollController extends Controller
             elseif($uptoDate){
                 $data->where("cutting_schedule_details.cutting_date","<=",$uptoDate);
             } 
+
+            if($machineId==1){                
+                $data->where(function($where){
+                    $where->where("roll_details.bag_type_id",5);
+                });
+            }  
             $list = DataTables::of($data)
                 ->addIndexColumn()                
                 ->addColumn('print_color', function ($val) {                    
