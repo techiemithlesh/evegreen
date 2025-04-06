@@ -48,7 +48,7 @@
 
         </div>
         <div class="panel-body">
-            <table id="postsTable" class="table table-striped table-bordered table-fixed">
+            <table id="postsTable" class="table table-striped table-bordered table-fixed table-nowrap">
                 <thead>
                     <tr>
                         <th >#</th>
@@ -64,7 +64,6 @@
                         <th>Gross Weight</th>
                         <th>Net Weight</th>
                         <th>GSM Variation</th>
-
                         <th>W</th>
                         <th>L</th>
                         <th>G</th>
@@ -207,7 +206,9 @@
     });
 
     function searchData(){
-        $('#postsTable').DataTable().ajax.reload(null, false);
+        $('#postsTable').DataTable().ajax.reload(function(){
+            addFilter('postsTable',[0]);
+        }, false);
     }
 </script>
 @include("layout.footer")

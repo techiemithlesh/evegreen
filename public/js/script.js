@@ -131,6 +131,7 @@ function addFilter(tableName,indexNo=[]){
 
   // Dynamically create the second row in <thead> for dropdown filters
   var filterRow = $('<tr></tr>'); // Create a new <tr> for filters
+  $("#" + tableName + " tr").has("th.filter-header").remove();
 
   table.find('thead tr:nth-child(1) th').each(function (index) {
       // Create <th> and <select> dynamically for each header

@@ -1855,7 +1855,7 @@ class RollController extends Controller
                     ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")
                     ->where("order_punch_details.client_detail_id",$request->clientId)
                     ->where("order_punch_details.lock_status",false)
-                    ->orderBy("order_punch_details.created_at")
+                    ->orderBy("order_punch_details.created_at","DESC")
                     ->get();
 
             // Remove duplicates based on the specified columns
@@ -2710,6 +2710,7 @@ class RollController extends Controller
                     ->leftJoin("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")    
                     ->leftJoin("grade_masters","grade_masters.id","order_punch_details.grade_id")                   
                     ->where("order_punch_details.lock_status",false)
+                    ->where("order_punch_details.is_delivered",false)
                     ->where(function($where){
                         $where->where(DB::raw("order_punch_details.total_units"),">",DB::raw("order_punch_details.booked_units + order_punch_details.disbursed_units"));
                     })
@@ -2728,7 +2729,7 @@ class RollController extends Controller
 
             if($orderNo){
                 $data->where("order_punch_details.order_no",$orderNo);
-            }         
+            }     
             $list = DataTables::of($data)
                 ->addIndexColumn()                
                 ->addColumn('is_delivered', function ($val) {                    

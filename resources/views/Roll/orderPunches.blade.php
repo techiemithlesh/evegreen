@@ -775,8 +775,18 @@
                     // Append the table structure
                     table.append(thead).append(tbody);
                     $("#suggestionRoll").append(table);
-                    if(response.data.roll.length > 0)
-                    addFilter('tblStockSuggestion',[0,($('#tblStockSuggestion thead tr:nth-child(1) th').length - 1)]);
+                    if(response.data.roll.length > 0){
+                        if ($.fn.DataTable.isDataTable("#tblStockSuggestion")) {
+                            $("#tblStockSuggestion").DataTable().destroy();
+                        }
+                        $("#tblStockSuggestion").DataTable({
+                            "ordering": true,  // Enables sorting
+                            "order": []        // Default order (unsorted initially)
+                        });
+
+                        addFilter('tblStockSuggestion',[0,($('#tblStockSuggestion thead tr:nth-child(1) th').length - 1)]);
+                        
+                    }
                     // Optionally, style the table
                     $(".history-table").css({
                         width: "100%",
@@ -868,8 +878,18 @@
                     // Append the table structure
                     table.append(thead).append(tbody);
                     $("#suggestionRollTransit").append(table);
-                    if(response.data.rollTransit.length > 0)
-                    addFilter('tblTransitSuggestion',[0,($('#tblTransitSuggestion thead tr:nth-child(1) th').length - 1)]);
+                    if(response.data.rollTransit.length > 0){
+                        
+                        if ($.fn.DataTable.isDataTable("#tblTransitSuggestion")) {
+                            $("#tblTransitSuggestion").DataTable().destroy();
+                        }
+                        $("#tblTransitSuggestion").DataTable({
+                            "ordering": true,  // Enables sorting
+                            "order": []        // Default order (unsorted initially)
+                        });
+
+                        addFilter('tblTransitSuggestion',[0,($('#tblTransitSuggestion thead tr:nth-child(1) th').length - 1)]);
+                    }
                     // Optionally, style the table
                     $(".history-table").css({
                         width: "100%",
