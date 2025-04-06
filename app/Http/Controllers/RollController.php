@@ -454,43 +454,6 @@ class RollController extends Controller
     }
 
     #=========== end Roll Transit ======================
-    /*
-    public function addRoll(Request $request){
-        try{
-            if($request->getMethod()=="POST"){
-                $rule = [
-                    "rollNo"=>"required|unique:".$this->_M_RollDetail->getTable().",roll_no",
-                    "purchaseDate"=>"nullable|",
-                    "vendorId"=>"required|exists:".$this->_M_VendorDetail->getTable().",id,lock_status,false",
-                    "rollSize"=>"required|numeric|min:0.1",
-                    "rollGsm"=>"required|numeric|min:0.01",
-                    "rollColor"=>"required",
-                    "rollLength"=>"required|numeric|min:0.1",
-                    "netWeight"=>"required|numeric|min:0.1",
-                    "grossWeight"=>"required|numeric|min:0.1",
-                    "forClientId"=>"nullable".($request->forClientId?"|exists:".$this->_M_ClientDetails->getTable().",id":""),
-                    "estimatedDespatchDate"=>"required_with:forClientId",
-                ];
-                $validate = Validator::make($request->all(),$rule);
-                if($validate->fails()){
-                    return validationError($validate);
-                }         
-                $id = $this->_M_RollDetail->store($request);
-                if($request->forClientId){
-                    foreach($request->printingColor as $val){
-                        $newRequest = new Request(["roll_id"=>$id,"color"=>$val]);
-                        $this->_M_RollPrintColor->store($newRequest);
-                    }
-                }
-                $roll = $this->_M_RollDetail->find($id);
-                flashToast("message","New Roll Add");
-                return responseMsgs(true,"New Roll Added",["rollDtl"=>$roll]);
-            }
-        }catch(Exception $e){
-            return responseMsgs(false,$e->getMessage(),"");
-        }
-    }
-    */
 
     public function downloadCsvTemplate()
     {
@@ -714,7 +677,6 @@ class RollController extends Controller
         $flag= $request->flag;
         $user_type = Auth()->user()->user_type_id??"";
         if($request->ajax()){
-            // dd($request->ajax());
             $data = $this->_M_RollDetail->select("roll_details.*","vendor_detail_masters.vendor_name",
                                 "client_detail_masters.client_name",
                                 "bag_type_masters.bag_type",
@@ -741,10 +703,10 @@ class RollController extends Controller
                         ->where("cutting_schedule_details.lock_status",false);
                     })
                     ->where("roll_details.lock_status",false);                    
-            if($flag!="history"){
+            if($flag!="register"){
                 $data->where("roll_details.is_cut",false);
             }
-            if($flag=="history" ){
+            if($flag=="register" ){
                 $fromDate = $request->fromDate;
                 $uptoDate = $request->uptoDate;
                 if($fromDate && $uptoDate){              
@@ -967,56 +929,6 @@ class RollController extends Controller
             return responseMsgs(false,$e->getMessage(),"");
         }
     }
-    /*
-    public function rollPrintingSchedule(Request $request){
-        try{            
-            $roll = $this->_M_RollDetail->find($request->printingScheduleRollId);
-            $request->merge([
-                "roll_id"=>$roll->id,
-                "printing_date"=>$request->printingScheduleDate,
-                "machine_id"=>$request->printingMachineId
-            ]);
-            if($roll->is_cut){
-                throw new Exception("Roll Already Cute");
-            }
-            if($roll->is_printed){
-                throw new Exception("Roll Already Printed");
-            }
-            DB::beginTransaction();
-            $this->_M_PrintingScheduleDetail->where("roll_id",$request->printingScheduleRollId)->update(["lock_status"=>true]);
-            $this->_M_PrintingScheduleDetail->store($request);
-            DB::commit();
-            return responseMsgs(true,"Roll No-".$roll->roll_no." Is Scheduled","");
-        }catch(Exception $e){
-            DB::rollBack();
-            return responseMsgs(false,$e->getMessage(),"");
-        }
-    }
-    
-
-    public function rollCuttingSchedule(Request $request){
-        try{
-            $roll = $this->_M_RollDetail->find($request->cuttingScheduleRollId);
-            $request->merge([
-                "roll_id"=>$roll->id,
-                "cutting_date"=>$request->cuttingScheduleDate,
-                "machine_id"=>$request->cuttingMachineId
-            ]);
-            if($roll->is_roll_cut){
-                throw new Exception("Roll Already Cute");
-            }
-            DB::beginTransaction();
-            $this->_M_CuttingScheduleDetail->where("roll_id",$request->cuttingScheduleRollId)->update(["lock_status"=>true]);
-            $this->_M_CuttingScheduleDetail->store($request);
-            DB::commit();
-            return responseMsgs(true,"Roll No-".$roll->roll_no." Is Scheduled","");
-        }catch(Exception $e){
-            DB::rollBack();
-            return responseMsgs(false,$e->getMessage(),"");
-        }
-    }
-
-    */
 
 
     #====== roll register =========================
@@ -1036,7 +948,7 @@ class RollController extends Controller
                                 DB::raw("printing_schedule_details.printing_date AS schedule_date_for_print , 
                                 cutting_schedule_details.cutting_date AS schedule_date_for_cutting")
                                 )
-                    ->leftJoin("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
+                    ->join("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
                     ->leftJoin("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")
                     ->leftJoin("printing_schedule_details",function($join){
@@ -1059,7 +971,6 @@ class RollController extends Controller
             elseif($uptoDate){
                 $data->where("purchase_date","<=",$uptoDate);
             } 
-            // DB::enableQueryLog();
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('row_color', function ($val) use($flag) {

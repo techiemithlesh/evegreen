@@ -93,7 +93,8 @@
             processing: true,
             serverSide: false,
             ajax: {
-                url: "{{route('roll.list',':flag')}}".replace(':flag', flag), // The route where you're getting data from
+                // url: "{{route('roll.list',':flag')}}".replace(':flag', flag), // The route where you're getting data from
+                url:"{{route('roll.register')}}",
                 data: function(d) {
 
                     // Add custom form data to the AJAX request
