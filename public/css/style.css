@@ -124,6 +124,9 @@ a.sidebar-link:hover {
     #sidebar.collapsed {
         margin-left: 0;
     }
+    .container{
+        max-width: 100%;
+    }
 }
 
 /* Navbar Styling */        

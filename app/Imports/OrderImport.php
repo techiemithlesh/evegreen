@@ -41,6 +41,13 @@ class OrderImport implements ToCollection,WithChunkReading,WithHeadingRow
                 $row["order_date"] = is_int($row["order_date"])? getDateColumnAttribute($row['order_date']) : $row['order_date'];
                 $row["estimate_delivery_date"] = is_int($row["estimate_delivery_date"])? getDateColumnAttribute($row['estimate_delivery_date']) : $row['estimate_delivery_date'];
             }
+            if($row["bag_quality"]=="BOPP"){
+                $row["bag_gsm_json"] = explode("+",$row["bag_gsm"]);
+                $row["bag_gsm"] = array_sum(explode("+",$row["bag_gsm"]));
+            }
+            if($row["bag_type"]!="B"){
+                $row["bag_g"]=null;
+            }
             $row["client_detail_id"] = $clientList->where("client_name",$row["client_name"])->first()->id;
             $row["is_delivered"] = trim($row["is_delivered"]) ? TRUE:FALSE;
             $row["booked_units"] = $row["booked_units"]? $row["booked_units"] : 0;

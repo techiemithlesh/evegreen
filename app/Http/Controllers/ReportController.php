@@ -40,16 +40,16 @@ class ReportController extends Controller
             $currentDate = Carbon::now();
             $today = $currentDate->copy()->format("Y-m-d");
             $fromYear = $currentDate->copy()->subYear()->format("Y-m-d");
-            $fromMonth = $currentDate->copy()->subMonth()->format("Y-m-d");
+            $fromMonth = $currentDate->copy()->subDays(35)->format("Y-m-d");
             $fromWeak = $currentDate->copy()->subWeek()->format("Y-m-d");
             if($val->is_cutting){
                 $monthly = $this->_RollDetails->where("cutting_machine_id",$val->id)->whereBetween("cutting_date",[$fromYear,$today])->count()/12;
-                $weakly = $this->_RollDetails->where("cutting_machine_id",$val->id)->whereBetween("cutting_date",[$fromMonth,$today])->count()/30;
+                $weakly = $this->_RollDetails->where("cutting_machine_id",$val->id)->whereBetween("cutting_date",[$fromMonth,$today])->count()/5;
                 $daily = $this->_RollDetails->where("cutting_machine_id",$val->id)->whereBetween("cutting_date",[$fromWeak,$today])->count()/7;
                 $todayProduction = $this->_RollDetails->where("cutting_machine_id",$val->id)->where("cutting_date",$today)->orderBy("updated_at","ASC")->get();
             }elseif($val->is_printing){
                 $monthly = $this->_RollDetails->where("printing_machine_id",$val->id)->whereBetween("printing_date",[$fromYear,$today])->count()/12;
-                $weakly = $this->_RollDetails->where("printing_machine_id",$val->id)->whereBetween("printing_date",[$fromMonth,$today])->count()/30;
+                $weakly = $this->_RollDetails->where("printing_machine_id",$val->id)->whereBetween("printing_date",[$fromMonth,$today])->count()/5;
                 $daily = $this->_RollDetails->where("printing_machine_id",$val->id)->whereBetween("printing_date",[$fromWeak,$today])->count()/7;
                 $todayProduction = $this->_RollDetails->where("printing_machine_id",$val->id)->where("printing_date",$today)->orderBy("updated_at","ASC")->get();
             }
@@ -208,5 +208,45 @@ class ReportController extends Controller
         $data = $request->all();        
         $data["agentList"] = $this->_M_Brokers->getBrokerOrm()->get();
         return view("Reports/agentOrderDtl",$data);
+    }
+
+    public function legacyClientOrder(Request $request){
+        if($request->ajax()){
+            $fromDate = $request->fromDate;
+            $data = DB::select("
+                SELECT *
+                FROM (
+                    SELECT cdm.*, opd.order_date, opd.client_detail_id, opd.bag_type_id, bgt.bag_type,
+                            opd.bag_quality,opd.bag_gsm, opd.total_units, opd.units , 
+                            opd.bag_w, opd.bag_l , opd.bag_g , opd.bag_color,
+                            ROW_NUMBER() OVER (PARTITION BY cdm.id ORDER BY opd.id DESC) AS rn
+                    FROM client_detail_masters cdm
+                    LEFT JOIN order_punch_details opd 
+                        ON opd.client_detail_id = cdm.id
+                    LEFT JOIN bag_type_masters bgt ON bgt.id = opd.bag_type_id
+                    WHERE cdm.lock_status = FALSE
+                ) t
+                WHERE rn = 1 and (
+                ".($fromDate ? " order_date<='2025-03-01' or order_date is null " : " order_date is null ")."
+                )
+                ORDER BY order_date ASC
+            ");
+            $list = DataTables::of($data)
+                    ->addIndexColumn()
+                    ->addColumn("order_date",function($val){
+                        return $val->order_date ? Carbon::parse($val->order_date)->format("d-m-Y"):"";
+                    })
+                    ->addColumn('bag_size', function ($val) { 
+                        return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
+                    })
+                    ->addColumn('action', function ($val){
+                        return "";
+                    })
+                    ->rawColumns(['action'])
+                    ->with(["fromDate"=>$fromDate?Carbon::parse($fromDate)->format("d-m-Y"):""])
+                    ->make(true);
+            return $list;
+        }
+        return view("Reports/legacyClientOrder");
     }
 }

@@ -105,7 +105,7 @@
                             const rowId = `row${sl}`;
                             const colors = roll.printing_color.split(",");
                             const colorInputs = colors.map((color, index) => {
-                                return `<input type='text' name='roll[${sl}][color_${index}]' id='color${index}_${rowId}' class='form-control dynamic-field' required onkeypress="return isNumDot(event);" placeholder='${color}' /> <input type='hidden' name='roll[${sl}][colorName_${index}]' value='${color}' />`;
+                                return `<input type='text' name='roll[${sl}][color][${index}]' id='color${index}_${rowId}' class='form-control dynamic-field' required onkeypress="return isNumDot(event);" placeholder='${color}' /> <input type='hidden' name='roll[${sl}][colorName][${index}]' value='${color}' />`;
                             }).join("");
 
                             let row = `

@@ -135,7 +135,7 @@
     <div class="d-flex">
         <!-- Sidebar -->
         <aside id="sidebar" class="sidebar-toggle text-sm" style="overflow-y: scroll;max-height:100vh;">
-            <div class="sidebar-logo" style="border-bottom: 3px solid white;">
+            <div class="sidebar-logo navbar-toggler" style="border-bottom: 3px solid white;">
                 <a href="#">Product Management</a>
             </div>
             <!-- Sidebar Navigation -->

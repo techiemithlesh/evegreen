@@ -12,7 +12,7 @@ class NearestDispatchedOrder extends Component
     function __construct()
     {
         $this->cards = (new OrderPunchDetail())->select("estimate_delivery_date")
-            ->where("estimate_delivery_date",">",Carbon::now()->format("Y-m-d"))
+            ->where("estimate_delivery_date",">=",Carbon::now()->format("Y-m-d"))
             ->where("is_delivered",false)
             ->where("lock_status",false)
             ->orderBy("estimate_delivery_date","ASC")

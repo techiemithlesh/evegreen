@@ -195,6 +195,7 @@ class OrderRollMapImport implements ToCollection,WithChunkReading,WithHeadingRow
             
             $orderNew = $_M_OrderPunch->find($orderId);               
             $orderNew->booked_units = $orderNew->booked_units+$bookOrders;
+            $orderNew->total_units = $orderNew->booked_units;
             $orderNew->update();
         }
     }
