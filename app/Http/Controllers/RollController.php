@@ -1434,6 +1434,9 @@ class RollController extends Controller
         }
         $data=[];
         $data["machine"] = $this->_M_Machine->find($machineId);
+        $data["operator"] = $this->_M_User->getOperateList();
+        $data["helper"] = $this->_M_User->getHelperList();
+        $data["privDate"] = Carbon::now()->subDay()->format("Y-m-d");
         return view("Roll/rollProduction",$data);
     }
 
@@ -1510,6 +1513,7 @@ class RollController extends Controller
         $data["machine"] = $this->_M_Machine->find($machineId);
         $data["operator"] = $this->_M_User->getOperateList();
         $data["helper"] = $this->_M_User->getHelperList();
+        $data["privDate"] = Carbon::now()->subDay()->format("Y-m-d");
         return view("Roll/rollProductionCutting",$data);
     }
 
@@ -1517,19 +1521,8 @@ class RollController extends Controller
         try{
             $machineId = $request->machineId;
             $machine = $this->_M_Machine->find($machineId);
-            $data = $this->_M_RollDetail
-                    ->select("roll_details.*",
-                        "client_detail_masters.client_name",
-                        DB::raw("
-                                    TO_CHAR(roll_details.purchase_date, 'DD-MM-YYYY') as purchase_date ,
-                                    TO_CHAR(roll_details.estimate_delivery_date, 'DD-MM-YYYY') as estimate_delivery_date ,
-                                    TO_CHAR(roll_details.delivery_date, 'DD-MM-YYYY') as delivery_date
-                                "
-                                )
-                    )
-                    ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
+            $data = $this->rollSearchPrintingOrm()
                     ->where("roll_details.roll_no",$request->rollNo)
-                    ->where("roll_details.is_printed",false)
                     ->first();
             $message="Data Fetch";
             if($data && !$data->printing_color){
@@ -1549,34 +1542,30 @@ class RollController extends Controller
         }
     }
 
+    public function rollSearchPrintingRollList(Request $request){
+        try{
+            $machineId = $request->machineId;
+            $data = $this->rollSearchPrintingOrm()
+                    ->whereNotNull("roll_details.printing_color")
+                    ->where("roll_details.roll_no","ILIKE",'%'.$request->rollNo.'%')
+                    ->get();
+            $data=collect($data);
+            if($machineId==1){
+                $data = $data->filter(function($val){
+                    return collect(json_decode($val->printing_color,true))->count()<=2;
+                })->values();
+                $data = collect($data);
+            }
+            return responseMsgs(true,"suggested Roll",$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
     public function rollSearchCutting(Request $request){
         try{
-            $data = $this->_M_RollDetail
-                    ->select("roll_details.*",
-                        "client_detail_masters.client_name",
-                        DB::raw("
-                                    TO_CHAR(roll_details.purchase_date, 'DD-MM-YYYY') as purchase_date ,
-                                    TO_CHAR(roll_details.estimate_delivery_date, 'DD-MM-YYYY') as estimate_delivery_date ,
-                                    TO_CHAR(roll_details.delivery_date, 'DD-MM-YYYY') as delivery_date
-                                "
-                                )
-                    )
-                    ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
-                    ->where("roll_details.roll_no",$request->rollNo)
-                    ->where(function ($query) {
-                        $query->where(function($subQuery){
-                                    $subQuery->whereNull(DB::raw('json_array_length(roll_details.printing_color)'));
-                                    // ->where('roll_details.is_printed', false)
-                                }                            
-                            )
-                            ->orWhere(function ($subQuery) {
-                                  $subQuery->whereNotNull(DB::raw('json_array_length(roll_details.printing_color)'))
-                                           ->where('roll_details.is_printed', true);
-                              });
-                    })                   
-                    ->where("roll_details.is_cut",false)
-                    ->whereNotNull("roll_details.client_detail_id")
-                    ->where("roll_details.lock_status",false)
+            $data = $this->rollSearchCuttingOrm()
+                    ->where("roll_details.roll_no",$request->rollNo)                    
                     ->first();
             if($data){
                 $data->printing_color = collect(json_decode($data->printing_color,true))->implode(",");
@@ -1596,6 +1585,18 @@ class RollController extends Controller
                 }
             }
             return responseMsgs(true,$message,$data);
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function rollSearchCuttingRollList(Request $request){
+        try{
+            $data = $this->rollSearchCuttingOrm()
+                    ->where("roll_details.roll_no","ILIKE","%".$request->rollNo."%")                    
+                    ->get();
+                    
+            return responseMsgs(true,"suggested Roll",$data);
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
         }
