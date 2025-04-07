@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Imports\ImportDispatchHistory;
 use App\Imports\OrderImport;
 use App\Imports\OrderRollMapImport;
+use App\Models\BagPacking;
+use App\Models\CityStateMap;
 use App\Models\ClientDetailMaster;
 use App\Models\FareDetail;
 use App\Models\GradeMaster;
@@ -13,13 +15,17 @@ use App\Models\OrderPunchDetail;
 use App\Models\RateTypeMaster;
 use App\Models\RollDetail;
 use App\Models\RollTransit;
+use App\Models\Sector;
+use App\Models\StateMaster;
 use App\Models\StereoDetail;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\HeadingRowImport;
+use Illuminate\Support\Str;
 
 class ImportOldRecords extends Controller
 {
@@ -33,6 +39,10 @@ class ImportOldRecords extends Controller
     protected $_M_RollDetail;
     protected $_M_RollTransit;
     protected $_M_Broker;
+    protected $_M_StateMaster;
+    protected $_M_CityStateMap;
+    protected $_M_Sector;
+    protected $_M_BagPacking;
     function __construct()
     {
         $this->_M_OrderPunchDetail = new OrderPunchDetail();
@@ -44,6 +54,10 @@ class ImportOldRecords extends Controller
         $this->_M_RollDetail = new RollDetail();
         $this->_M_RollTransit = new RollTransit();
         $this->_M_Broker = new OrderBroker();
+        $this->_M_StateMaster = new StateMaster();
+        $this->_M_CityStateMap = new CityStateMap();
+        $this->_M_Sector = new Sector();
+        $this->_M_BagPacking = new BagPacking();
     }
 
     public function importOrders(Request $request){
@@ -231,6 +245,254 @@ class ImportOldRecords extends Controller
             $file = $request->file('csvFile');
             $headings = (new HeadingRowImport())->toArray($file)[0][0];
             Excel::import(new ImportDispatchHistory,$file);
+        }
+        return view("import/importExcelToDb");
+    }
+
+    public function importClient(Request $request){
+        if($request->post()){
+            ini_set('max_execution_time', 600);
+            $validate = Validator::make($request->all(),["csvFile"=>"required|mimes:csv,xlsx"]);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            $file = $request->file('csvFile');
+            $headings = (new HeadingRowImport())->toArray($file)[0][0];
+            $expectedHeadings = Config::get("customConfig.clientCsvHeader");
+            if (array_diff($expectedHeadings, $headings)) {
+                return responseMsgs(false,"data in invalid Formate","");;
+            }
+            $rows = Excel::toArray([], $file);
+
+            // Validate rows
+            $validationErrors = [];
+            $dataWithHeadings = [];
+            foreach ($rows[0] as $index => $row) {
+                // Skip the header row
+                if ($index == 0) continue;
+                // Validate each row
+                $rowData = array_combine($headings, $row);               
+                $validator = Validator::make($rowData, [
+                    "client_name"=>"required",
+                    'mobile_no' => "required",                   
+                    'sector' => 'nullable',
+                    'secondary_mobile_no' => 'nullable',
+                    'temporary_mobile_no' => 'nullable',
+                    'email' => 'nullable|email',
+                    "state"=>"nullable",
+                    "city"=>"nullable",
+                    "address"=>"nullable",
+                ]);
+
+                if ($validator->fails()) {
+                    $validationErrors[$index] = $validator->errors()->all();
+                }
+                $rowData["client_name"] = Str::title($rowData["client_name"]);
+                $rowData["state"] = Str::title($rowData["state"]);
+                $rowData["city"] = Str::title($rowData["city"]);
+                $rowData["sector"] = Str::title($rowData["sector"]);
+                $dataWithHeadings[] = $rowData; 
+            }
+
+            $group = collect($dataWithHeadings)->groupBy("client_name")->filter(function($val){
+                return $val->count()>1;
+            });
+            
+            if($group->count()>0){
+                foreach($group as $index=>$val){
+                    $validationErrors[] = ["Client Name $index is repeated ".sizeof($val)." time"];
+                }
+            }
+            if (!empty($validationErrors)) {
+                return responseMsgs(false,"Validation Error",$validationErrors);
+            } 
+            
+            // Import the CSV file using the RollDetailsImport class
+            $state = $this->_M_StateMaster->all();
+            $city = $this->_M_CityStateMap->all();
+            $sector = $this->_M_Sector->all();
+            DB::beginTransaction();
+            foreach($dataWithHeadings as $val){
+                $stateId = $state->where("state_name",$val["state"])->first()->id??null;
+                $cityId = $city->where("state_id",$stateId)->where("city_name",$val["city"])->first()->id??null;
+                $sectorId = $sector->where("sector",$val["sector"])->first()->id??null;
+                if(!$stateId && $val["state"]){
+                    $newStateRequest = new Request(["state_name"=>$val["state"]]);
+                    $stateId = $this->_M_StateMaster->store($newStateRequest);
+                    $state = $this->_M_StateMaster->all();
+                }
+                if(!$cityId && $val["city"]){
+                    $newCityRequest = new Request(["state_id"=>$stateId,"city_name"=>$val["city"]]);
+                    $cityId = $this->_M_CityStateMap->store($newCityRequest);
+                    $city = $this->_M_CityStateMap->all();
+                }
+                if(!$sectorId && $val["sector"]){
+                    $newSectorRequest = new Request(["sector"=>$val["sector"]]);
+                    $sectorId = $this->_M_Sector->store($newSectorRequest);
+                    $sector = $this->_M_Sector->all();
+                }
+                $clientRequest = new Request($val);
+                $clientRequest->merge(["state_id"=>$stateId,"city_id"=>$cityId]);
+                $this->_M_ClientDetail->store($clientRequest);
+            }   
+            DB::commit();
+        }
+        return view("import/importExcelToDb");
+    }
+
+    public function importBag(Request $request){
+        if($request->post()){
+            ini_set('max_execution_time', 600);
+            $validate = Validator::make($request->all(),["csvFile"=>"required|mimes:csv,xlsx"]);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            $file = $request->file('csvFile');
+            $headings = (new HeadingRowImport())->toArray($file)[0][0];
+            $expectedHeadings = Config::get("customConfig.BagCsvHeader");
+            if (array_diff($expectedHeadings, $headings)) {
+                return responseMsgs(false,"data in invalid format","");;
+            }
+            $rows = Excel::toArray([], $file);
+
+            // Validate rows
+            $validationErrors = [];
+            $dataWithHeadings = [];
+            foreach ($rows[0] as $index => $row) {
+                // Skip the header row
+                if ($index == 0) continue;
+                // Validate each row
+                $rowData = array_combine($headings, $row);    
+                if(strtolower($file->getClientOriginalExtension())=="xlsx")
+                {
+                    $rowData["packing_date"] = is_int($rowData["packing_date"])? getDateColumnAttribute($rowData['packing_date']) : $rowData['packing_date'];
+                }           
+                $validator = Validator::make($rowData, [
+                    "packing_date"=>"required|date",
+                    'client_name' => "required",                   
+                    'bag_configuration' => 'required|in:NW,BOPP,LAM',
+                    'bag_type' => 'required|in:B,D,L,U,LBB',
+                    'gsm' => 'nullable|numeric',
+                    'w' => 'required|numeric',
+                    "l"=>"required|numeric",
+                    "g"=>"nullable|numeric",
+                    "bag_color"=>"nullable",
+                    "printing_color"=>"nullable",
+                    "bag_weight"=>"required|numeric",
+                    "bag_in_pieces"=>"nullable|int",
+                    "bag_status"=>"required|in:godown,factory"
+                ]);
+
+                if ($validator->fails()) {
+                    $validationErrors[$index] = $validator->errors()->all();
+                }
+                $rowData["client_name"] = Str::title($rowData["client_name"]);
+                $rowData["packing_weight"]=$rowData["bag_weight"];
+                $rowData["packing_bag_pieces"]=$rowData["bag_in_pieces"];
+                $dataWithHeadings[] = $rowData; 
+            }
+
+            $group = collect($dataWithHeadings)->groupBy("packing_no")->filter(function($val){
+                return $val->count()>1;
+            });
+            
+            if($group->count()>0){
+                foreach($group as $index=>$val){
+                    $validationErrors[] = ["packing no $index is repeated ".sizeof($val)." time"];
+                }
+            }
+
+            if (!empty($validationErrors)) {
+                return responseMsgs(false,"Validation Error",$validationErrors);
+            } 
+            
+            // Import the CSV file using the RollDetailsImport class
+            $client = $this->_M_ClientDetail->all();
+            $bagType = Config::get("customConfig.bagTypeIdByShortName");
+            $data = collect($dataWithHeadings)->groupBy(["client_name","bag_configuration","bag_type","gsm","bag_color","printing_color"]);
+            DB::beginTransaction();
+            foreach($data as $clintName=>$bagConfigVal){ 
+                foreach($bagConfigVal as $config =>$bagVal){
+                    foreach($bagVal as $bag=>$gsmVal){
+                        foreach($gsmVal as $gsm=>$colorVal){
+                            foreach($colorVal as $color=>$printingVal){
+                                foreach($printingVal as $print=>$item){
+                                    $item = $item->groupBy(["w","l","g"]);
+                                    foreach($item as $w=>$litem){
+                                        foreach($litem as $l=>$gitem){
+                                            foreach($gitem as $g=>$val){                                                
+                                                $inKgItem     = $val->whereNull("bag_in_pieces");
+                                                $inPiecesItem = $val->whereNotNull("bag_in_pieces");
+                                                $client_detail_id = $client->where("client_name",$clintName)->first()->id??null;
+                                                if(!$client_detail_id){
+                                                    $clientRequest = new Request(["client_name"=>$clintName]);
+                                                    $client_detail_id = $this->_M_ClientDetail->store($clientRequest);
+                                                    $client = $this->_M_ClientDetail->all();
+                                                }
+                                                $orderDate = $val->min("packing_date");
+                                                $bagTypeId = $bagType[$bag]??null;
+                                                $orderData=[
+                                                    "client_detail_id"=>$client_detail_id,
+                                                    "estimate_delivery_date"=>Carbon::now()->format("Y-m-d"),
+                                                    "order_date"=>$orderDate,
+                                                    "bag_type_id"=>$bagTypeId,
+                                                    "bag_quality"=>$config,
+                                                    "bag_gsm"=>$gsm ? explode(",",$gsm):null,
+                                                    "bag_w"=>$w,
+                                                    "bag_l"=>$l,
+                                                    "bag_g"=>$g?$g:null,
+                                                    "bag_color"=>$color?explode(",",$color):null,
+                                                    "bag_printing_color"=>$print?explode(",",$print):null,
+                                                    "disbursed_units"=>0,
+                                                    "wip_disbursed_units"=>0,
+                                                    "is_wip_disbursed"=>true,
+                                                ];
+                                                $newOrderRequest = new Request($orderData);
+                                                if($inKgItem){
+                                                    $newOrderRequest->merge([
+                                                        "booked_units"=>$inKgItem->sum("bag_weight"),
+                                                        "units"=>"Kg",
+                                                        "total_units"=>$inKgItem->sum("bag_weight"),
+                                                    ]);
+                                                    $orderId = $this->_M_OrderPunchDetail->store($newOrderRequest);
+                                                    foreach($inKgItem as $kgs){
+                                                        $newBagRequest = new Request($kgs);
+                                                        $newBagRequest->merge(["order_id"=>$orderId]);
+                                                        if($kgs["bag_status"]=="godown"){
+                                                            $newBagRequest->merge(["packing_status"=>2,"godown_reiving_date"=>$kgs["packing_date"]]);
+                                                        }
+                                                        $this->_M_BagPacking->store($newBagRequest);
+                                                    }
+                                                }
+                                                if($inPiecesItem){
+                                                    $newOrderRequest->merge([
+                                                        "booked_units"=>$inPiecesItem->sum("bag_weight"),
+                                                        "units"=>"Kg",
+                                                        "total_units"=>$inPiecesItem->sum("bag_weight"),
+                                                    ]);
+                                                    $orderId = $this->_M_OrderPunchDetail->store($newOrderRequest);
+                                                    foreach($inPiecesItem as $kgs){
+                                                        $newBagRequest = new Request($kgs);
+                                                        $newBagRequest->merge(["order_id"=>$orderId]);
+                                                        if($kgs["bag_status"]=="godown"){
+                                                            $newBagRequest->merge(["packing_status"=>2,"godown_reiving_date"=>$kgs["packing_date"]]);
+                                                        }
+                                                        $this->_M_BagPacking->store($newBagRequest);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }    
+                            }
+                        }
+                    }
+                }
+            }
+            // dd($data);   
+            // DB::commit();
+            flashToast("message","Bag Import Successfully");
+            return redirect()->back();
         }
         return view("import/importExcelToDb");
     }

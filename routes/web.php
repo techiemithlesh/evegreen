@@ -300,6 +300,8 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::match(["get", "post"], "import/order", "importOrders")->name("import.order");
         Route::match(["get", "post"], "import/order/roll/map", "orderRollMap")->name("import.order.roll.map");
         Route::match(["get", "post"], "import/despatch/history", "importDespatchHistory")->name("import.despatch.history");
+        Route::match(["get","post"],"import/client","importClient");
+        Route::match(["get","post"],"import/bag","importBag")->name("import.bag");
     });
 
     Route::prefix('report')->group(function () {
