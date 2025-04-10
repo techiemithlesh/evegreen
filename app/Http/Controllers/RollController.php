@@ -421,6 +421,9 @@ class RollController extends Controller
                         $rollDtl =$rollTransit->replicate();
                         $rollDtl->setTable($this->_M_RollDetail->getTable());
                         $rollDtl->id =  $rollTransit->id;
+                        $rollDtl->created_at =  $rollTransit->created_at;
+                        $rollDtl->updated_at =  $rollTransit->updated_at;
+                        $rollDtl->deleted_at =  $rollTransit->deleted_at;
                         $rollDtl->roll_receiving_at =  Carbon::now();
                         $rollDtl->save();
                     }else{
@@ -432,6 +435,10 @@ class RollController extends Controller
                         $rollDtl =$this->_M_LoopDetail->newInstance($loop);
                         $rollDtl->setTable($this->_M_LoopDetail->getTable());
                         $rollDtl->id =  $rollTransit->id;
+                        $rollDtl->created_at =  $rollTransit->created_at;
+                        $rollDtl->updated_at =  $rollTransit->updated_at;
+                        $rollDtl->deleted_at =  $rollTransit->deleted_at;
+                        $rollDtl->roll_receiving_at =  Carbon::now();
                         $rollDtl->save(); 
                         $loopStock = $this->_M_LoopStock->where("loop_color",$rollDtl->loop_color)->first();
                         if(!$loopStock){

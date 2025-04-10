@@ -25,7 +25,8 @@ class LoopDetail extends Model
         "quality_id",
         "hardness",
         'roll_type',
-        'lock_status'
+        'lock_status',
+        "roll_receiving_at"
     ];
 
     public function store($request){        
