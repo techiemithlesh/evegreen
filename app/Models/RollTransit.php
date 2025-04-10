@@ -49,7 +49,8 @@ class RollTransit extends Model
         "cutting_machine_id",
         "lock_status",
         "loop_color",
-        "quality_id"
+        "quality_id",
+        "roll_receiving_at"
     ];
 
     public function store($request){        

@@ -421,6 +421,7 @@ class RollController extends Controller
                         $rollDtl =$rollTransit->replicate();
                         $rollDtl->setTable($this->_M_RollDetail->getTable());
                         $rollDtl->id =  $rollTransit->id;
+                        $rollDtl->roll_receiving_at =  Carbon::now();
                         $rollDtl->save();
                     }else{
                         $rollTransit->loop_color = $rollTransit->roll_color;

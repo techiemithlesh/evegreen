@@ -313,6 +313,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
             Route::get("/legacy/client/order", "legacyClientOrder")->name("legacy.client.order");
             Route::get("/roll/shortage", "rollShortage")->name("roll.shortage");
             Route::get("garbage", "garbageRegister")->name("report.garbage");
+            Route::get("roll/status", "rollStatus")->name("report.roll.status");
         });
     });
 
