@@ -50,7 +50,7 @@
                         <th>Client Name</th>
                         <th>Order Date</th>
                         <th>Dispatch Date</th>
-                        <th>Status</th>
+                        <!-- <th>Status</th> -->
                         <th style="width: 100%;">Flowchart</th>
                     </tr>
                 </thead>
@@ -97,7 +97,7 @@
                 { data: "client_name", name: "client_name" },
                 { data: "order_date", name: "order_date" },
                 { data: "estimate_delivery_date", name: "estimate_delivery_date" },
-                { data: "status", name: "status", orderable: false, searchable: false },
+                // { data: "status", name: "status", orderable: false, searchable: false },
                 { data: "flowchart", name: "flowchart", orderable: false, searchable: false }
             ],
             createdRow: function(row, data, dataIndex) {
