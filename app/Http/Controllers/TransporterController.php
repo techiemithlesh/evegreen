@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DataExport;
 use App\Models\AutoDetail;
 use App\Models\TransporterDetail;
 use Exception;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class TransporterController extends Controller
@@ -24,6 +26,17 @@ class TransporterController extends Controller
     public function autoList(Request $request){
         if($request->ajax()){
             $data = $this->_M_AutoDetails->where("lock_status",false)->orderBy("id","ASC");
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+        
+                $headings = collect($columns)->map(function ($col) {
+                    return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                })->toArray();
+                $data=$data->get();
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'auto-list.xlsx');
+                }
+            }        
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
@@ -77,6 +90,17 @@ class TransporterController extends Controller
     public function transporterList(Request $request){
         if($request->ajax()){
             $data = $this->_M_TransporterDetails->where("lock_status",false)->orderBy("id","ASC");
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+        
+                $headings = collect($columns)->map(function ($col) {
+                    return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                })->toArray();
+                $data=$data->get();
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'Transporter-list.xlsx');
+                }
+            } 
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {

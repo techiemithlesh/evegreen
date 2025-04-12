@@ -121,7 +121,7 @@
     $(document).ready(function(){
         $('#postsTable').DataTable({
             processing: true,
-            serverSide: true,
+            serverSide: false,
             ajax: "{{route('master.roll.shortage.list')}}",
             columns: [
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
@@ -153,6 +153,21 @@
                 $(row).attr('data-id', data.DT_RowIndex);
                 $(row).attr('data-item', JSON.stringify(data));
             },
+            dom: 'lBfrtip', // This enables the buttons
+            language: {
+                lengthMenu: "Show _MENU_" // Removes the "entries" text
+            },
+            lengthMenu: [
+                [10, 25, 50, 100, -1], // The internal values
+                ["10 Row", "25 Row", "50 Row", "100 Row", "All"] // The display values, replace -1 with "All"
+            ],
+            buttons: [
+                {
+                    extend: 'excel',
+                    text: '<i class="bi bi-file-earmark-excel-fill text-success"></i> ',
+                    className: 'btn btn-success',
+                },
+            ],
         });
         $("#rollMinLimitForm").validate({
             rules: {

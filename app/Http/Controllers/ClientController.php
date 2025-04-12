@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DataExport;
 use App\Models\ClientDetailMaster;
 use App\Models\Sector;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class ClientController extends Controller
@@ -59,6 +61,18 @@ class ClientController extends Controller
                             $val->state_name = $val->getState()->state_name??"";
                             return $val;
                         });
+                if ($request->has('export')) {
+                    $columns = json_decode($request->export_columns, true);
+                    $headings = json_decode($request->export_headings,true);
+                    if(!$headings){
+                        $headings = collect($columns)->map(function ($col) {
+                            return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                        })->toArray();
+                    }
+                    if ($request->export === 'excel') {
+                        return Excel::download(new DataExport($data, $headings,$columns), 'Client-list.xlsx');
+                    }
+                }
                 return DataTables::of($data)
                     ->addIndexColumn()
                     ->addColumn('action', function ($val) {

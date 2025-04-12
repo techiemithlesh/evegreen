@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DataExport;
 use App\Http\Controllers\MenuController;
 use App\Models\MenuMaster;
 use App\Models\User;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Validate;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
@@ -103,7 +105,6 @@ class UserController extends Controller
             }
             
         }catch(Exception $e){
-            dd($e);
             flashToast("message","Internal Server Error");
             return redirect()->back();
         }
@@ -160,7 +161,9 @@ class UserController extends Controller
             if($validate->fails()){                    
                 return validationError($validate);
             }
-            $request->merge(["password"=>Hash::make($request->password)]);
+            if($request->password){
+                $request->merge(["password"=>Hash::make($request->password)]);
+            }
             $this->_M_User->edit($request->id,$request);
             return responseMsgs(true,"New User Added","");
         }catch(Exception $e){
@@ -174,7 +177,19 @@ class UserController extends Controller
             $data = $this->_M_User
                     ->select("users.*","user_type_masters.user_type")
                     ->leftJoin("user_type_masters","user_type_masters.id","users.user_type_id");
-            DB::enableQueryLog();
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+                $headings = json_decode($request->export_headings,true);
+                if(!$headings){
+                    $headings = collect($columns)->map(function ($col) {
+                        return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                    })->toArray();
+                }
+                $data = $data->get();
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'User-list.xlsx');
+                }
+            }
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) use($user_type) {                    

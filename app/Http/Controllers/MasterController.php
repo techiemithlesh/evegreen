@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DataExport;
 use App\Models\CityStateMap;
 use App\Models\FareDetail;
 use App\Models\GradeMaster;
@@ -63,6 +64,20 @@ class MasterController extends Controller
     public function fareList(Request $request){
         if($request->ajax()){
             $data = $this->_M_FareDetail->where("lock_status",false)->orderBy("id","ASC");
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+        
+                $headings = json_decode($request->export_headings,true);
+                if(!$headings){
+                    $headings = collect($columns)->map(function ($col) {
+                        return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                    })->toArray();
+                }
+                $data=$data->get();
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'Broker-list.xlsx');
+                }
+            } 
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
@@ -117,6 +132,20 @@ class MasterController extends Controller
     public function stereoList(Request $request){
         if($request->ajax()){
             $data = $this->_M_StereoDetail->where("lock_status",false)->orderBy("id","ASC");
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+        
+                $headings = json_decode($request->export_headings,true);
+                if(!$headings){
+                    $headings = collect($columns)->map(function ($col) {
+                        return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                    })->toArray();
+                }
+                $data=$data->get();
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'Stereo-list.xlsx');
+                }
+            } 
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
@@ -171,6 +200,20 @@ class MasterController extends Controller
     public function gradeList(Request $request){
         if($request->ajax()){
             $data = $this->_M_GradeMaster->where("lock_status",false)->orderBy("id","ASC");
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+        
+                $headings = json_decode($request->export_headings,true);
+                if(!$headings){
+                    $headings = collect($columns)->map(function ($col) {
+                        return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                    })->toArray();
+                }
+                $data=$data->get();
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'Grade-list.xlsx');
+                }
+            } 
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
@@ -225,6 +268,23 @@ class MasterController extends Controller
     public function rollQualityList(Request $request){
         if($request->ajax()){
             $data = $this->_M_VendorDetail->where("lock_status",false)->orderBy("id","ASC");
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+        
+                $headings = json_decode($request->export_headings,true);
+                if(!$headings){
+                    $headings = collect($columns)->map(function ($col) {
+                        return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                    })->toArray();
+                }
+                $data=$data->get()->map(function($val){
+                    $val->roll_quality = ($val->rollQualityList()->get())->pluck('quality')->implode(",","quality");
+                    return $val;
+                });
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'Roll-Quality-list.xlsx');
+                }
+            } 
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn("roll_quality",function($val){
@@ -300,6 +360,20 @@ class MasterController extends Controller
     public function rateTypeList(Request $request){
         if($request->ajax()){
             $data = $this->_M_RateType->where("lock_status",false)->orderBy("id","ASC");
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+        
+                $headings = json_decode($request->export_headings,true);
+                if(!$headings){
+                    $headings = collect($columns)->map(function ($col) {
+                        return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                    })->toArray();
+                }
+                $data=$data->get();
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'Rate-Type-list.xlsx');
+                }
+            } 
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
@@ -356,6 +430,20 @@ class MasterController extends Controller
     public function userTypeList(Request $request){
         if($request->ajax()){
             $data = $this->_M_UserTypeMaster->where("lock_status",false)->orderBy("id","ASC");
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+        
+                $headings = json_decode($request->export_headings,true);
+                if(!$headings){
+                    $headings = collect($columns)->map(function ($col) {
+                        return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                    })->toArray();
+                }
+                $data=$data->get();
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'User Type-list.xlsx');
+                }
+            } 
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
@@ -396,6 +484,20 @@ class MasterController extends Controller
     public function loopStockList(Request $request){
        if($request->ajax()){
             $data = $this->_M_LoopStock->where("lock_status",false)->orderBy("id","ASC");
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+        
+                $headings = json_decode($request->export_headings,true);
+                if(!$headings){
+                    $headings = collect($columns)->map(function ($col) {
+                        return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                    })->toArray();
+                }
+                $data=$data->get();
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'Loop-Stock-list.xlsx');
+                }
+            } 
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
@@ -476,6 +578,20 @@ class MasterController extends Controller
     public function brokerList(Request $request){
         if($request->ajax()){
             $data = $this->_M_broker->orderBy("id","ASC");
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+        
+                $headings = json_decode($request->export_headings,true);
+                if(!$headings){
+                    $headings = collect($columns)->map(function ($col) {
+                        return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                    })->toArray();
+                }
+                $data=$data->get();
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'Agent-list.xlsx');
+                }
+            } 
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
@@ -539,6 +655,20 @@ class MasterController extends Controller
     public function stateList(Request $request){
         if($request->ajax()){
             $data = $this->_M_Sate->orderBy("state_name","ASC");
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+        
+                $headings = json_decode($request->export_headings,true);
+                if(!$headings){
+                    $headings = collect($columns)->map(function ($col) {
+                        return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                    })->toArray();
+                }
+                $data=$data->get();
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'State-list.xlsx');
+                }
+            } 
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($val) {
@@ -650,6 +780,18 @@ class MasterController extends Controller
                 $val->state_name = $val->getState()->first()->state_name??"";
                 return $val;
             });
+            if ($request->has('export')) {
+                $columns = json_decode($request->export_columns, true);
+                $headings = json_decode($request->export_headings,true);
+                if(!$headings){
+                    $headings = collect($columns)->map(function ($col) {
+                        return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                    })->toArray();
+                }
+                if ($request->export === 'excel') {
+                    return Excel::download(new DataExport($data, $headings,$columns), 'City-list.xlsx');
+                }
+            }
             return DataTables::of($data)
                 ->addIndexColumn()                
                 ->addColumn('action', function ($val) {
