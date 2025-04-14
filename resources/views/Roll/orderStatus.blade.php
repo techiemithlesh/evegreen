@@ -1,5 +1,11 @@
 @include("layout.header")
+<style>
+    #ordersTable td:last-child,
+    #ordersTable th:last-child {
+        text-align: left;
+    }
 
+</style>
 <main class="p-3">
     <div class="container-fluid">
         <div class="mb-3 text-left">
@@ -101,16 +107,16 @@
                 { data: "flowchart", name: "flowchart", orderable: false, searchable: false }
             ],
             createdRow: function(row, data, dataIndex) {
-                $('td', row).eq(5).attr({
+                $('td', row).eq(4).attr({
                     "class": "flowchart-cell",
                     "data-order-id": data.id,
-                });
+                }).css('max-width', '200px').css('word-break', 'break-word');
 
-                $('td', row).eq(4).attr({
-                    "class": "status-cell",
-                    "data-order-id": data.id,
-                    "style": "cursor: pointer;"
-                });                
+                // $('td', row).eq(4).attr({
+                //     "class": "status-cell",
+                //     "data-order-id": data.id,
+                //     "style": "cursor: pointer;"
+                // });                
                 
             },
             drawCallback: function () {

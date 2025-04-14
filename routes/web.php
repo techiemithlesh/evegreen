@@ -215,6 +215,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::match(["get", "post"], "roll/order/book", "bookedOrder")->name("order.book");
         Route::match(["get", "post"], "roll/order/book-delivered", "bookedOrderDelivered")->name("order.book.delivered");
         Route::match(["get", "post"], "roll/order/unbook", "unBookedOrder")->name("order.unbook");
+        Route::get("roll/order/draft", "draftOrder")->name("order.draft");
 
         Route::get("roll/order/status","orderStatus")->name("order.status");
 

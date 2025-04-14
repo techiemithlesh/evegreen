@@ -369,6 +369,7 @@
                 </div>
                 <div class="col-12">
                     <button type="button" class="btn btn-primary" onclick="showRollSuggestion()">Check</button>
+                    <button type="button" name="draft" value="draft" class="btn btn-warning" onclick="savAsDraft();">Save As Draft</button>
                     <button type="submit" class="btn btn-primary" onclick="setHintCollapse();">Submit</button>
                 </div>
             </form>
@@ -454,16 +455,6 @@
                         return $("#bagQuality").val()!=="BOPP"
                     },
                 },
-                // bagGsm:{
-                //     required: function(){
-                //         return $("#bagQuality").val()!=="BOPP"
-                //     },
-                // },
-                // bagGsmJson:{
-                //     required: function(){
-                //         return $("#bagQuality").val()=="BOPP"
-                //     },
-                // },
                 roll_id:{
                     required:true,
                 }
@@ -1033,11 +1024,26 @@
         }
         return false;
     }
-    function saveOrder(){
+
+    function savAsDraft(){
+        if(!$("#bookingForClientId").val()){
+            alert("please select client");
+            $("#bookingForClientId").focus();
+            return false;
+        }
+        (showConfirmDialog('Are you sure you want to As Draft Order?', function(){saveOrder(true);}));
+    }
+    function saveOrder(isDraft=false){
+        let data = new FormData($("#myForm")[0]);
+        if(isDraft){
+            data.append("saveAsDraft", true);
+        }
         $.ajax({
             url:"{{route('order.punches.save')}}",
             type:"post",
-            data:$("#myForm").serialize(),
+            data:data,
+            processData: false,     // ✅ must be false for FormData
+            contentType: false,     // ✅ must be false for FormData
             beforeSend:function(){
                 $("#loadingDiv").show();
             },
@@ -1048,7 +1054,7 @@
                     $("#orderHistory").hide();
                     $("#suggestion").hide();
                     $("#orderRoll tbody").empty();
-                    modelInfo(data.messages);
+                    modelInfo(data.message);
                     setHintDefault();
                     getBalance();
                     resetForm("myForm");

@@ -1,5 +1,5 @@
-<td class="flowchart-cell" data-order-id="{{ $order->id }}" style="display: none;">
-    <div class="mermaid">
+<div style="overflow-x: auto; max-width: 100%;">
+    <div class="mermaid flowchart-cell" data-order-id="{{ $order->id }}">
         @php            
             $completedNodes = [];
             $statusClass = 'pending';
@@ -52,12 +52,18 @@
             } elseif ($order->isRollBook) {
                 $completedNodes = ['PartBooking'];
                 $statusClass = 'rollbooked';
+            } else{
+                $completedNodes = ['Pending'];
+                $statusClass = 'pending';
             }
             
         @endphp
         
         graph LR;
             @php
+                if($order->is_draft){
+                    echo "Draft".(isset($completedNodes[0])?" -->".$completedNodes[0]:"").";\n";
+                }
                 foreach ($completedNodes as $index => $node) {
                     if (isset($completedNodes[$index + 1])) {
                         echo "$node --> {$completedNodes[$index + 1]};\n";
@@ -77,9 +83,12 @@
 
         %% Apply colors dynamically based on order status
         @php
+            if($order->is_draft){
+                echo "class Draft $statusClass;\n";
+            }
             foreach ($completedNodes as $node) {
                 echo "class $node $statusClass;\n";
             }
         @endphp
     </div>
-</td>
+</div>

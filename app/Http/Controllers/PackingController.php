@@ -125,6 +125,7 @@ class PackingController extends Controller
             ->where("order_punch_details.is_delivered",false)
             ->where("order_punch_details.is_wip_disbursed",false)
             ->where("order_punch_details.lock_status",false)
+            ->where("order_punch_details.is_draft",false)
             // ->where("order_punch_details.id",261)
             ->orderBy("order_punch_details.id")
             ->get()

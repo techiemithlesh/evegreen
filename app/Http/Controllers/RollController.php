@@ -2312,6 +2312,9 @@ class RollController extends Controller
                 $request->merge(["bagGsm"=>array_sum(explode("/",$request->bagGsmJson))]);
                 $request->merge(["bagGsmJson"=>(explode("/",$request->bagGsmJson))]);
             }
+            if($request->saveAsDraft){
+                $request->merge(["is_draft"=>$request->saveAsDraft]);
+            }
 
             DB::beginTransaction();
             if($request->id){
@@ -2321,6 +2324,9 @@ class RollController extends Controller
             }
             $orderNew = $this->_M_OrderPunches->find($orderId);
             $type ="Pending";
+            if($request->saveAsDraft){
+                $type ="Draft";
+            }
             $bookOrders = 0;
             if($request->roll){
                 $type ="Booked";
@@ -2529,6 +2535,9 @@ class RollController extends Controller
                     $request->merge(["bagGsmJson"=>(explode("/",$request->bagGsmJson))]);
                 }
                 $request->merge(["id"=>$order->id]);
+                if($request->is_daft_order==1){
+                    $request->merge(["is_draft"=>false]);
+                }
                 DB::beginTransaction();
                 $this->_M_OrderPunches->edit($request);
                 DB::commit();
@@ -2550,6 +2559,7 @@ class RollController extends Controller
             return (int) $val;
         })->toArray();
         $order->bookRoll = $order->getOrderRollBagTypes()->count()?true:false;
+        $data["is_daft_order"] = $request->is_daft_order??false;
         $data["prevUrl"] = $request->priv_url??url()->previous();
         $data["prevUrlName"] = $request->priv_url_name??"Back";
         $data["order"] = $order;
@@ -3208,6 +3218,7 @@ class RollController extends Controller
                     ->leftJoin("grade_masters","grade_masters.id","order_punch_details.grade_id")                   
                     ->where("order_punch_details.lock_status",false)
                     ->where("order_punch_details.is_delivered",false)
+                    ->where("order_punch_details.is_draft",false)
                     ->where(function($where){
                         $where->where(DB::raw("order_punch_details.total_units"),">",DB::raw("order_punch_details.booked_units + order_punch_details.disbursed_units"));
                     })
@@ -3318,6 +3329,159 @@ class RollController extends Controller
 
         }
         return view("Roll/unBookedOrder");
+    }
+
+    public function draftOrder(Request $request){
+        if($request->ajax()){
+        {
+            $fromDate = $request->fromDate;
+            $uptoDate = $request->uptoDate;
+            $orderNo = $request->orderNo;            
+            $data = $this->_M_OrderPunches
+                    ->select(
+                                "order_punch_details.*","order_roll_bag_types.*",
+                                "client_detail_masters.client_name",  
+                                "bag_type_masters.bag_type" , 
+                                "grade_masters.grade" ,                       
+                    )
+                    ->leftJoin(
+                        DB::raw("(
+                            SELECT *
+                            FROM(
+                                    SELECT order_id, STRING_AGG(roll_no,' , ') as roll_no 
+                                    FROM(
+                                        (
+                                            SELECT order_roll_bag_types.order_id, roll_details.roll_no 
+                                            FROM order_roll_bag_types
+                                            JOIN roll_details on roll_details.id = order_roll_bag_types.roll_id
+                                            WHERE order_roll_bag_types.lock_status = false
+                                        )
+                                        UNION ALL(
+                                            SELECT order_roll_bag_types.order_id, roll_transits.roll_no
+                                            FROM order_roll_bag_types
+                                            JOIN roll_transits on roll_transits.id = order_roll_bag_types.roll_id
+                                            WHERE order_roll_bag_types.lock_status = false
+                                        )
+                                    )orders
+                                    GROUP BY order_id 
+                            )
+                        ) AS order_roll_bag_types"),
+                        "order_roll_bag_types.order_id","order_punch_details.id"
+                    )                
+                    ->leftJoin("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id") 
+                    ->leftJoin("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")    
+                    ->leftJoin("grade_masters","grade_masters.id","order_punch_details.grade_id")                   
+                    ->where("order_punch_details.lock_status",false)
+                    ->where("order_punch_details.is_delivered",false)
+                    ->where("order_punch_details.is_draft",true)                    
+                    ->orderBy("order_punch_details.created_at","ASC");                               
+
+            if($fromDate && $uptoDate){             
+                $data->whereBetween(DB::raw("order_punch_details.created_at::date"),[$fromDate,$uptoDate]);
+            }
+
+            elseif($fromDate){
+                $data->where(DB::raw("order_punch_details.created_at::date"),">=",$fromDate);
+            }
+            elseif($uptoDate){
+                $data->where(DB::raw("order_punch_details.created_at::date"),"<=",$uptoDate);
+            } 
+
+            if($orderNo){
+                $data->where("order_punch_details.order_no",$orderNo);
+            }     
+            $list = DataTables::of($data)
+                ->addIndexColumn()                
+                ->addColumn('is_delivered', function ($val) {                    
+                    return $val->is_delivered ? "YES" : "NO";
+                })
+                ->addColumn("bag_size",function($val){
+                    return (float)$val->bag_w." x ".(float)$val->bag_l.($val->bag_g ?(" x ".(float)$val->bag_g) :"") ;
+                })
+                ->addColumn("bag_printing_color",function($val){
+                    return collect(json_decode($val->bag_printing_color,true))->implode(", ") ;
+                })
+                ->addColumn("bag_color",function($val){
+                    return collect(json_decode($val->bag_color,true))->implode(", ") ;
+                })
+                ->addColumn("bag_gsm",function($val){
+                    return collect(json_decode($val->bag_gsm,true))->implode(", ") ;
+                })
+                ->addColumn("alt_bag_color",function($val){
+                    return collect(json_decode($val->alt_bag_color,true))->implode(", ") ;
+                })
+                ->addColumn("alt_bag_gsm",function($val){
+                    return collect(json_decode($val->alt_bag_gsm,true))->implode(", ") ;
+                })
+                
+                ->addColumn("total_units",function($val){
+                    return round($val->total_units) ;
+                })
+                ->addColumn("booked_units",function($val){
+                    return round($val->booked_units) ;
+                })
+                ->addColumn("balance_units",function($val){
+                    return round($val->total_units -( $val->booked_units + $val->disbursed_units));
+                })
+                ->addColumn("balance_units_kg",function($val){
+                    return $val->units=='Kg' ? round($val->total_units -( $val->booked_units + $val->disbursed_units)) : "N/A";
+                })
+                ->addColumn("balance_units_pcs",function($val){
+                    return $val->units!='Kg' ? round($val->total_units -( $val->booked_units + $val->disbursed_units)) : "N/A";
+                })
+                ->addColumn("balance_units_in_kg",function($val){
+                    $balance = round($val->total_units -( $val->booked_units + $val->disbursed_units));
+                    $bag = $val->getBagType();
+                    $formula = $bag->weight_of_bag_per_piece??"";
+                    $size = $bag->roll_size_find??"";
+                    $newRequest = new Request();
+                    $newRequest->merge([
+                        "formula"=>$formula,
+                        "bagL" =>$val->bag_l,
+                        "size" =>" ( ".$size." ) ",
+                        "bagL"=>$val->bag_l,                        
+                        "bagW"=>$val->bag_w,
+                        "bagG"=>$val->bag_g,
+                    ]);                    
+                    $kg=[];
+                    $gsmArr = json_decode($val->bag_gsm,true);
+                    if($gsmArr && is_array($gsmArr) && $val->units=="Piece"){
+                        
+                        foreach($gsmArr as $gsm){
+                            $newRequest->merge([
+                                "gsm"=>$gsm
+                            ]);
+                            $result = $this->calculatePossibleProduction($newRequest);
+                            $kg[] = ["key"=>$gsm,"val"=> roundFigure(($result["result"] * $balance)/1000)];
+                        }
+                    }
+                    return $kg;
+                })
+                ->addColumn('created_at', function ($val) {                    
+                    return $val->created_at ? Carbon::parse($val->created_at)->format("d-m-Y") : "";                    
+                })
+                ->addColumn('estimate_delivery_date', function ($val) {                    
+                    return $val->estimate_delivery_date ? Carbon::parse($val->estimate_delivery_date)->format("d-m-Y") : "";                    
+                })
+                ->addColumn("order_date",function($val){
+                    return $val->order_date ? Carbon::parse($val->order_date)->format("d-m-Y"):"";
+                })
+                ->addColumn('delivery_date', function ($val) {                    
+                    return $val->delivery_date ? Carbon::parse($val->delivery_date)->format("d-m-Y") : "";                    
+                })
+                ->addColumn('action', function ($val) {     
+                    $button ='<i class="btn btn-sm btn-success mx-2" onClick="openBookingModel('.$val->id.')" title="search roll">S</i>'; 
+                    $button .='<a href = "'.route('order.punches.edit',['orderId' => $val->id,"priv_url"=>request()->path(),"priv_url_name"=>"Draft Order","is_daft_order"=>true]).'" class="btn btn-sm btn-primary mx-2" title="Edit Order">E</a>';      
+                    // $button .= '<i class="btn btn-sm btn-warning mx-2" onClick="disbursedOrder('.$val->id.')" title="Disburse Order">D</i>';
+                    $button .= '<i class="btn btn-sm btn-danger mx-2" onClick="deactivate('.$val->id.')" title="Delete Order">X</i>';         
+                    return '<div style="display:flex">'.$button.'</div>';                    
+                })
+                ->make(true);
+            return $list;
+
+        }
+        }
+        return view("Roll/draftOrder");
     }
 
     public function rebookOrder(Request $request){
