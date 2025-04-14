@@ -263,7 +263,6 @@ class PackingController extends Controller
             return responseMsg(false,$e->getMessage(),"");
         }catch(Exception $e){
             DB::rollBack();
-            dd($e);
             return responseMsg(false,"Server Error!!!",'');
         }
     }
@@ -627,12 +626,18 @@ class PackingController extends Controller
             $chalanNo="OO"."-";
             if($transPortStatus==4){
                 $chalanNo="FC"."-";
+                if(in_array($bags->first()->packing_status,[2,5])){
+                    $chalanNo="GC"."-";
+                }
             }
             elseif($transPortStatus==1){
                 $chalanNo="GF"."-";
             }
             elseif($transPortStatus==3){
                 $chalanNo="FG"."-";
+                if(in_array($bags->first()->packing_status,[2,5])){
+                    $chalanNo="GG"."-";
+                }
             }
             $key=$chalanNo;
             $chalanNo .=substr($rateType ? Str::upper($rateType->rate_type) :"O",0,1)."-";
@@ -692,7 +697,7 @@ class PackingController extends Controller
         }
     }
 
-    public function bagGodown(Request $request){
+    public function bagGodown($godownTypeId,Request $request){
         $user = Auth()->user();
         $user_type = $user->user_type;
         if($request->ajax()){
@@ -701,15 +706,21 @@ class PackingController extends Controller
                     )
                     ->join("order_punch_details","order_punch_details.id","bag_packings.order_id")
                     ->join("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")
-                    ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")
-                    ->where("bag_packings.packing_status",2)
+                    ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")                    
                     ->where("bag_packings.lock_status",false)
                     ->orderBy("bag_packings.order_id","DESC")
-                    ->orderBy("bag_packings.id","DESC")
-                    ->get();
+                    ->orderBy("bag_packings.id","DESC");
+            if($godownTypeId==1){
+                $data->where("bag_packings.packing_status",2);
+            }elseif($godownTypeId==2){
+                $data->where("bag_packings.packing_status",5);
+            }
+            $data=$data->get();
+            $request->merge(["cli"=>true]);
+            $verificationPending = $this->reivingGodown($godownTypeId,$request);
             $summary=[
                 "totalWeight"=>roundFigure($data->sum("packing_weight")),
-                "intTransPort"=>$this->_M_BagPacking->where("packing_status",3)->count(),
+                "intTransPort"=>$verificationPending->sum("total_unverified_bag"),
             ];
             $list = DataTables::of($data)
                 ->addIndexColumn()
@@ -742,6 +753,7 @@ class PackingController extends Controller
             return $list;
 
         }
+        $data["godownTypeId"] = $godownTypeId;
         $data["autoList"] =$this->_M_Auto->where("lock_status",false)->orderBy("id","ASC")->get();
         $data["transporterList"] = $this->_M_Transporter->where("lock_status",false)->orderBy("id","ASC")->get();
         $data["rateType"] = $this->_M_RateType->all();
@@ -749,7 +761,7 @@ class PackingController extends Controller
         return view("Packing/godown",$data);
     }
 
-    public function reivingGodown(Request $request){
+    public function reivingGodown($godownTypeId,Request $request){
         if($request->ajax()){
             $data = $this->_M_PackTransport->select("bag_packing_transports.id","bag_packing_transports.bill_no","bag_packing_transports.invoice_no","bag_packing_transports.transport_date",
                         "auto_details.auto_name",
@@ -767,6 +779,17 @@ class PackingController extends Controller
                     ->where("bag_packing_transports.is_fully_reviewed",false)
                     ->where("bag_packing_transports.lock_status",false)
                     ->groupBy("bag_packing_transports.id","bag_packing_transports.bill_no","bag_packing_transports.invoice_no","bag_packing_transports.transport_date","auto_details.auto_name");
+            if($godownTypeId==1){
+                $data->where(function($query)use($godownTypeId){
+                    $query->where("bag_packing_transports.godown_type_id",$godownTypeId)
+                    ->orWhereNull("bag_packing_transports.godown_type_id");
+                });
+            }else{                
+                $data->where("bag_packing_transports.godown_type_id",$godownTypeId);
+            }
+            if($request->cli){
+                return $data->get();
+            }
                 
             $list = DataTables::of($data)
                 ->addIndexColumn()
@@ -780,14 +803,15 @@ class PackingController extends Controller
                 ->make(true);
             return $list;
         }
-        return view("Packing/reivingGodown");
+        $data["godownTypeId"] = $godownTypeId;
+        return view("Packing/reivingGodown",$data);
     }
 
     public function reivingTransport(Request $request){
         try{
             $client = $this->_M_ClientDetails->all();
             $bagType = $this->_M_BagType->all();
-            $data = $this->_M_TransportDetail->select("bag_packings.*","bag_packing_transport_details.*","order_punch_details.*")
+            $data = $this->_M_TransportDetail->select("bag_packings.*","order_punch_details.*","bag_packing_transport_details.*")
                     ->join("bag_packings","bag_packings.id","bag_packing_transport_details.bag_packing_id")
                     ->join("order_punch_details","order_punch_details.id","bag_packings.order_id")
                     ->where("bag_packing_transport_details.pack_transport_id",$request->id)
@@ -811,10 +835,12 @@ class PackingController extends Controller
         try{
             $validate = Validator::make($request->all(),[
                 "id"=>"required|exists:".$this->_M_TransportDetail->getTable().",id,is_delivered,false",
+                "godownTypeId"=>"required|int|in:1,2"
             ]);
             if($validate->fails()){
                 return validationError($validate);
             }
+            $status = Config::get("customConfig.godownBagStatus.".$request->godownTypeId);
             $currentDate = Carbon::now()->format("Y-m-d");
             $user = Auth()->user();
 
@@ -826,7 +852,7 @@ class PackingController extends Controller
             $transportDtl->reiving_user_id = $user->id;
             $transportDtl->reiving_date = $currentDate;
 
-            $bagPackage->packing_status = 2;
+            $bagPackage->packing_status = $status;
             $bagPackage->godown_reiving_date = Carbon::now();
             
             DB::beginTransaction();
@@ -850,7 +876,7 @@ class PackingController extends Controller
     public function bagTransport(Request $request){
         $flag = $request->flag;
         if($request->ajax()){
-            return $this->bagGodown($request);
+            // return $this->bagGodown($request);
         }
         $data["autoList"] =$this->_M_Auto->where("lock_status",false)->orderBy("id","ASC")->get();
         $data["transporterList"] = $this->_M_Transporter->where("lock_status",false)->orderBy("id","ASC")->get();
@@ -912,12 +938,12 @@ class PackingController extends Controller
                 "transPortType" => "required|in:For Godown,For Delivery,For Factory", // Fixed 'id' to 'in' for a set of allowed values
                 "dispatchedDate" => "required|date", // Ensures dispatchedDate is a valid date
                 "invoiceNo" => "required", // Invoice number is mandatory
-                // "billNo" => "required_if:transPortType,For Delivery", // Bill number is required only if transport type is 'For Delivery'
+                "godownTypeId" => "required_if:transPortType,For Godown", 
                 "bag" => "required|array", // Packing must be a non-empty array
                 "bag.*.id" => [
                         "required",
                         Rule::exists($this->_M_BagPacking->getTable(), "id")
-                            ->whereIn("packing_status", [1, 2]),
+                            ->whereIn("packing_status", [1, 2, 5]),
                     ], // Ensures the packing IDs exist with specific statuses
             ];
             $validate = Validator::make($request->all(),$rules);
@@ -1150,7 +1176,7 @@ class PackingController extends Controller
                         if ($statusType) { // Ensure config exists to prevent errors
                             $query->orWhere(function ($q) use ($statusType) {
                                 $q->where("bag_packing_transports.transport_status", $statusType["transport_status"])
-                                  ->where("bag_packing_transports.transport_init_status", $statusType["transport_init_status"]);
+                                  ->whereIn("bag_packing_transports.transport_init_status", $statusType["transport_init_status"]);
                             });
                         }
             

@@ -7,6 +7,10 @@ return[
         "For Godown"=>3,
         "For Factory"=>1,
     ],
+    "godownBagStatus"=>[
+        "1"=>2,
+        "2"=>5
+    ],
     "bagStatus"=>[
         1=>"in factory",
         2=>"in godown",
@@ -15,24 +19,29 @@ return[
     ],
     "transportationDropDownType"=>[
         "Factory To Godown"=>[
-            "transport_init_status"=>1,
+            "transport_init_status"=>[1],
             "transport_status"=>3,
             "type"=>"Factory To Godown",
         ],
         "Factory To Client"=>[
-            "transport_init_status"=>1,
+            "transport_init_status"=>[1],
             "transport_status"=>4,
             "type"=>"Factory To Client",
         ],        
         "Godown To Client"=>[
-            "transport_init_status"=>2,
+            "transport_init_status"=>[2,5],
             "transport_status"=>4,
             "type"=>"Godown To Client",
         ],
         "Godown To Factory"=>[
-            "transport_init_status"=>2,
+            "transport_init_status"=>[2,5],
             "transport_status"=>1,
             "type"=>"Godown To Factory",
+        ],
+        "Godown To Godown"=>[
+            "transport_init_status"=>[2,5],
+            "transport_status"=>3,
+            "type"=>"Godown To Godown",
         ],
     ],
     "rollImportCsvHeader"=>['vendor_name',

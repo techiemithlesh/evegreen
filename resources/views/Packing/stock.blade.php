@@ -16,7 +16,8 @@
             <h5 class="panel-title">List</h5> 
             <div class="panel-control">
                 <!-- <a href="{{route('packing.transport.stock')}}" class="btn btn-warning btn-sm">Transport Bag</a> -->
-                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Godown')">Godown</button>
+                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Godown',1)">Godown 1</button>
+                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Godown',2)">Godown 2</button>
                 <button type="button" class="btn btn-sm btn-success" onclick="openTransportModel('For Delivery')">Client</button>
             </div>           
         </div>
@@ -430,7 +431,8 @@
         })
     }
 
-    function openTransportModel(transportType) {
+    function openTransportModel(transportType,godownType='') {
+        const storageType = ["For Godown", "For Factory"];
         let sequence = [];
 
         $(".checkbox").each(function () {
@@ -446,7 +448,7 @@
             return;
         }
         $("#isLocalTransportDiv").show();
-        if(transportType=="For Godown" || transportType=="For Factory"){
+        if(storageType.includes(transportType)){
             $("#isLocalTransportDiv").hide();
             $("#isLocalTransport").attr("checked",true).trigger("click");
         }
@@ -473,6 +475,7 @@
         });
         hidden+=`<input type='hidden' name='rateTypeIdNew' value="${rate}" />`;
         hidden+=`<input type='hidden' id='transPortType' name='transPortType' value="${transportType}" />`;
+        hidden += `<input type='hidden' name="godownTypeId" value="${godownType}" />`;
         
         console.log(rateType);
         if (Object.keys(rateType).length > 1 && transportType=="For Delivery") {
@@ -487,19 +490,19 @@
         $("#rateTypeDiv").show();
         $("#rateTypeId").val(rate);
         $("#transporterId").attr("required",true);
-        if(is_local_order || transportType=="For Godown" || transportType=="For Factory"){
+        if(is_local_order || storageType.includes(transportType)){
             $(".transposerDiv").hide();            
             $("#transporterId").attr("required",false);
             $("#rateTypeDiv").hide();
         }
         $("#bookingForClientId").attr({"disabled":true,"required":false});
         $(".client").hide();
-        if(clientId==1 && !(transportType=="For Godown" || transportType=="For Factory")){
+        if(clientId==1 && !storageType.includes(transportType)){
             $("#bookingForClientId").attr({"disabled":false,"required":true});
             $(".client").show();
         }
         $("#hiddenDiv").html(hidden);
-        $("#transportModelLabel").html(transportType);
+        $("#transportModelLabel").html(transportType+(godownType?(' '+ godownType):""));
         $("#transportModel").modal("show");
 
     }
