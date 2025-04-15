@@ -5,13 +5,13 @@
             <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
                 <ol class="breadcrumb fs-6">
                     <li class="breadcrumb-item fs-6"><a href="#">Bag</a></li>
-                    <li class="breadcrumb-item active fs-6" aria-current="page">Transport</li>
+                    <li class="breadcrumb-item active fs-6" aria-current="page">Chalane</li>
                 </ol>
             </nav>
 
         </div>
     </div>
-    <div class="container"> 
+    <div class="container">
         <div class="panel-body">
             <form action="" id="searchForm" >
                 <div class="row">                    
@@ -35,9 +35,8 @@
                             <div class="form-group">
                                 <label class="form-label" for="transportTypeId">Transportation Type</label>
                                 <select type="text" id="transportTypeId" name="transportTypeId[]" class="form-select" multiple>
-                                    <!-- <option value="">Select</option> -->
                                     @foreach($transportType as $val)
-                                        <option value="{{$val->id}}" {{in_array($val->id,['Factory To Client','Godown To Client'])?"selected":""}}>{{$val->type}}</option>
+                                        <option value="{{$val->id}}" {{in_array($val->id,['Factory To Client1','Godown To Client1'])?"selected":""}}>{{$val->type}}</option>
                                     @endforeach
                                 </select>
                                 <span class="error-text" id="transporterId-error"></span>
@@ -53,32 +52,25 @@
                 </div>
             </form>
         </div>
-        <div class="panel-body">
-            <div class="tableStickyDiv">
-                <table class="table table-bordered table-responsive table-fixed" id="postTable">
-                    <thead>
-                        <tr>
-                            <th>Dispatch Date</th>
-                            <th>Bag No</th>
-                            <th>Client Name</th>
-                            <th>Bag Size</th>
-                            <th>Bag Color</th>
-                            <th>Printing Color</th>
-                            <th>GSM</th>
-                            <th>Bag Type</th>
-                            <th>Bag Weight</th>
-                            <th>Bag Pieces</th>
-                            <th>Auto Name</th>
-                            <th>Transporter Name</th>
-                            <th>Chalan No</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
+        <div class="panel-body"> 
+            <table class="table table-bordered  table-responsive table-fixed" id="postsTable">
+                <thead>
+                    <tr>
+                        <th>Transport Date</th>
+                        <th>Chalan No.</th>
+                        <th>Auto Name</th>
+                        <th>Transporter Name</th>
+                        <th>Total Bag</th>
+                        <th>Return Bag</th>
+                        <th>Transportation Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
         </div>
     </div>
-
     <!-- model chalan -->
     <div class="modal fade modal-lg" id="chalanModal" tabindex="-1" aria-labelledby="chalanModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -97,32 +89,43 @@
             </div>
         </div>
     </div>
+    <!-- model transport dtl modal  -->
+    <div class="modal fade modal-lg" id="dtlModal" tabindex="-1" aria-labelledby="dtlModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dtlModalLabel">Dtl Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            </div>
+            </div>
+        </div>
+    </div>
 </main>
 <script>
     $(document).ready(function(){
         $("#transportTypeId").select2();
-        const table = $('#postTable').DataTable({
+        const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
             ordering:false,
-            searching:true,
             ajax: {
-                url: "{{route('packing.transport.register')}}", // The route where you're getting data from  
+                url: "{{route('packing.chalan.register')}}",// The route where you're getting data from
                 data: function(d) {
+
                     // Add custom form data to the AJAX request
                     var formData = $("#searchForm").serializeArray();
                     $.each(formData, function(i, field) {
-                        if (d[field.name]) {
-                            if (!Array.isArray(d[field.name])) {
-                                d[field.name] = [d[field.name]];
-                            }
-                            d[field.name].push(field.value);
-                        } else {
-                            d[field.name] = field.value;
-                        }
+                        d[field.name] = field.value; // Corrected: use d[field.name] instead of d.field.name
                     });
 
-                },              
+                },
+                dataSrc: function (json) {
+                    // $('#total_weight').text(json?.totalWeight); 
+                    // $('#intTransPort').text(json?.intTransPort); 
+                    return json.data;
+                },
                 beforeSend: function() {
                     $("#btn_search").val("LOADING ...");
                     $("#loadingDiv").show();
@@ -134,22 +137,27 @@
             },
 
             columns: [
-                { data: "transport_date", name: "transport_date" },
-                { data: "packing_no", name: "packing_no" },
-                { data: "client_name", name: "client_name" },
-                { data: "bag_size", name: "bag_size" },                
-                { data: "bag_color", name: "bag_color" },                
-                { data: "bag_printing_color", name: "bag_printing_color" },
-                { data: "bag_gsm", name: "bag_gsm" },
-                { data: "bag_type", name: "bag_type" },
-                { data: "packing_weight", name: "packing_weight" },
-                { data: "packing_bag_pieces", name: "packing_bag_pieces" },
+                { data:"transport_date",name:"transport_date" },
+                { data: "invoice_no", name: "invoice_no" },
                 { data: "auto_name", name: "auto_name" },
                 { data: "transporter_name", name: "transporter_name" },
-                { data: "invoice_no", name: "invoice_no" },
-                { data: "action", name: "action", orderable: false, searchable: false },
+                { data: "total_bags", name: "total_bags" },
+                { data: "total_return_bags", name: "total_return_bags" },
+                { data: "transition_type", name: "transition_type" },
                 
             ],
+            createdRow: function(row, data, dataIndex) {
+                let td = $('td', row).eq(1); 
+                let originalText = td.text().trim(); // Get the plain text content
+                td.html(`
+                    <i onclick="openPreviewChalanModel('${data.chalan_unique_id}')" style="cursor:pointer; color:blue; text-decoration:underline;">
+                        ${originalText}
+                    </i>
+                    &nbsp;
+                    <i class="bi bi-info-circle-fill" data-placement="bottom" data-toggle="tooltip" title="View detail" style="cursor:pointer;" onclick="showDtlModel(${data.id})"></i>
+                `);
+
+            },
             dom: 'lBfrtip', // This enables the buttons
             language: {
                 lengthMenu: "Show _MENU_" // Removes the "entries" text
@@ -158,31 +166,23 @@
                 [10, 25, 50, 100, -1], // The internal values
                 ["10 Row", "25 Row", "50 Row", "100 Row", "All"] // The display values, replace -1 with "All"
             ],
-            buttons: [
-                {
-                    extend: 'excel',
-                    text: '<i class="bi bi-file-earmark-excel-fill text-success"></i> ',
-                    className: 'btn btn-success',
-                },
-                {
-                    extend: 'pdfHtml5',
-                    text: '<i class="bi bi-file-earmark-pdf-fill text-danger"></i>',
-                    title: 'Data Export',
-                    orientation: 'portrait',
-                    pageSize: 'A4',
-                    // exportOptions: {
-                    //     columns: [0, 1,2, 3,4,5,6,7,8,9,10]  // Export only Name, Position, and Age columns
-                    // }
+            buttons: [{
+                extend: 'csv',
+                text: 'Export to Excel',
+                className: 'btn btn-success',
 
-                },
-            ],    
+            }],            
+            initComplete: function () {
+                addFilter('postsTable',[]);
+            },
         });
     });
 
     function searchData(){
-        $('#postTable').DataTable().ajax.reload(function(){
-            addFilter('postTable',[$('#postTable thead tr:nth-child(1) th').length - 1]);
+        $('#postsTable').DataTable().ajax.reload(function(){
+            addFilter('postsTable',[]);
         },false);
+        
     }
 
     function base64ToBlob(base64, mimeType) {
@@ -232,9 +232,9 @@
         })
     }
 
-    function deleteTransPortDtl(id){
+    function showDtlModel(chalaneId){
         $.ajax({
-            url:"{{route('packing.transport.delete', ['id' => ':id']) }}".replace(':id', id),
+            url:"{{route('packing.transport.dtlhtml', ['id' => ':id'])}}".replace(":id",chalaneId),
             type:"get",
             dataType:"json",
             beforeSend:function(){
@@ -242,40 +242,19 @@
             },
             success:function(response){
                 $("#loadingDiv").hide();
-                modelInfo(response.message);
-                if(response.status){
-                    searchData();
+                if(response.status){                    
+                    $("#dtlModal").modal("show");
+                    $("#dtlModal .modal-body").html(response?.data);
+                }else{
+
                 }
             },
             error: function (xhr, status, error) {
                 $("#loadingDiv").hide();
                 console.error("AJAX error:", error);
-                modelInfo("server error");
+                popupAlert("An error occurred while generating the PDF.");
             }
         })
-    }
-
-    function sellRollBak(id){
-        $.ajax({
-            url:"{{route('packing.transport.return.sell', ['id' => ':id']) }}".replace(':id', id),
-            type:"get",
-            dataType:"json",
-            beforeSend:function(){
-                $("#loadingDiv").show();
-            },
-            success:function(response){
-                $("#loadingDiv").hide();
-                modelInfo(response.message);
-                if(response.status){
-                    searchData();
-                }
-            },
-            error: function (xhr, status, error) {
-                $("#loadingDiv").hide();
-                console.error("AJAX error:", error);
-                modelInfo("server error");
-            }
-        });
     }
 </script>
 @include("layout.footer")

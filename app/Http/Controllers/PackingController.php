@@ -15,6 +15,7 @@ use App\Models\GarbageEntry;
 use App\Models\OrderPunchDetail;
 use App\Models\RateTypeMaster;
 use App\Models\RollDetail;
+use App\Models\Sector;
 use App\Models\TransporterDetail;
 use App\Traits\Formula;
 use Carbon\Carbon;
@@ -48,6 +49,7 @@ class PackingController extends Controller
     protected $_M_ChalanDtl;
     protected $_M_GarbageEntry;
     protected $_M_GarbageAcceptRegister;
+    protected $_M_Sector;
     function __construct()
     {
         $this->_M_RollDetail = new RollDetail();
@@ -63,6 +65,7 @@ class PackingController extends Controller
         $this->_M_ChalanDtl = new ChalanDtl();
         $this->_M_GarbageEntry = new GarbageEntry();
         $this->_M_GarbageAcceptRegister = new GarbageAcceptRegister();
+        $this->_M_Sector = new Sector();
     }
 
     public function packingEnter(Request $request){
@@ -226,6 +229,30 @@ class PackingController extends Controller
 
         }
         return view("Packing/wip");
+    }
+
+    public function getPackingSerialNo(Request $request){
+        try{
+            $orderDate = Carbon::parse($request->packing_date);
+            $rolNo = $orderDate->clone()->format("d/m/y")."-";
+            $sl = BagPacking::where("packing_date",$orderDate->clone()->format('Y-m-d'))->count("id")+1;
+            $slNo ="";
+            while(true){   
+                $slNo = str_pad((string)$sl,2,"0",STR_PAD_LEFT);                       
+                $test = BagPacking::where("packing_no",$rolNo.$slNo)->count();
+                if((!$test)){                    
+                    $rolNo.=$slNo;
+                    break;
+                }
+                $sl=($sl+1);
+            }
+            $data["sl"]=$sl+(collect($request->sl_nos)->count());
+            return responseMsg(true,"sl",$data);
+        }catch(MyException $e){
+            return responseMsg(false,$e->getMessage(),$e->getMessage());
+        }catch(Exception $e){
+            return responseMsg(false,"server Error","");
+        }
     }
 
     public function deleteWIP(Request $request){
@@ -1187,7 +1214,12 @@ class PackingController extends Controller
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn("transition_type",function($val){
-                    return $transition_type = collect(Config::get("customConfig.transportationDropDownType"))->where("transport_status",$val->transport_status)->where("transport_init_status",$val->transport_init_status)->first()["type"]??"";
+                    return $transition_type = collect(Config::get("customConfig.transportationDropDownType"))
+                                                ->filter(function ($item) use ($val) {
+                                                    return $item["transport_status"] == $val->transport_status &&
+                                                        in_array($val->transport_init_status, $item["transport_init_status"]);
+                                                })
+                                                ->first()["type"] ?? "";
                     
                 })
                 ->addColumn('transport_date', function ($val) { 
@@ -1206,10 +1238,17 @@ class PackingController extends Controller
                     return collect(json_decode($val->bag_gsm,true))->implode(",");
                 })
                 ->addColumn('action', function ($val) {                   
-                    $button='<button class="btn btn-sm btn-info" onClick="openPreviewChalanModel('."'".$val->chalan_unique_id."'".')" >Chalan</button>';
+                    $button='<button class="btn btn-sm btn-info" onClick="openPreviewChalanModel('."'".$val->chalan_unique_id."'".')" >View Chalan</button>';
                     if(in_array(Auth()->user()->user_type_id,[1,2])){
-                        $button.='<button class="btn btn-sm btn-danger" onclick="showConfirmDialog('."'Are you sure you want to deactivate this item?', function() { deleteTransPortDtl('$val->id'); })".'" >Delete</button>';
-
+                        // $button.='<button class="btn btn-sm btn-danger" onclick="showConfirmDialog('."'Are you sure you want to deactivate this item?', function() { deleteTransPortDtl('$val->id'); })".'" >Delete</button>';
+                    }
+                    $deliveryStatus = Config::get("customConfig.transportType.For Delivery");
+                    if(in_array(Auth()->user()->user_type_id,[1,2]) && $val->transport_status==$deliveryStatus){
+                        if(!$val->is_bag_return){
+                            $button.='<button class="btn btn-sm btn-danger" onclick="showConfirmDialog('."'Are you sure you want to Sell Return this item?', function() { sellRollBak('$val->id'); })".'" >Sell Return</button>';
+                        }else{
+                            $button.='<span class="btn btn-sm btn-warning">Bag Is Return in '.($val->transport_init_status==5?"Godown 2":($val->transport_init_status==2?"Godown 1":"Factory")).'</span>';
+                        }
                     }
                     return $button;
                 })
@@ -1241,6 +1280,28 @@ class PackingController extends Controller
             $tranportDtl->update();
             DB::commit();
             return responseMsg(true,"Bag Delete From Transport","");
+        }catch(MyException $e){
+            DB::rollBack();
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            DB::rollBack();
+            return responseMsg(false,"Server error!!!","");
+        }
+    }
+
+    public function returnSell($id,Request $request){
+        try{
+            
+            $tranportDtl = $this->_M_TransportDetail->find($id);
+            $transport = $this->_M_PackTransport->find($tranportDtl->pack_transport_id);
+            $bag = $this->_M_BagPacking->find($tranportDtl->bag_packing_id);
+            $tranportDtl->is_bag_return=true;
+            $bag->packing_status = $transport->transport_init_status;
+            DB::beginTransaction();  
+            $bag->update();          
+            $tranportDtl->update();
+            DB::commit();
+            return responseMsg(true,"Bag Return","");
         }catch(MyException $e){
             DB::rollBack();
             return responseMsg(false,$e->getMessage(),"");
@@ -1298,5 +1359,137 @@ class PackingController extends Controller
             return json_decode(json_encode(["id"=>$index,"type"=>$val]));
         });
         return view("Packing/bag_history",$data);
+    }
+
+    public function chalanRegister(Request $request){
+        if($request->ajax()){
+            $data = $this->_M_PackTransport->select("bag_packing_transports.*",
+                        "bag_packing_transport_details.total_bags","bag_packing_transport_details.total_return_bags",
+                        "auto_details.auto_name", "transporter_details.transporter_name"
+                    )
+                    ->join(DB::raw("(
+                            select pack_transport_id, count(bag_packing_id) AS total_bags, 
+                                count(case when is_bag_return=true then bag_packing_id else null end) AS total_return_bags
+                            from bag_packing_transport_details
+                            where bag_packing_transport_details.lock_status = false
+                            group by pack_transport_id
+                            ) AS bag_packing_transport_details"),"bag_packing_transport_details.pack_transport_id","bag_packing_transports.id")
+                    ->leftJoin("auto_details","auto_details.id","bag_packing_transports.auto_id")
+                    ->leftJoin("transporter_details","transporter_details.id","bag_packing_transports.transporter_id")
+                    ->where("bag_packing_transports.lock_status",false)
+                    ->orderBy("bag_packing_transports.transport_date","DESC");
+
+            if($request->fromDate && $request->uptoDate){
+                $data->WhereBetween("bag_packing_transports.transport_date",[$request->fromDate,$request->uptoDate]);
+            }elseif($request->fromDate){
+                $data->Where("bag_packing_transports.transport_date",$request->fromDate);
+            }elseif($request->uptoDate){
+                $data->Where("bag_packing_transports.transport_date",$request->uptoDate);
+            }
+
+            if($request->autoId){
+                $data->where("bag_packing_transports.auto_id",$request->autoId);
+            }
+
+            if($request->transporterId){
+                $data->where("bag_packing_transports.transporter_id",$request->transporterId);
+            }
+            if($request->billNo){
+                $data->where("bag_packing_transports.bill_no",$request->billNo);
+            }
+            if($request->invoiceNo){
+                $data->where("bag_packing_transports.invoice_no",$request->invoiceNo);
+            }
+            if($request->transportTypeId){
+                $data->where(function($query) use($request){
+                    foreach($request->transportTypeId as $index=> $val){
+                        $statusType=Config::get("customConfig.transportationDropDownType.".$val);
+                        if ($statusType) {
+                            // Ensure config exists to prevent errors
+                            $query->orWhere(function ($q) use ($statusType) {
+                                $q->where("bag_packing_transports.transport_status", $statusType["transport_status"])
+                                  ->whereIn("bag_packing_transports.transport_init_status", $statusType["transport_init_status"]);
+                            });
+                        }
+            
+                    }
+                });
+            }
+
+            $list = DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn("transition_type",function($val){
+                    return $transition_type = collect(Config::get("customConfig.transportationDropDownType"))
+                        ->filter(function ($item) use ($val) {
+                            return $item["transport_status"] == $val->transport_status &&
+                                in_array($val->transport_init_status, $item["transport_init_status"]);
+                        })
+                        ->first()["type"] ?? "";
+                    
+                })
+                ->addColumn('transport_date', function ($val) { 
+                    return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
+                })
+                ->make(true);
+            return $list;
+        }
+        $data["autoList"] = $this->_M_Auto->getAutoListOrm()->orderBy("id","ASC")->get();
+        $data["transporterList"] = $this->_M_Transporter->getAutoListOrm()->orderBy("id","ASC")->get();
+        $data["transportType"] = collect(Config::get("customConfig.transportationDropDownType"))->map(function($val,$index){
+            return json_decode(json_encode(["id"=>$index,"type"=>$index]));
+        });
+        return view("Packing/chalanRegister",$data);
+    }
+
+    public function transPortDtlHtml($id,Request $request){
+        try{
+            $transport = $this->_M_PackTransport->find($id);
+            $transportDtl = $this->_M_TransportDetail->where("pack_transport_id",$id)->where("lock_status",false)->get();
+            $transport->total_bag = $transportDtl->count();
+            $transport->total_return_bag = $transportDtl->where("is_bag_return",true)->count();
+            $transport->transition_type = collect(Config::get("customConfig.transportationDropDownType"))
+                                            ->filter(function ($item) use ($transport) {
+                                                return $item["transport_status"] == $transport->transport_status &&
+                                                    in_array($transport->transport_init_status, $item["transport_init_status"]);
+                                            })
+                                            ->first()["type"] ?? "";
+            $auto = $this->_M_Auto->find($transport->auto_id);
+            $transporter = $this->_M_Transporter->find($transport->transporter_id);
+            $transport->auto_name = $auto->auto_name??"";
+            $transport->transporterLabel = $transporter ? ($transporter->is_bus ? "Bus Name : " : "Transporter Name : ") : "";
+            $transport->transporter_name = $transporter->transporter_name??"";
+            $transport->gstLabel = $transporter ? ($transporter->is_bus ? "Bus No : " : "GST No : ") : "";
+            $transport->gst_no = $transporter->gst_no??"";
+
+
+            $bags = $this->_M_BagPacking->whereIn("id",$transportDtl->pluck("bag_packing_id"))->get();
+            $order = $this->_M_OrderPunchDetail->whereIn("id",$bags->pluck("order_id"))->get()->map(function($val)use($bags,$transportDtl){
+                $val->clientDtl = $this->_M_ClientDetails->find($val->client_detail_id); 
+                if($val->clientDtl){
+                    $val->clientDtl->sector = $this->_M_Sector->find($val->clientDtl->sector_id)->sector??"";
+                    $val->clientDtl->state = $val->clientDtl->getState()->state??"";
+                    $val->clientDtl->city = $val->clientDtl->getCity()->city??"";
+                }
+                $val->bags = $bags->where("order_id",$val->id)->map(function($val)use($transportDtl){
+                    $returnBag = $transportDtl->where("is_bag_return",true)->where("bag_packing_id",$val->id)->first();
+                    $val->is_bag_return = $returnBag ? true:false;
+                    return $val;
+                });
+                return $val;
+            });
+            $data["transport"]=$transport;
+            $data["transportDtl"]=$transportDtl;
+            $data["auto"]=$auto;
+            $data["transporter"]=$transporter;
+            $data["order"]=$order;
+            $html = view('Packing.Parts.transportDtl', $data)->render();
+            return responseMsg(true,"html",$html);
+
+        }catch(MyException $e){
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            dd($e);
+            return responseMsg(false,"Server Error","");
+        }
     }
 }

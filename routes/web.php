@@ -267,6 +267,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     Route::controller(PackingController::class)->group(function () {
         Route::get("packing/entry", "packingEnter")->name("packing.entry");
         Route::get("packing/wip", "WIPVerification")->name("packing.wip");
+        Route::get("packing/serial", "getPackingSerialNo")->name("packing.serial");
         Route::post("packing/wip/delete", "deleteWIP")->name("packing.wip.delete");
         Route::post("packing/wip/disburse/order", "disburseOrder")->name("packing.wip.disburse.order");
         Route::post("packing/entry-wip/add", "packingEnterWipAdd")->name("packing.entry.wip.add");
@@ -283,7 +284,10 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post("packing/transport/search", "searchPackingForTransport")->name("packing.transport.search");
         Route::post("packing/transport/save", "transportAdd")->name("packing.transport.save");
         Route::get("packing/transport/register", "transportRegister")->name("packing.transport.register");
+        Route::get("packing/transport/dtlHtml/{id}","transPortDtlHtml")->name("packing.transport.dtlhtml");
+        Route::get("packing/chalan/register", "chalanRegister")->name("packing.chalan.register");
         Route::get("packing/transport/delete/{id}", "deleteTransPortDtl")->name("packing.transport.delete");
+        Route::get("packing/transport/return/sell/{id}", "returnSell")->name("packing.transport.return.sell");
         Route::get("packing/bag/dtl/{id}","bagDtl")->name("packing.bag.dtl");
         Route::post("packing/bag/edit","editBag")->name("packing.bag.edit");
         Route::post("packing/bag/delete","deleteBag")->name("packing.bag.delete");

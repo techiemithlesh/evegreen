@@ -35,7 +35,7 @@
                     <table class="table table-bordered table-responsive table-fixed" id="orderRoll">
                         <thead>
                             <tr>
-                                <th>#</th>
+                                <th>Order No</th>
                                 <th>Client Name</th>
                                 <th>Bag Size</th>
                                 <th>Bag Type</th>
@@ -53,7 +53,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="col-12 mt-3">
+                <div class="col-12 mt-3 d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary" id="submit" style="display:none;">Submit</button>
                 </div>
             </form>
@@ -94,7 +94,7 @@
                 },
             },
             columns: [
-                { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
+                { data: "order_no", name: "order_no", orderable: false, searchable: false },
                 { data: "client_name", name: "client_name" },
                 { data: "bag_size", name: "bag_size" ,render: function(item) {  return `<pre>${item}</pre>`; }},
                 { data: "bag_type", name: "bag_type" },
@@ -184,7 +184,50 @@
     });
 
     let sl = 0;
-    function addTr(id) {
+    async function addTr(id) {
+        let packingDate = $("#packing_date").val();
+        let slObj = [];
+        await $(".bag_sl_no").each(function () {
+            if (this.tagName === "INPUT") {
+                slObj.push($(this).val());
+            }
+        });
+
+        if(packingDate==""){
+            alert("please select packing date");
+            return;
+        }
+        packing_sl = 0;
+        try {
+            const response = await $.ajax({
+                url: "{{ route('packing.serial') }}",
+                method: "GET",
+                dataType: "json",
+                data: {
+                    packing_date:packingDate,
+                    sl_nos:slObj
+                },
+                beforeSend: function () {
+                    $("#loadingDiv").show();
+                }
+            });
+
+            console.log(response);
+
+            if (response.status) {
+                $("#packing_date").attr("readonly",true);
+                packing_sl = response.data.sl;
+            }
+        } catch (error) {
+            console.log("AJAX error:", error);
+        } finally {
+            $("#loadingDiv").hide();
+        }
+
+        if (!packing_sl) {
+            alert("Serial number not generated");
+            return false;
+        }
         sl++;
         let table = $("#table_" + id);
         let buttonElement = document.getElementById("button_" + id); 
@@ -198,7 +241,7 @@
  
         let is_piece = item.units === 'Piece'?true:false;
         let colspan = 2;
-        let td = `<td> <input type='text' class="form-control" style="width:100px" name='roll[${sl}][sl_no]' required onkeypress="return isNum(event);" placeholder="Sl No."  /></td>`;
+        let td = `<td> <input type='text' class="form-control bag_sl_no" style="width:100px" name='roll[${sl}][sl_no]' value="${packing_sl}" required onkeypress="return isNum(event);" placeholder="Sl No."  /></td>`;
         if(is_piece){
             colspan=0;
             td+=` 
@@ -238,6 +281,7 @@
 
         if ($("input[type='hidden'][name^='roll']").length === 0) {
             $("#submit").hide();
+            $("#packing_date").attr("readonly",false);
         }
     }
 
@@ -258,6 +302,7 @@
                 if(data?.status){
                     modelInfo(data?.message);
                     $("#entryForm").get(0).reset();
+                    $("#packing_date").attr("readonly",false);
                     searchData();
                     // $("#orderRoll").DataTable().ajax.reload();
                     sl=0;

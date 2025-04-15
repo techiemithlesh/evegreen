@@ -235,17 +235,9 @@
             },
 
             columns: [
-                // { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                // { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false ,
-                //     render: function(data, type, row, meta) {
-                //             const rowDataEncoded = base64Encode(JSON.stringify(row));
-                //             return `${meta.row + 1} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
-                //         }
-                // },
-                // { data: "packing_date", name: "packing_date" },
                 { data: "packing_no", name: "packing_no",render: function(data, type, row, meta) {
                             const rowDataEncoded = base64Encode(JSON.stringify(row));
-                            return `${row.packing_no} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
+                            return `${row.packing_no} <i class="bi bi-info-circle-fill" data-placement="bottom" data-toggle="tooltip" title="${row.order_no}"></i> <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
                         }
                 },
                 { data: "client_name", name: "client_name" },
@@ -253,7 +245,6 @@
                 { data: "bag_type", name: "bag_type" },
                 { data: "bag_color", name: "bag_color" },
                 { data: "bag_gsm", name: "bag_gsm" },
-                // { data: "units", name: "units" },
                 { data: "packing_weight", name: "packing_weight",render:function(data, type, row, meta){return `${row.packing_weight} (Kg)`} },
                 { data: "packing_bag_pieces", name: "packing_bag_pieces",render:function(data, type, row, meta){return `${row.packing_bag_pieces ? row.packing_bag_pieces +" (Pcs)" : "NA"} `} },
                 { data: "action", name: "action", orderable: false, searchable: false },
