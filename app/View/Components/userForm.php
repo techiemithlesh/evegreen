@@ -15,7 +15,7 @@ class userForm extends Component
     public $user_type_list;
     public function __construct()
     {
-        $this->user_type_list = UserTypeMaster::where("lock_status",false)->orderBy("id","ASC")->get();print_var($this->user_type_list);die;
+        $this->user_type_list = UserTypeMaster::where("lock_status",false)->orderBy("id","ASC")->get();
     }
 
     /**
