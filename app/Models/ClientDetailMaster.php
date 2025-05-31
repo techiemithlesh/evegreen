@@ -21,6 +21,7 @@ class ClientDetailMaster extends Model
         "city_id",
         "state_id",
         "sector_id",
+        "trade_name",
         "secondary_mobile_no",
         "temporary_mobile_no",
         'lock_status',

@@ -282,6 +282,7 @@ class ImportOldRecords extends Controller
                     "state"=>"nullable",
                     "city"=>"nullable",
                     "address"=>"nullable",
+                    "trade_name"=>"nullable",
                 ]);
 
                 if ($validator->fails()) {
