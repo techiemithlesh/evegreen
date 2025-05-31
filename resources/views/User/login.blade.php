@@ -69,7 +69,7 @@
                     <!-- Remember Me Checkbox -->
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="rememberMe">
-                        <label class="form-check-label" for="rememberMe">Remember Me</label>
+                        <label class="form-check-label" for="rememberMe">Remember Me To</label>
                     </div>
                     
                     <!-- Submit Button -->
