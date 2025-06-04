@@ -68,14 +68,16 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="orderDate">Order Date</label>
-                                <input type="date" max="{{date('Y-m-d')}}" value="{{date('Y-m-d')}}" name="orderDate" id="orderDate" class="form-control" required/>                                  
+                                <!-- <input type="date" max="{{date('Y-m-d')}}" value="{{date('Y-m-d')}}" name="orderDate" id="orderDate" class="form-control" required/>                                   -->
+                                 <input type="date" max="{{date('Y-m-d')}}" value="2025-04-01" name="orderDate" id="orderDate" class="form-control" required/> 
                                 <span class="error-text" id="orderDate-error"></span>
                             </div>
                         </div>                        
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingEstimatedDespatchDate">Dispatch Date</label>
-                                <input type="date" min="{{date('Y-m-d')}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" value="{{date('Y-m-d',strtotime(date('Y-m-d').' 10 days'))}}" required/>                                  
+                                <!-- <input type="date" min="{{date('Y-m-d')}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" value="{{date('Y-m-d',strtotime(date('Y-m-d').' 10 days'))}}" required/>  -->
+                                <input type="date" min="{{date('Y-m-d')}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" value="2025-04-10" required/>                                  
                                 <span class="error-text" id="bookingEstimatedDespatchDate-error"></span>
                             </div>
                         </div>
@@ -91,30 +93,20 @@
                     </div>
                 </div>
 
-                <div class="row mb-3">                     
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <label class="form-label" for="w">W</label>
-                            <input name="w" id="w" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                
-                            <span class="error-text" id="w-error"></span>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <label class="form-label" for="l">L </label>
-                            <input name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()"/>                                                                    
-                            <span class="error-text" id="l-error"></span>
-                        </div>
-                    </div>
-                    <div class="col-sm-4" id="gussetDiv">
-                        <div class="form-group">
-                            <label class="form-label" for="g">G </label>
-                            <input name="g" id="g" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                                                    
-                            <span class="error-text" id="g-error"></span>
-                        </div>
-                    </div>
-                </div>
+                
                 <div class="row mb-3">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="bookingBagTypeId">Bag Type </label>
+                            <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop();showAlternativeOption();getBalance()">
+                                <option value="">Select</option>
+                                @foreach ($bagType as $val)
+                                    <option value="{{ $val->id }}">{{ $val->bag_type }}</option>
+                                @endforeach
+                            </select>                                                                       
+                            <span class="error-text" id="bookingBagTypeId-error"></span>
+                        </div>
+                    </div>
                     <div class="col-sm-4">
                         <div class="form-group" id='singleGsm'>
                             <label class="form-label" for="bagGsm">GSM</label>
@@ -145,19 +137,47 @@
                             <span class="error-text" id="bookingBagColor-error"></span>
                         </div>
                     </div>
-                    <div class="col-sm-4">
+                    
+                </div>
+
+                <div class="row mb-3">                     
+                    <div class="col-sm-3">
                         <div class="form-group">
-                            <label class="form-label" for="bookingBagTypeId">Bag Type </label>
-                            <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop();showAlternativeOption();getBalance()">
-                                <option value="">Select</option>
-                                @foreach ($bagType as $val)
-                                    <option value="{{ $val->id }}">{{ $val->bag_type }}</option>
+                            <label class="form-label" for="w">W</label>
+                            <input name="w" id="w" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                
+                            <span class="error-text" id="w-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label class="form-label" for="l">L </label>
+                            <input name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()"/>                                                                    
+                            <span class="error-text" id="l-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-3" id="gussetDiv">
+                        <div class="form-group">
+                            <label class="form-label" for="g">G </label>
+                            <input name="g" id="g" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                                                    
+                            <span class="error-text" id="g-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-3" id="loopColorDiv">
+                        <div class="form-group">
+                            <label class="form-label" for="looColor">Loop Color</label>
+                            <select name="looColor" id="looColor" class="form-control"  required onchange="testLoop()">
+                                <option value="">select</option>
+                                @foreach($loopColor as $val)
+                                    <option value="{{$val->loop_color}}" id="{{$val->loop_color}}" data-item="{{json_encode($val)}}">{{$val->loop_color}}</option>
                                 @endforeach
-                            </select>                                                                       
-                            <span class="error-text" id="bookingBagTypeId-error"></span>
+                            </select>
+                            <!-- <input name="looColor" id="looColor" class="form-control" required />                                -->
+                            <span class="error-text" id="looColor-error"></span>
                         </div>
                     </div>
                 </div>
+
                 <div class="row mb-3"> 
                     <div class="col-sm-4">
                         <div class="form-group">
@@ -200,19 +220,7 @@
                             <span class="error-text" id="bookingPrintingColor-error"></span>
                         </div>
                     </div>
-                    <div class="col-sm-4" id="loopColorDiv">
-                        <div class="form-group">
-                            <label class="form-label" for="looColor">Loop Color</label>
-                            <select name="looColor" id="looColor" class="form-control"  required onchange="testLoop()">
-                                <option value="">select</option>
-                                @foreach($loopColor as $val)
-                                    <option value="{{$val->loop_color}}" id="{{$val->loop_color}}" data-item="{{json_encode($val)}}">{{$val->loop_color}}</option>
-                                @endforeach
-                            </select>
-                            <!-- <input name="looColor" id="looColor" class="form-control" required />                                -->
-                            <span class="error-text" id="looColor-error"></span>
-                        </div>
-                    </div>
+                    
                     <div class="col-sm-4">
                         <div class="form-group">
                             <label class="form-label" for="totalUnits">QTY</label>
@@ -658,8 +666,8 @@
         let inputs = [
             { id: "#bookingBagTypeId", name: "Bag Type" },
             { id: "#bookingBagUnits", name: "Bag Units" },
-            { id: "#totalUnits", name: "Total Units" },
-            { id : "#bagQuality" , name : "bag Quality"},
+            // { id: "#totalUnits", name: "Total Units" },
+            // { id : "#bagQuality" , name : "bag Quality"},
             { id: "#l", name: "Bag Length" },
             { id: "#w", name: "Bag Width" },
             { id: "#bagGsm", name: "Bag GSM" },
