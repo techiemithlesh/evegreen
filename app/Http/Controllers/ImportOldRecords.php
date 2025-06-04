@@ -273,7 +273,7 @@ class ImportOldRecords extends Controller
                 // Validate each row
                 $rowData = array_combine($headings, $row);               
                 $validator = Validator::make($rowData, [
-                    "client_name"=>"required",
+                    "client_name"=>"required|unique:".$this->_M_ClientDetail->getTable().",client_name",
                     'mobile_no' => "required",                   
                     'sector' => 'nullable',
                     'secondary_mobile_no' => 'nullable',
@@ -289,9 +289,9 @@ class ImportOldRecords extends Controller
                     $validationErrors[$index] = $validator->errors()->all();
                 }
                 $rowData["client_name"] = Str::title($rowData["client_name"]);
-                $rowData["state"] = Str::title($rowData["state"]);
-                $rowData["city"] = Str::title($rowData["city"]);
-                $rowData["sector"] = Str::title($rowData["sector"]);
+                $rowData["state"] = Str::title(trim($rowData["state"]));
+                $rowData["city"] = Str::title(trim($rowData["city"]));
+                $rowData["sector"] = Str::title(trim($rowData["sector"]));
                 $dataWithHeadings[] = $rowData; 
             }
 
