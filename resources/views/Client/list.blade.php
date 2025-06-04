@@ -29,6 +29,8 @@
                     <th>Mobile No</th>
                     <th>Email</th>
                     <th>Address</th>
+                    <th>Sector</th>
+                    <th>Trade Name</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -69,6 +71,14 @@
                 {
                     data: "address",
                     name: "address",
+                },
+                {
+                    data: "sector",
+                    name: "sector",
+                },
+                {
+                    data: "trade_name",
+                    name: "trade_name",
                 },
                 {
                     data: "action",
@@ -224,6 +234,7 @@
                     $("#cityId").val(clientDtl?.city_id).trigger("change");
                     $("#cityHidden").val(clientDtl?.city_id);
                     $("#sectorId").val(clientDtl?.sector_id);
+                    $("#tradeName").val(clientDtl?.trade_name);
                     $("#clientModal").modal("show");
                 
                 } 

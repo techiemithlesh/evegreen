@@ -57,6 +57,7 @@ class ClientController extends Controller
                         ->orderBy("id","ASC")
                         ->get()
                         ->map(function($val){
+                             $val->sector = $val->getSector()->sector??"";
                             $val->city_name = $val->getCity()->city_name??"";
                             $val->state_name = $val->getState()->state_name??"";
                             return $val;

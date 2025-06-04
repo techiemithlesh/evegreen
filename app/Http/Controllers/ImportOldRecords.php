@@ -491,7 +491,7 @@ class ImportOldRecords extends Controller
                 }
             }
             // dd($data);   
-            // DB::commit();
+            DB::commit();
             flashToast("message","Bag Import Successfully");
             return redirect()->back();
         }
