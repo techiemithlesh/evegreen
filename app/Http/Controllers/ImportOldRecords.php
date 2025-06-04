@@ -381,7 +381,7 @@ class ImportOldRecords extends Controller
                     "printing_color"=>"nullable",
                     "bag_weight"=>"required|numeric",
                     "bag_in_pieces"=>"nullable|int",
-                    "bag_status"=>"required|in:godown,factory"
+                    "bag_status"=>"required|in:godown1,godown2,factory"
                 ]);
 
                 if ($validator->fails()) {
@@ -459,8 +459,11 @@ class ImportOldRecords extends Controller
                                                     foreach($inKgItem as $kgs){
                                                         $newBagRequest = new Request($kgs);
                                                         $newBagRequest->merge(["order_id"=>$orderId]);
-                                                        if($kgs["bag_status"]=="godown"){
+                                                        if($kgs["bag_status"]=="godown1" || $kgs["bag_status"]=="godown2"){
                                                             $newBagRequest->merge(["packing_status"=>2,"godown_reiving_date"=>$kgs["packing_date"]]);
+                                                            if($kgs["bag_status"]=="godown2"){
+                                                                $newBagRequest->merge(["packing_status"=>5]);
+                                                            }
                                                         }
                                                         $this->_M_BagPacking->store($newBagRequest);
                                                     }
@@ -475,8 +478,11 @@ class ImportOldRecords extends Controller
                                                     foreach($inPiecesItem as $kgs){
                                                         $newBagRequest = new Request($kgs);
                                                         $newBagRequest->merge(["order_id"=>$orderId]);
-                                                        if($kgs["bag_status"]=="godown"){
+                                                        if($kgs["bag_status"]=="godown1" || $kgs["bag_status"]=="godown2"){
                                                             $newBagRequest->merge(["packing_status"=>2,"godown_reiving_date"=>$kgs["packing_date"]]);
+                                                            if($kgs["bag_status"]=="godown2"){
+                                                                $newBagRequest->merge(["packing_status"=>5]);
+                                                            }
                                                         }
                                                         $this->_M_BagPacking->store($newBagRequest);
                                                     }
