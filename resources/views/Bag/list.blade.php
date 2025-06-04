@@ -12,7 +12,7 @@
 
         </div>
         <div class="panel-heading">
-            <h5 class="panel-title">Clint List</h5>
+            <h5 class="panel-title">Bag List</h5>
             <div class="panel-control">
                 <button type="button" class="btn btn-primary fa fa-arrow-right" data-bs-toggle="modal" data-bs-target="#bagModal" onclick="resetModelForm()">
                     Add <ion-icon name="add-circle-outline"></ion-icon>
