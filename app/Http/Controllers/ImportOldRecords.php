@@ -372,7 +372,7 @@ class ImportOldRecords extends Controller
                     "packing_date"=>"required|date",
                     'client_name' => "required",                   
                     'bag_configuration' => 'required|in:NW,BOPP,LAM',
-                    'bag_type' => 'required|in:B,D,L,U,LBB',
+                    'bag_type' => 'required|in:B,D,L,U,LBB,NO-D',
                     'gsm' => 'nullable|numeric',
                     'w' => 'required|numeric',
                     "l"=>"required|numeric",
