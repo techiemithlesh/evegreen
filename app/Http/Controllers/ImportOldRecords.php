@@ -333,7 +333,7 @@ class ImportOldRecords extends Controller
                     $sector = $this->_M_Sector->all();
                 }
                 $clientRequest = new Request($val);
-                $clientRequest->merge(["state_id"=>$stateId,"city_id"=>$cityId]);
+                $clientRequest->merge(["state_id"=>$stateId,"city_id"=>$cityId,"sector_id"=>$sectorId]);
                 $this->_M_ClientDetail->store($clientRequest);
             }   
             DB::commit();
