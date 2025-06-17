@@ -150,6 +150,7 @@
             submitHandler: function(form) {
                 // If form is valid, prevent default form submission and submit via AJAX                
                 addUser();
+                return false;
             }
         });
         addEventListenersToForm("userForm");
@@ -157,8 +158,13 @@
     function addUser(){
         let url = "{{route('user.add')}}";
         let userId = $("#id").val();
-        if(userId!="" && userId!="undefined"){
-            url = "{{route('user.edit')}}"
+        let form = $("#userForm")[0];
+        let formData = new FormData(form);
+
+        if (userId && userId !== "undefined") {
+            url = "{{ route('user.edit') }}";
+            formData.delete("password");
+            formData.delete("password_confirmation");
         }
         $.ajax({
                 type: "POST",
@@ -166,7 +172,10 @@
                                 
                 "deferRender": true,
                 "dataType": "json",
-                'data': $("#userForm").serialize(),
+                "contentType": false,   // Required for FormData
+                "processData": false,   // Required for FormData
+
+                'data': formData,
                 beforeSend: function () {
                     $("#loadingDiv").show();
                 },
@@ -216,7 +225,8 @@
     }
 
     function resetModelForm(){
-        $("#id").val("");       
+        $("#id").val("");  
+        $("#passwordDiv").show();     
         $("#userForm").get(0).reset();
         document.querySelectorAll("#userForm input, #userForm select, #userForm textarea").forEach(field => {
             if (field.type === "checkbox" || field.type === "radio") {
