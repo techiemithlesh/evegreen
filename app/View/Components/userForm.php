@@ -7,7 +7,7 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class userForm extends Component
+class UserForm extends Component
 {
     /**
      * Create a new component instance.
@@ -15,7 +15,7 @@ class userForm extends Component
     public $user_type_list;
     public function __construct()
     {
-        $this->user_type_list = UserTypeMaster::where("lock_status",false)->orderBy("id","ASC")->get();
+        $this->user_type_list = UserTypeMaster::where("lock_status",false)->orderBy("id","ASC")->get();print_var("ok");
     }
 
     /**
