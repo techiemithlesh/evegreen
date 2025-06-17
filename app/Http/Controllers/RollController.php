@@ -734,12 +734,16 @@ class RollController extends Controller
                                     TO_CHAR(roll_details.printing_date, 'DD-MM-YYYY') as printing_date ,
                                     TO_CHAR(roll_details.cutting_date, 'DD-MM-YYYY') as cutting_date ,    
                                     TO_CHAR(printing_schedule_details.printing_date, 'DD-MM-YYYY') as schedule_date_for_print ,
-                                    TO_CHAR(cutting_schedule_details.cutting_date , 'DD-MM-YYYY') as schedule_date_for_cutting                                 
+                                    TO_CHAR(cutting_schedule_details.cutting_date , 'DD-MM-YYYY') as schedule_date_for_cutting ,
+                                    concat(roll_quality_masters.quality ,'  (',roll_details.hardness,')') as quality ,
+                                    grade_masters.grade                              
                                     ")
                                 )
                     ->join("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
                     ->leftJoin("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")
+                    ->leftJoin("roll_quality_masters","roll_quality_masters.id","roll_details.quality_id")
+                    ->join("grade_masters","grade_masters.id","roll_quality_masters.grade_id")
                     ->leftJoin("printing_schedule_details",function($join){
                         $join->on("printing_schedule_details.roll_id","=","roll_details.id")
                         ->where("printing_schedule_details.lock_status",false);
@@ -854,7 +858,7 @@ class RollController extends Controller
                         $color="";
                         if($flag=="schedule" && $val->estimated_despatch_date ){
                             $dayDiff = Carbon::now()->diffInDays(Carbon::parse($val->estimated_despatch_date),false);
-                            // dd($dayDiff,$val->despatch_date);
+                            
                             if($dayDiff<3){
                                 $color="tr-primary-print";
                             }
@@ -870,7 +874,7 @@ class RollController extends Controller
                         $color="";
                         if($flag=="schedule" && $val->estimated_despatch_date ){
                             $dayDiff = Carbon::now()->diffInDays(Carbon::parse($val->estimated_despatch_date),false);
-                            // dd($dayDiff,$val->despatch_date);
+                            
                             if($dayDiff<3){
                                 $color="tr-primary-print";
                             }
@@ -887,15 +891,6 @@ class RollController extends Controller
                 })
                 ->addColumn('gsm_variation', function ($val) {                        
                     return roundFigure($val->gsm_variation)."%";
-                })
-                ->addColumn("grade",function($val){
-                    $quality = RollQualityMaster::find($val->quality_id);
-                    $grade = $quality ? $quality->getGrade()->first()->grade??"":"";
-                    return $grade ;                        
-                })
-                ->addColumn("quality",function($val){
-                    $quality = RollQualityMaster::find($val->quality_id);
-                    return ($quality->quality??"").(" (".$val->hardness.")") ;                        
                 })
                 ->addColumn("gsm_json",function($val){
                     return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
@@ -944,7 +939,6 @@ class RollController extends Controller
                 ->rawColumns(['row_color', 'action'])
                 ->with($summary)
                 ->make(true);
-                // dd(DB::getQueryLog());
             return $list;
 
         }

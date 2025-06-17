@@ -351,6 +351,7 @@ class ImportOldRecords extends Controller
             $file = $request->file('csvFile');
             $headings = (new HeadingRowImport())->toArray($file)[0][0];
             $expectedHeadings = Config::get("customConfig.BagCsvHeader");
+            dd($headings,$expectedHeadings);
             if (array_diff($expectedHeadings, $headings)) {
                 return responseMsgs(false,"data in invalid format","");;
             }
@@ -369,6 +370,7 @@ class ImportOldRecords extends Controller
                     $rowData["packing_date"] = is_int($rowData["packing_date"])? getDateColumnAttribute($rowData['packing_date']) : $rowData['packing_date'];
                 }           
                 $validator = Validator::make($rowData, [
+                    "packing_no"=>"required|unique:".$this->_M_BagPacking->getTable().",packing_no",
                     "packing_date"=>"required|date",
                     'client_name' => "required",                   
                     'bag_configuration' => 'required|in:NW,BOPP,LAM',
@@ -495,8 +497,7 @@ class ImportOldRecords extends Controller
                         }
                     }
                 }
-            }
-            // dd($data);   
+            }  
             DB::commit();
             flashToast("message","Bag Import Successfully");
             return redirect()->back();
