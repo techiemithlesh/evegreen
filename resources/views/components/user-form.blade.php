@@ -36,7 +36,6 @@
                         <div class="col-sm-12">
                             <label class="control-label"><b><u>Roll Type</u></b></label>
                         </div>
-                        <?php print_var($user_type_list)?>
                         @if($user_type_list??"")
                             @foreach ($user_type_list as $values) 
                                 <div class="col-sm-3">
