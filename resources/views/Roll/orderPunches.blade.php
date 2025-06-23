@@ -509,6 +509,15 @@
     }
     function showPrivOrder(event) {
         const clientId = $(event.target).val();
+        if(clientId==1){
+            $("#rateTypeId").attr("required",false);
+            $("#ratePerUnit").attr("required",false);
+            $("#brokerId").attr("required",false);
+        }else{
+            $("#rateTypeId").attr("required",true);
+            $("#ratePerUnit").attr("required",true);
+            $("#brokerId").attr("required",true);
+        }
         if (clientId != "") {
             $.ajax({
                 url: "{{route('client.old.order')}}",
