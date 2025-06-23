@@ -149,7 +149,7 @@ return[
         "client_name","sector","mobile_no","secondary_mobile_no","temporary_mobile_no","email","state","city","address","trade_name"
     ],
     "BagCsvHeader"=>[
-        "packing_no","packing_date","client_name","bag_configuration","bag_type","gsm","w","l","g","bag_color","printing_color","bag_weight","bag_in_pieces","bag_status"
+        "bora_number","packing_date","client_name","bag_configuration","bag_type","gsm","w","l","g","bag_color","printing_color","bag_weight","bag_in_pieces","bag_status"
     ],
 
 ];

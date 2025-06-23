@@ -351,7 +351,6 @@ class ImportOldRecords extends Controller
             $file = $request->file('csvFile');
             $headings = (new HeadingRowImport())->toArray($file)[0][0];
             $expectedHeadings = Config::get("customConfig.BagCsvHeader");
-            dd($headings,$expectedHeadings);
             if (array_diff($expectedHeadings, $headings)) {
                 return responseMsgs(false,"data in invalid format","");;
             }
@@ -360,6 +359,8 @@ class ImportOldRecords extends Controller
             // Validate rows
             $validationErrors = [];
             $dataWithHeadings = [];
+            $orderBroker = OrderBroker::all();
+            $rateType = RateTypeMaster::all();
             foreach ($rows[0] as $index => $row) {
                 // Skip the header row
                 if ($index == 0) continue;
@@ -370,7 +371,8 @@ class ImportOldRecords extends Controller
                     $rowData["packing_date"] = is_int($rowData["packing_date"])? getDateColumnAttribute($rowData['packing_date']) : $rowData['packing_date'];
                 }           
                 $validator = Validator::make($rowData, [
-                    "packing_no"=>"required|unique:".$this->_M_BagPacking->getTable().",packing_no",
+                    // "packing_no"=>"required|unique:".$this->_M_BagPacking->getTable().",packing_no",
+                    "bora_number"=>"nullable|unique:".$this->_M_BagPacking->getTable().",packing_no",
                     "packing_date"=>"required|date",
                     'client_name' => "required",                   
                     'bag_configuration' => 'required|in:NW,BOPP,LAM',
@@ -383,19 +385,30 @@ class ImportOldRecords extends Controller
                     "printing_color"=>"nullable",
                     "bag_weight"=>"required|numeric",
                     "bag_in_pieces"=>"nullable|int",
-                    "bag_status"=>"required|in:godown1,godown2,factory"
+                    "bag_status"=>"required|in:Godown1,Godown2,Factory"
                 ]);
 
                 if ($validator->fails()) {
                     $validationErrors[$index] = $validator->errors()->all();
                 }
+                $brokerId = $orderBroker->firstWhere(fn($b) => strtoupper($b->broker_name) === strtoupper($rowData["agent"]))->id ?? null;
+
+                if (!$brokerId && $rowData["agent"]) {
+                    $brokerId = (new OrderBroker())->store(["broker_name" => $rowData["agent"]]);
+                    // If needed again, you may refresh the broker list or just use the created ID
+                    $orderBroker = OrderBroker::all();
+                }
+
+                $rateTypeId = $rateType->firstWhere(fn($r) => strtoupper($r->rate_type) === strtoupper($rowData["rate_type"]))->id ?? null;;
                 $rowData["client_name"] = Str::title($rowData["client_name"]);
-                $rowData["packing_weight"]=$rowData["bag_weight"];
-                $rowData["packing_bag_pieces"]=$rowData["bag_in_pieces"];
+                $rowData["packing_weight"]=$rowData["bag_weight"];  
+                $rowData["broker_id"]=$brokerId; 
+                $rowData["rate_type_id"]=$rateTypeId;                 
+                $rowData["packing_no"]=trim($rowData["bora_number"]) ? Carbon::parse($rowData["packing_date"])->format("d/m/y")."-00".trim($rowData["bora_number"]):null;
                 $dataWithHeadings[] = $rowData; 
             }
 
-            $group = collect($dataWithHeadings)->groupBy("packing_no")->filter(function($val){
+            $group = collect($dataWithHeadings)->whereNotNull("packing_no")->groupBy("packing_no")->filter(function($val){
                 return $val->count()>1;
             });
             
@@ -425,7 +438,7 @@ class ImportOldRecords extends Controller
                                         foreach($litem as $l=>$gitem){
                                             foreach($gitem as $g=>$val){                                                
                                                 $inKgItem     = $val->whereNull("bag_in_pieces");
-                                                $inPiecesItem = $val->whereNotNull("bag_in_pieces");
+                                                $inPiecesItem = $val->whereNotNull("bag_in_pieces");print_var($inKgItem);print_var($inPiecesItem);die;
                                                 $client_detail_id = $client->where("client_name",$clintName)->first()->id??null;
                                                 if(!$client_detail_id){
                                                     $clientRequest = new Request(["client_name"=>$clintName]);
@@ -461,9 +474,9 @@ class ImportOldRecords extends Controller
                                                     foreach($inKgItem as $kgs){
                                                         $newBagRequest = new Request($kgs);
                                                         $newBagRequest->merge(["order_id"=>$orderId]);
-                                                        if($kgs["bag_status"]=="godown1" || $kgs["bag_status"]=="godown2"){
+                                                        if($kgs["bag_status"]=="Godown1" || $kgs["bag_status"]=="Godown2"){
                                                             $newBagRequest->merge(["packing_status"=>2,"godown_reiving_date"=>$kgs["packing_date"]]);
-                                                            if($kgs["bag_status"]=="godown2"){
+                                                            if($kgs["bag_status"]=="Godown2"){
                                                                 $newBagRequest->merge(["packing_status"=>5]);
                                                             }
                                                         }
@@ -480,9 +493,9 @@ class ImportOldRecords extends Controller
                                                     foreach($inPiecesItem as $kgs){
                                                         $newBagRequest = new Request($kgs);
                                                         $newBagRequest->merge(["order_id"=>$orderId]);
-                                                        if($kgs["bag_status"]=="godown1" || $kgs["bag_status"]=="godown2"){
+                                                        if($kgs["bag_status"]=="Godown1" || $kgs["bag_status"]=="Godown2"){
                                                             $newBagRequest->merge(["packing_status"=>2,"godown_reiving_date"=>$kgs["packing_date"]]);
-                                                            if($kgs["bag_status"]=="godown2"){
+                                                            if($kgs["bag_status"]=="Godown2"){
                                                                 $newBagRequest->merge(["packing_status"=>5]);
                                                             }
                                                         }
