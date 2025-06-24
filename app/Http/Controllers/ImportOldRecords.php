@@ -438,7 +438,7 @@ class ImportOldRecords extends Controller
                                         foreach($litem as $l=>$gitem){
                                             foreach($gitem as $g=>$val){                                                
                                                 $inKgItem     = $val->whereNull("bag_in_pieces");
-                                                $inPiecesItem = $val->whereNotNull("bag_in_pieces");print_var($inKgItem);print_var($inPiecesItem);die;
+                                                $inPiecesItem = $val->whereNotNull("bag_in_pieces");
                                                 $client_detail_id = $client->where("client_name",$clintName)->first()->id??null;
                                                 if(!$client_detail_id){
                                                     $clientRequest = new Request(["client_name"=>$clintName]);
