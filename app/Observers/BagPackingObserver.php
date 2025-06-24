@@ -12,23 +12,23 @@ class BagPackingObserver
      */
     public function created(BagPacking $bagPacking): void
     {
-        // if(!$bagPacking->packing_no){
-        //     $orderDate = Carbon::parse($bagPacking->packing_date);
-        //     $rolNo = $orderDate->clone()->format("d/m/y")."-";
-        //     $sl = BagPacking::where("packing_date",$orderDate->clone()->format('Y-m-d'))->count("id");
-        //     $slNo ="";
-        //     while(true){   
-        //         $slNo = str_pad((string)$sl,2,"0",STR_PAD_LEFT);
-        //         $sl=($sl+1);             
-        //         $test = BagPacking::where("packing_no",$rolNo.$slNo)->count();
-        //         if((!$test)){                    
-        //             $rolNo.=$slNo;
-        //             break;
-        //         }
-        //     }
-        //     $bagPacking->packing_no  = $rolNo;
-        // }
-        // $bagPacking->saveQuietly();
+        if(!$bagPacking->packing_no){
+            $orderDate = Carbon::parse($bagPacking->packing_date);
+            $rolNo = $orderDate->clone()->format("d/m/y")."-";
+            $sl = BagPacking::where("packing_date",$orderDate->clone()->format('Y-m-d'))->count("id");
+            $slNo ="";
+            while(true){   
+                $slNo = str_pad((string)$sl,2,"0",STR_PAD_LEFT);
+                $sl=($sl+1);             
+                $test = BagPacking::where("packing_no",$rolNo.$slNo)->count();
+                if((!$test)){                    
+                    $rolNo.=$slNo;
+                    break;
+                }
+            }
+            $bagPacking->packing_no  = $rolNo;
+        }
+        $bagPacking->saveQuietly();
     }
 
     /**
