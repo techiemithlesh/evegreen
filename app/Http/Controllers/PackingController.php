@@ -528,7 +528,7 @@ class PackingController extends Controller
                 "id"=>"required|exists:".$this->_M_BagPacking->getTable().",id",
                 "packing_weight"=>"required|numeric",
                 "packing_bag_pieces"=>"nullable|numeric",
-                "client_id"=>"required"
+                "client_id"=>"nullable"
             ];
             $validate = Validator::make($request->all(),$rules);
             if($validate->fails()){
@@ -536,6 +536,9 @@ class PackingController extends Controller
             }
             $bag = $this->_M_BagPacking->find($request->id);
             $order = $bag->getOrderDtl();
+            if(!$request->client_id){
+                $request->merge(["client_id"=>$order->client_detail_id]);
+            }
             $bagStatus = flipConstants(collect(Config::get("customConfig.bagStatus")));
             if($bag->packing_status==$bagStatus["dispatched"]){
                 throw new MyException("Bag is Dispatch");
@@ -545,16 +548,19 @@ class PackingController extends Controller
             }
             $bag->packing_weight = $request->packing_weight;
             $bag->packing_bag_pieces = $request->packing_bag_pieces;
-            if($order->bag_printing_color && $order->client_detail_id != $request->client_id){
-                throw new MyException("This Bag is Printed Show Client Not Change.");
+            if(!$bag->packing_no){
+                $bag->packing_no = $request->packing_no ;
             }
-            if($order->client_detail_id != $request->client_id){
-                $bag->client_id = $request->client_id;
-                $bag->is_bag_assign = true;
-            }else{
-                $bag->client_id = null;
-                $bag->is_bag_assign = false;
-            }
+            // if($order->bag_printing_color && $order->client_detail_id != $request->client_id){
+            //     throw new MyException("This Bag is Printed Show Client Not Change.");
+            // }
+            // if($order->client_detail_id != $request->client_id){
+            //     $bag->client_id = $request->client_id;
+            //     $bag->is_bag_assign = true;
+            // }else{
+            //     $bag->client_id = null;
+            //     $bag->is_bag_assign = false;
+            // }
             DB::beginTransaction();
             $bag->update();
             DB::commit();
@@ -562,7 +568,7 @@ class PackingController extends Controller
         }catch(MyException $e){
             return responseMsg(false,$e->getMessage(),"");
         }catch(Exception $e){
-            return responseMsg(false,"Server Error","");
+            return responseMsg(false,"Server Error",$e->getMessage());
         }
     }
 

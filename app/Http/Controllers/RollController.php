@@ -1802,7 +1802,7 @@ class RollController extends Controller
                 $newRequest = new Request(["printingId"=>$entryId,"rollId"=>$roll->id,"printing_color_json"=>$colorArr?$colorArr:null]);
                 $this->_M_PrintingRegister->store($newRequest);
             }
-            // DB::commit();
+            DB::commit();
             return responseMsgs(true,"Roll No ".$roll->roll_no." Printed","");
 
         }catch(Exception $e){

@@ -64,6 +64,11 @@
                     <!-- Hidden field for Client ID -->
                     <input type="hidden" id="id" name="id" value="">
                     <div class="row">
+                        <div class="form-group col-md-6 packing_no">
+                            <label for="packing_no" class="control-label">Packing No<span class="text-danger">*</span></label>
+                            <input name="packing_no"  id="packing_no" class="form-control" required />
+                            <span class="error-text" id="packing_no-error"></span>
+                        </div>
                         <div class="form-group col-md-6">
                             <label for="packing_weight" class="control-label">Weight<span class="text-danger">*</span></label>
                             <input name="packing_weight"  id="packing_weight" class="form-control" required onkeypress="return isNum(event);"/>
@@ -342,9 +347,14 @@
                 $("#packing_bag_pieces").parent("label").find("span").css("display","none");
                 $("#packing_bag_pieces").closest(".form-group").find("label span.text-danger").css("display", "none");
                 $("#packing_bag_pieces").attr("required",false);
+                $("#packing_no").attr("readonly",true);
                 if(response.status && response.data.id){
                     let item = response.data;
                     $("#id").val(item.id);
+                    $("#packing_no").val(item.packing_no);
+                    if(!item?.packing_no){
+                        $("#packing_no").attr("readonly",false);
+                    }
                     $("#packing_weight").val(item.packing_weight);
                     $("#packing_bag_pieces").val(item.packing_bag_pieces);
                     if(item.units!="Kg"){
