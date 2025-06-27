@@ -1666,7 +1666,12 @@ class RollController extends Controller
         try{
             $machineId = $request->machineId;
             $data = $this->rollSearchPrintingOrm()
-                    ->whereNotNull("roll_details.printing_color")
+                    // ->whereNotNull("roll_details.printing_color")                    
+                    ->where(function($where) {
+                        $where->whereNotNull("roll_details.printing_color")
+                            ->orWhere("roll_details.roll_type", "BOPP");
+                    })
+
                     ->where("roll_details.roll_no","ILIKE",'%'.$request->rollNo.'%');
             if($request->rollId){
                 $data->whereNotIn("roll_details.id",$request->rollId);
