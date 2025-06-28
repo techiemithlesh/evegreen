@@ -246,6 +246,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::get("roll/register/cutting/{machineId?}", "rollRegisterCutting")->name("roll.register.cutting");
         Route::get("roll/schedule/{flag?}", "rollSchedule")->name("roll.schedule");
         Route::post("roll/schedule-set/{flag}", "rollScheduleSet")->name("roll.schedule.set");
+        Route::post("roll/production/printing/updateWeight", "editPrintingWeight")->name("roll.production.edit.printing.weight");
         Route::get("roll/production/printing/{machineId?}", "rollProduction")->name("roll.production.printing");
         Route::get("roll/production/cutting/{machineId?}", "rollProductionCutting")->name("roll.production.cutting");
 

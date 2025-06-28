@@ -1189,6 +1189,7 @@ class RollController extends Controller
                     $action="";
                     if(in_array($user->user_type_id,[1,2]) && !$val->is_cut){
                         $action="<button class='btn btn-sm btn-warning' onclick='deletePrintingConform(".$val->id.")'>Delete</button>";
+                        $action.="<button class='btn btn-sm btn-success' onclick='editPrinting(".$val->id.",".$val->weight_after_print.")'>Edit</button>";
                     }
                     return $action;
                 })
@@ -1202,6 +1203,31 @@ class RollController extends Controller
         $data["uptoDate"] = Carbon::now()->format("Y-m-d");
         $data["machine"] = $this->_M_Machine->find($machineId);
         return view("Roll/rollRegisterPrinting",$data);
+    }
+
+    public function editPrintingWeight(Request $request){
+        try{
+            $user = Auth()->user();
+            $rules=[
+                "rollId"=>"required|exists:".$this->_M_RollDetail->getTable().",id,is_printed,true",
+                "printingWeight"=>"required",
+            ];
+            $validate = Validator::make($request->all(),$rules);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            if(!in_array($user->user_type_id,[1,2])){
+                throw new MyException("Access Denial");
+            }
+            $roll = $this->_M_RollDetail->find($request->rollId);
+            $roll->weight_after_print  = $request->printingWeight;
+            $roll->update();
+            return responseMsgs(true,"Update Printing Weight","");
+        }catch(MyException $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            return responseMsgs(false,"Server Error","");
+        }
     }
 
     public function rollRegisterCutting(Request $request){
