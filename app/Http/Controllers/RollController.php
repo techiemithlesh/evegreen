@@ -969,6 +969,7 @@ class RollController extends Controller
             if(!$data){
                 throw new Exception("no data find");
             }
+            $data->printing_color = json_decode($data->printing_color,true)??"";
             $data->vender_name = $data->getVendor()->first()->vendor_name??"";
             return responseMsgs(true,"roll dtl fetched",$data);
         }catch(Exception $e){
@@ -1643,11 +1644,11 @@ class RollController extends Controller
                     ->where("roll_details.roll_no",$request->rollNo)
                     ->first();
             $message="Data Fetch";
-            if($data && !$data->printing_color){
+            if($data && !$data->printing_color && $data->roll_type!="BOPP"){
                 $message="Printing is not applicable on this roll";
                 $data=null;
             }
-            if($data && $machineId==1 && collect(json_decode($data->printing_color,true))->count()>2){
+            if($data && $machineId==1 && collect(json_decode($data->printing_color,true))->count()>2 && $data->roll_type!="BOPP"){
                 $message=collect(json_decode($data->printing_color,true))->count()." Colors are not printed on this machine.";
                 $data=null; 
             }
@@ -3907,6 +3908,7 @@ class RollController extends Controller
             $roll->size = $request->size;
             $roll->net_weight = $request->netWeight;
             $roll->gross_weight = $request->grossWeight;
+            $roll->printing_color = $request->printingColor;
             DB::beginTransaction();
             $roll->update();
             DB::commit();

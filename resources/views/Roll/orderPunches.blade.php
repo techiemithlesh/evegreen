@@ -208,7 +208,11 @@
                 <div class="row mb-3">
                     <div class="col-sm-4" id="bookingPrintingColorDiv">
                         <div class="form-group">
-                            <label class="form-label" for="bookingPrintingColor">Printing Color</label>
+                            <label class="form-label" for="bookingPrintingColor">Printing Color 
+                                <span class="text-info text-xs text" style="font-size: x-small; text-decoration-line: underline;"> 
+                                    <i> if Plane Bag Then Check It <input type="checkbox" onchange="makeReadOlyPrinting(event)"/></i>
+                                </span>
+                            </label>
                             <div class="col-md-12">
                                 <select name="bookingPrintingColor[]" id="bookingPrintingColor" class="form-select select22" multiple="multiple" required> 
                                                                         
@@ -476,6 +480,18 @@
             width:"100%",
         }); 
     });
+
+    function makeReadOlyPrinting(event){
+        if (event.target.checked) {
+            $("#bookingPrintingColor")
+                .val("")
+                .trigger("change")
+                .attr("disabled", true);
+        } else {
+            $("#bookingPrintingColor").attr("disabled", false);
+        }
+
+    }
     function openRollBookingClineModel(){
         $('#rollBookingModal').css("z-index",0);
         $('#clientModal').css("z-index",1060);
