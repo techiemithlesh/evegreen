@@ -777,6 +777,30 @@
         })
     }
 
+    function transferInTransit(id){
+        $.ajax({
+            url:"{{route('roll.stock.to.transit')}}",
+            type:"post",
+            data:{"id":id},
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(data){                
+                $("#loadingDiv").hide();
+                if(data?.status){
+                    $('#postsTable').DataTable().ajax.reload();
+                }else{
+                    modelInfo(data?.message,"warning");
+                }
+            },
+            error:function(errors){
+                console.log(errors);
+                $("#loadingDiv").hide();
+                modelInfo("server error","error")
+            }
+        })
+    }
+
     function updateSelection(event) {
         let id = event.target.value;
         let rollId = $("#selectedRollId").val().split(",").filter(Boolean); // Ensure no empty values

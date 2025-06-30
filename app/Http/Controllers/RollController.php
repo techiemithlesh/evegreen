@@ -905,7 +905,10 @@ class RollController extends Controller
                     $button = "";
                     if($val->is_cut){
                         return $button;
-                    }
+                    } 
+                    if(in_array($user_type,[1,2]) && (!$val->is_printed)){
+                        $button .= '<button class="btn btn-sm btn-info" onClick="showConfirmDialog('."'Are sure to Delete??',function (){transferInTransit(".$val->id.');})" >Back In Transit</button>';
+                    }                   
                     if(!($val->is_cut || $val->is_printed)){
                         $button.='<button class="btn btn-sm btn-primary" onClick="editRoll('.$val->id.')" >Edit</button>';
                     }
@@ -914,7 +917,6 @@ class RollController extends Controller
                     }if(in_array($user_type,[1,2]) && $val->client_detail_id && !$val->is_printed){
                         $button .= '<button class="btn btn-sm btn-danger" onClick="openModelBookingModel('.$val->id.')" >Alter Booking</button>';
                         $button .= '<button class="btn btn-sm btn-warning" onClick="removeBooking('.$val->id.')" >Remove</button>';
-                        // $button .= '<button class="btn btn-sm btn-danger" onClick="openModelAlterBookingModel('.$val->id.')" >Alter Booking</button>';
                     }
                     if($flag=="schedule-printing"){
                         $button='<button class="btn btn-sm btn-warning" onClick="openPrintingScheduleModel('.$val->id.')" >Schedule For Print</button>';
@@ -3649,6 +3651,34 @@ class RollController extends Controller
         }
     }
 
+    public function backInTransit(Request $request){
+        try{
+            $rule = [
+                "id"=>"required",
+            ];
+            $validate = Validator::make($request->all(),$rule);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            DB::beginTransaction();
+            $response = $this->removeBookedRoll($request);
+            if(!$response->original["status"]){
+                return $response;
+            }
+            $roll = $this->_M_RollDetail->find($request->id);
+            $transitDtl =$roll->replicate();
+            $transitDtl->setTable($this->_M_RollTransit->getTable());
+            $transitDtl->id = $roll->id;
+            $transitDtl->roll_receiving_at = null;
+            $transitDtl->save();
+            $roll->forceDelete();
+            DB::commit();
+            return responseMsgs(true,"Roll Remove From Stock","");
+        }catch(Exception $e){
+            DB::rollBack();
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
     public function removeBookedRoll(Request $request){
         try{
             $rule = [
