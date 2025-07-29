@@ -93,7 +93,7 @@ class UserController extends Controller
                             Redis::set("menu_list_".$user["user_type_id"],$tree);
                         }
                         session(['last_activity' => Carbon::now()]);
-                        flashToast("message","Login");
+                        flashToast("message","Login");dd("jsfkjj");
                         return redirect()->to('/home');
                     }
                 }else{
