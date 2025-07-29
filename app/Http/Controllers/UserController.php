@@ -52,7 +52,7 @@ class UserController extends Controller
     }
 
     public function login(Request $request){
-        try{
+        try{ dd("jksdfkl");
             $data = $request->all();
             if($request->getMethod()=="GET"){
                 return view("User/login",$data);
@@ -93,7 +93,7 @@ class UserController extends Controller
                             Redis::set("menu_list_".$user["user_type_id"],$tree);
                         }
                         session(['last_activity' => Carbon::now()]);
-                        flashToast("message","Login");dd("jsfkjj");
+                        flashToast("message","Login");
                         return redirect()->to('/home');
                     }
                 }else{
