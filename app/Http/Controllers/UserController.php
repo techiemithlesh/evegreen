@@ -70,8 +70,9 @@ class UserController extends Controller
                         ->withErrors($validate->failed())
                         ->withInput();
                 }
+                dd($this->_M_User->where("email",$request->email)->first());
                 if($user = $this->_M_User->where("email",$request->email)->first()){
-                    dd($request->all());
+                    
                     if(!(Hash::check($request->password, $user->password))){
                         flashToast("message","Invalid User");
                         return redirect()->back()
@@ -105,7 +106,7 @@ class UserController extends Controller
                 }
             }
             
-        }catch(Exception $e){
+        }catch(Exception $e){dd($e);
             flashToast("message","Internal Server Error");
             return redirect()->back();
         }
