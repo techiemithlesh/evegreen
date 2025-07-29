@@ -52,13 +52,13 @@ class UserController extends Controller
     }
 
     public function login(Request $request){
-        try{ dd("jksdfkl");
+        try{ 
             $data = $request->all();
             if($request->getMethod()=="GET"){
                 return view("User/login",$data);
             }
             elseif($request->getMethod()=="POST"){
-
+                dd("jksdfkl");
                 $validate = Validator::make($request->all(),
                     [
                         'email' => 'required|email',
