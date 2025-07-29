@@ -58,7 +58,7 @@ class UserController extends Controller
                 return view("User/login",$data);
             }
             elseif($request->getMethod()=="POST"){
-                dd("jksdfkl");
+                
                 $validate = Validator::make($request->all(),
                     [
                         'email' => 'required|email',
@@ -69,7 +69,7 @@ class UserController extends Controller
                     return redirect()->back()
                         ->withErrors($validate->failed())
                         ->withInput();
-                }
+                }dd("jksdfkl");
                 if($user = $this->_M_User->where("email",$request->email)->first()){
                     if(!(Hash::check($request->password, $user->password))){
                         flashToast("message","Invalid User");
