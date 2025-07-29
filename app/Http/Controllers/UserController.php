@@ -69,7 +69,7 @@ class UserController extends Controller
                     return redirect()->back()
                         ->withErrors($validate->failed())
                         ->withInput();
-                }dd("jksdfkl");
+                }
                 if($user = $this->_M_User->where("email",$request->email)->first()){
                     if(!(Hash::check($request->password, $user->password))){
                         flashToast("message","Invalid User");
@@ -79,7 +79,7 @@ class UserController extends Controller
                     }
                     $credentials = $request->only('email', 'password');
 
-                    
+                    dd("okdl");
                     if (Auth::attempt($credentials)) {
                         $menuList ="";Redis::get("menu_list_".$user["user_type_id"]);                        
                         if (!$menuList) {
