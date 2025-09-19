@@ -29,7 +29,7 @@ use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+// use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 
 
 class PackingController extends Controller
@@ -615,32 +615,38 @@ class PackingController extends Controller
             $bags = $this->_M_BagPacking->whereIn("id",collect($request->bag)->pluck("id"))->get();
             $bags->map(function($val){
                 $order = $val->getOrderDtl();
+                $val->units = $order->units;
                 $val->bag_type = $order->getBagType()->bag_type;
                 $val->bag_color = collect(json_decode($order->bag_color,true))->implode(","); 
                 $val->bag_size = (float)$order->bag_w." x ".(float)$order->bag_l.($order->bag_g ?(" x ".(float)$order->bag_g) :"");                
                 return $val;
             });
-            
-            $bagGroup = $bags->groupBy(["bag_type","bag_color","bag_size"]);
-            $table=[];
-            $table["grand_total"]=[
-                "total"=>$bags->count(),
-                "total_weight"=>$bags->sum("packing_weight"),
-            ];
-            foreach($bagGroup as $bagType=>$colorSize){
-                foreach($colorSize as $color=>$size){
-                    foreach($size as $key=>$val){
-                        $table["row"][]=[
-                            "bag_type"=>$bagType,
-                            "color"=>$color,
-                            "size"=>$key,
-                            "bags"=>$val->toArray(),
-                            "count"=>collect($val)->count(),
-                            "total_weight"=>collect($val)->sum("packing_weight"),
-                        ];
+            $parentTable=[];
+            $unitGroup = $bags->groupBy(["units"]);
+            foreach($unitGroup as $unit=>$bb){
+                $bagGroup = $bb->groupBy(["bag_type","bag_color","bag_size"]);
+                $table=[];
+                $table["grand_total"]=[
+                    "total"=>$bb->count(),
+                    "total_unit"=>$unit =="Kg" ? collect($bb)->sum("packing_weight") : collect($bb)->sum("packing_bag_pieces"),
+                ];
+                foreach($bagGroup as $bagType=>$colorSize){
+                    foreach($colorSize as $color=>$size){
+                        foreach($size as $key=>$val){
+                            $table["row"][]=[
+                                "bag_type"=>$bagType,
+                                "color"=>$color,
+                                "size"=>$key,
+                                "bags"=>$val->toArray(),
+                                "count"=>collect($val)->count(),
+                                "total_unit"=>$unit =="Kg" ? collect($val)->sum("packing_weight") : collect($val)->sum("packing_bag_pieces"),
+                            ];
+                        }
                     }
                 }
+                $parentTable[$unit]=$table;
             }
+            // dd($parentTable);
 
             $firstBag = $bags->first();
             $order = $firstBag->getOrderDtl();
@@ -684,8 +690,8 @@ class PackingController extends Controller
                 }
             }
             $data["unique_id"]=getFY()."-".$key.$count;
-            $data["table"]=$table;
-            $data["chalan_date"]=Carbon::now()->format("d-m-Y");
+            $data["table"]=$parentTable;
+            $data["chalan_date"]=$request->dispatchedDate??Carbon::now()->format("d-m-Y");
             $data["transposer"]=$transposer;
             $data["bus_no"]=$request->busNo;
             $data["is_local"]=$request->isLocalTransport;
@@ -709,7 +715,7 @@ class PackingController extends Controller
         }catch(MyException $e){
             return responseMsg(false,$e->getMessage(),"");
         }catch(Exception $e){
-            // dd($e->getMessage(),$e->getLine());
+            dd($e->getMessage(),$e->getLine());
             return responseMsg(false,"Server Error","");
         }
     }
