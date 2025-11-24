@@ -10,7 +10,7 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class transportModel extends Component
+class TransportModel extends Component
 {
     /**
      * Create a new component instance.
@@ -32,7 +32,6 @@ class transportModel extends Component
      */
     public function render(): View|Closure|string
     {
-        dd($this->autoList);
         return view('components.roll.transport-model');
     }
 }
