@@ -50,7 +50,8 @@ class RollTransit extends Model
         "lock_status",
         "loop_color",
         "quality_id",
-        "roll_receiving_at"
+        "roll_receiving_at",
+        "is_roll_sell",
     ];
 
     public function store($request){        

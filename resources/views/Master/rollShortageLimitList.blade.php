@@ -21,32 +21,34 @@
         </div>
     </div>
     <div class="container">
-        <table id="postsTable" class="table table-striped table-bordered">
-            <thead>
-                <tr>
-                    <th rowspan="2">#</th>
-                    <th rowspan="2">Size</th>
-                    <th rowspan="2">Roll Color</th>
-                    <th rowspan="2">GSM</th>
-                    <th rowspan="2">Quality</th>
-                    <th rowspan="2">Limit</th>
-                    <th colspan="3">Stock</th>
-                    <th colspan="3">In Transit</th>
-                    <th rowspan="2">Action</th>
-                </tr>
-                <tr>
-                    <th>Net Total Weight</th>
-                    <th>Total Roll</th>
-                    <th>Total Length</th>
-                    <th>Net Total Weight</th>
-                    <th>Total Roll</th>
-                    <th>Total Length</th>
-                </tr>
-            </thead>
-            <tbody>
+        <div class="tableStickyDiv">
+            <table id="postsTable" class="table table-striped table-bordered table-fixed">
+                <thead>
+                    <tr>
+                        <th rowspan="2">#</th>
+                        <th rowspan="2">Size</th>
+                        <th rowspan="2">Roll Color</th>
+                        <th rowspan="2">GSM</th>
+                        <th rowspan="2">Quality</th>
+                        <th rowspan="2">Limit</th>
+                        <th colspan="3">Stock</th>
+                        <th colspan="3">In Transit</th>
+                        <th rowspan="2">Action</th>
+                    </tr>
+                    <tr>
+                        <th>Net Total Weight</th>
+                        <th>Total Roll</th>
+                        <th>Total Length</th>
+                        <th>Net Total Weight</th>
+                        <th>Total Roll</th>
+                        <th>Total Length</th>
+                    </tr>
+                </thead>
+                <tbody>
 
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     

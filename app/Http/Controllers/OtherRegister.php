@@ -68,13 +68,13 @@ class OtherRegister extends Controller
                         (
                             select id
                             from roll_details
-                            where is_cut = false
+                            where is_cut = false and is_roll_sell=false
                                 and lock_status = false
                         )
                         UNION(
                             select id
                             from roll_details
-                            where is_cut = false
+                            where is_cut = false and is_roll_sell=false
                                 and lock_status = false
                         )
                     )as roll on roll.id = loop_usage_accounts.roll_id

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Exceptions\MyException;
 use App\Exports\ExportRoll;
 use App\Imports\RollDetailsImport;
+use App\Models\AutoDetail;
 use App\Models\BagType;
 use App\Models\BagTypeMaster;
+use App\Models\ChalanDtl;
 use App\Models\ClientDetail;
 use App\Models\ClientDetailMaster;
 use App\Models\ColorMaster;
@@ -35,12 +37,16 @@ use App\Models\RollPrintColor;
 use App\Models\RollQualityGradeMap;
 use App\Models\RollQualityMaster;
 use App\Models\RollTransit;
+use App\Models\RollTransport;
+use App\Models\RollTransportDetail;
 use App\Models\StereoDetail;
+use App\Models\TransporterDetail;
 use App\Models\User;
 use App\Models\VendorDetail;
 use App\Models\VendorDetailMaster;
 use App\Traits\Formula;
 use App\Traits\Rolls;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -49,6 +55,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Excel as ExcelExcel;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\HeadingRowImport;
@@ -93,6 +100,11 @@ class RollController extends Controller
     protected $_M_GarbageEntry;
     protected $_M_PrintingEntry ;
     protected $_M_PrintingRegister;
+    protected $_M_Auto;
+    protected $_M_Transporter;
+    protected $_M_ChalanDtl;
+    protected $_M_RollTransport;
+    protected $_M_RollTransportDetail;
 
     function __construct()
     {
@@ -125,6 +137,12 @@ class RollController extends Controller
         $this->_M_GarbageEntry = new GarbageEntry();
         $this->_M_PrintingEntry = new PrintingEntry();
         $this->_M_PrintingRegister = new PrintingRegister();
+        $this->_M_Auto  =  new AutoDetail();
+        $this->_M_Transporter = new TransporterDetail();
+        $this->_M_ChalanDtl = new ChalanDtl();
+        $this->_M_RollTransport = new RollTransport();
+        $this->_M_RollTransportDetail = new RollTransportDetail();
+        
     }
 
     #================ Roll Transit =====================
@@ -757,7 +775,8 @@ class RollController extends Controller
                 $data->where("roll_details.is_printed",true);
             }                  
             if($flag!="register"){
-                $data->where("roll_details.is_cut",false);
+                $data->where("roll_details.is_cut",false)
+                    ->where("roll_details.is_roll_sell",false);
             }
             if($flag=="register" ){
                 $fromDate = $request->fromDate;
@@ -903,13 +922,13 @@ class RollController extends Controller
                 })
                 ->addColumn('action', function ($val) use($flag,$user_type) {                    
                     $button = "";
-                    if($val->is_cut){
+                    if($val->is_cut || $val->is_roll_sell){
                         return $button;
                     } 
                     if(in_array($user_type,[1,2]) && (!$val->is_printed)){
                         $button .= '<button class="btn btn-sm btn-info" onClick="showConfirmDialog('."'Are sure to Delete??',function (){transferInTransit(".$val->id.');})" >Back In Transit</button>';
                     }                   
-                    if(!($val->is_cut || $val->is_printed)){
+                    if(!($val->is_cut || $val->is_printed || $val->is_roll_sell)){
                         $button.='<button class="btn btn-sm btn-primary" onClick="editRoll('.$val->id.')" >Edit</button>';
                     }
                     if(in_array($user_type,[1,2]) && !$val->client_detail_id){
@@ -946,6 +965,381 @@ class RollController extends Controller
         }
         $data["flag"]=$flag;
         return view("Roll/list",$data);
+    }
+
+    public function generateRollChalan(Request $request){
+        try{          
+            // return $pdf->output(); 
+            $rolls = $this->_M_RollDetail->whereIn("id",collect($request->rolls)->pluck("id"))->get()->map(function($item){
+                $item->quality = $item->getQualityType()->first()?->quality;
+                return $item;
+            });
+            $parentTable=[];
+            $rollTypeGroup = $rolls->groupBy(["roll_type"]);
+            foreach($rollTypeGroup as $unit=>$bb){
+                $qualityGroup = $bb->sortBy(["quality_id"]);
+                $table=[];
+                $table["grand_total"]=[
+                    "total"=>$bb->count(),
+                    "total_gross_weight"=> collect($bb)->sum("gross_weight") ,
+                    "total_net_weight"=> collect($bb)->sum("net_weight") ,
+                ];
+                foreach($qualityGroup as $key=>$val){
+                    $table["row"][]=$val;
+                }
+                $parentTable[$unit]=$table;
+            }
+            // dd($parentTable);
+            
+            $client = $this->_M_ClientDetails->find($request->bookingForClientId);
+           
+            $auto = $this->_M_Auto->find($request->autoId);
+            $transposer = $this->_M_Transporter->find($request->transporterId);
+            $fyear=getFY();
+            list($fromDate,$uptoDate) = explode("-",$fyear);
+            $fromDate=$fromDate."-04-01"; 
+            $uptoDate=$uptoDate."-03-31"; 
+            $transPortStatus = $request->transportStatus??0;         
+            $count = $this->getChalaneSequence($transPortStatus);
+            $chalanNo="RS"."-";
+            
+            $key=$chalanNo;
+            $chalanNo .=substr("O",0,1)."-";
+            $chalanNo .=str_pad((string)$count,4,"0",STR_PAD_LEFT); 
+            
+            if($client->id==1){
+                $godownDtl = Config::get("customConfig.godownDtl");
+                foreach($godownDtl as $key=>$val){
+                    $client->$key=$val;
+                }
+            }
+            $data["unique_id"]=getFY()."-".$key.$count;
+            $data["table"]=$parentTable;
+            $data["chalan_date"]=$request->dispatchedDate??Carbon::now()->format("d-m-Y");
+            $data["transposer"]=$transposer;
+            $data["bus_no"]=$request->busNo;
+            $data["is_local"]=$request->isLocalTransport;
+            $data["auto"]=$auto;
+            $data["chalan_no"] = $chalanNo;
+            $data["client"] = $client;
+            // dd($parentTable);
+            $pdf = Pdf::loadView('pdf.rollSell', $data);
+            $pdfContent = $pdf->output();
+            $data["pdf_base64"]= base64_encode($pdfContent);
+            $newRequest = new Request(
+                [
+                    "unique_id"=> $data["unique_id"],
+                    "chalan_date"=> Carbon::parse($data["chalan_date"])->format("Y-m-d"),
+                    "chalan_no"=>$chalanNo,
+                    "chalan_json"=>$data,
+                    "user_id"=>Auth()->user()->id,
+                ]                
+            );
+            $this->_M_ChalanDtl->store($newRequest);
+            return responseMsgs(true,"Chalane Genrated",$data);
+        }catch(MyException $e){
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            return responseMsg(false,"Server Error","");
+        }
+    }
+
+    public function sellRole(Request $request){
+        try{
+            $rules=[
+                "bookingForClientId"=>"required",
+                "dispatchedDate" => "required|date", // Ensures dispatchedDate is a valid date
+                "invoiceNo" => "required", // Invoice number is mandatory
+                "rolls"=>"required|array",
+                "rolls.*.id"=>"required|exists:".$this->_M_RollDetail->getConnectionName().".".$this->_M_RollDetail->getTable().",id,lock_status,false,is_cut,false,is_roll_sell,false",
+            ];
+            $validate = Validator::make($request->all(),$rules);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            $request->merge(["clientId"=>$request->bookingForClientId]);
+            DB::beginTransaction();
+            $tranId = $this->_M_RollTransport->store($request);
+            foreach($request->rolls as $index=> $val){
+                $roll1 = $this->_M_RollDetail->where("id",$val["id"])->first();
+                $removeVal=["client_detail_id","estimate_delivery_date","delivery_date","bag_type_id","bag_unit","w","l","g","loop_color"];
+                foreach($removeVal as $column){
+                    $roll1->$column = null;
+                }
+                $roll1->is_roll_sell =true;
+                $newRequest = new Request($val);
+                $newRequest->merge([
+                    "roll_transport_id"=>$tranId,
+                    "rollId"=>$roll1->id,
+                ]);
+                $this->_M_RollTransportDetail->store($newRequest);
+                $order_filed=["client_detail_id","estimate_delivery_date","printing_color","loop_color","bag_type_id","bag_unit","w","l","g"];
+                $avg1 = 0;
+                $bag1 = $this->_M_BagType->find($roll1->bag_type_id);
+                if($bag1){
+                    $newRequest = new Request();
+                    $newRequest->merge([
+                        "formula"=>$bag1->roll_size_find,
+                        "bookingBagUnits"=>"M",                    
+                        // "gsm" => $request->bagGsm,
+                        "bagL"=> $roll1->l,
+                        "bagW"=> $roll1->w,
+                        "bagG"=> $roll1->g,
+                    ]);
+                    $result = $this->calculatePossibleProduction($newRequest);
+                    
+
+                    // possible production 
+
+                    $bestFind = "";
+                    $bestFind2 = ""; 
+                    if($roll1->bag_unit=="Kg"){
+                        $bestFind = "RW";
+                        $bestFind2 = "RW";
+                    }elseif($roll1->bag_unit=="Piece"){
+                        $bestFind = $bag1->roll_find;                    
+                        $bestFind2 = $bag1->roll_find_as_weight;
+                    }
+
+                    $newRequestOld = new Request($roll1->toArray());
+                    $newRequestOld->merge([
+                        "formula"=>$bestFind,
+                        "bookingBagUnits"=>$roll1->bag_unit,
+                        "length" => $roll1->length,
+                        "netWeight" => $roll1->net_weight,
+                        "size" => $roll1->size,
+                        "gsm" => $roll1->gsm,
+                        "bagL"=> $roll1->l,
+                        "bagW"=> $roll1->w,
+                        "bagG"=> $roll1->g,
+                    ]);
+                    $newRequestOld2 = new Request($newRequestOld->all());
+                    $newRequestOld2->merge([
+                        "formula"=>$bestFind2
+                    ]);
+                    $result = $this->calculatePossibleProduction($newRequestOld);
+                    $result1 = $this->calculatePossibleProduction($newRequestOld2);
+                    $avg1 = round((($result["result"]??0)+($result1["result"]??0))/2);
+                }
+                
+                $order1=[];
+                foreach($order_filed as $key){
+                    $order1[$key]=$roll1[$key];
+                }
+                $orderRollBag1 = $this->_M_OrderRollBagType->where("roll_id",$roll1->id)->where("lock_status",false)->orderBy("id","DESC")->first();
+                
+                // remover from booking;  
+                if($orderRollBag1){
+                    $order1 = $this->_M_OrderPunches->find($orderRollBag1->order_id);
+                    $order1->booked_units = $order1->booked_units - $avg1 ;
+                    $order1->disbursed_units = 0;
+                    $orderRollBag1->lock_status= true;
+                    
+                    $orderRollBag1->update();
+                    $order1->update();
+                } 
+                $roll1->update();
+            }
+            DB::commit();
+            return responseMsgs(true,"roll shall","");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+    public function chalanRegister(Request $request){
+        if($request->ajax()){
+            $data = $this->_M_RollTransport->select("roll_transports.*","client_detail_masters.client_name",
+                        "roll_transport_details.total_rolls","roll_transport_details.total_return_rolls",
+                        "auto_details.auto_name", "transporter_details.transporter_name"
+                    )
+                    ->join(DB::raw("(
+                            select roll_transport_id, count(roll_id) AS total_rolls, 
+                                count(case when is_roll_return=true then roll_id else null end) AS total_return_rolls
+                            from roll_transport_details
+                            where roll_transport_details.lock_status = false
+                            group by roll_transport_id
+                            ) AS roll_transport_details"),"roll_transport_details.roll_transport_id","roll_transports.id")
+                    ->leftJoin("client_detail_masters","client_detail_masters.id","roll_transports.client_id")
+                    ->leftJoin("auto_details","auto_details.id","roll_transports.auto_id")
+                    ->leftJoin("transporter_details","transporter_details.id","roll_transports.transporter_id")
+                    ->where("roll_transports.lock_status",false)
+                    ->orderBy("roll_transports.transport_date","DESC");
+
+            if($request->fromDate && $request->uptoDate){
+                $data->WhereBetween("roll_transports.transport_date",[$request->fromDate,$request->uptoDate]);
+            }elseif($request->fromDate){
+                $data->Where("roll_transports.transport_date",$request->fromDate);
+            }elseif($request->uptoDate){
+                $data->Where("roll_transports.transport_date",$request->uptoDate);
+            }
+
+            if($request->autoId){
+                $data->where("roll_transports.auto_id",$request->autoId);
+            }
+
+            if($request->transporterId){
+                $data->where("roll_transports.transporter_id",$request->transporterId);
+            }
+            if($request->billNo){
+                $data->where("roll_transports.bill_no",$request->billNo);
+            }
+            if($request->invoiceNo){
+                $data->where("roll_transports.invoice_no",$request->invoiceNo);
+            }
+
+            $list = DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn("transition_type",function($val){
+                    return $transition_type = collect(Config::get("customConfig.transportationDropDownType"))
+                        ->filter(function ($item) use ($val) {
+                            return $item["transport_status"] == $val->transport_status &&
+                                in_array($val->transport_init_status, $item["transport_init_status"]);
+                        })
+                        ->first()["type"] ?? "";
+                    
+                })
+                ->addColumn('transport_date', function ($val) { 
+                    return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
+                })
+                ->make(true);
+            return $list;
+        }
+        $data["autoList"] = $this->_M_Auto->getAutoListOrm()->orderBy("id","ASC")->get();
+        $data["transporterList"] = $this->_M_Transporter->getAutoListOrm()->orderBy("id","ASC")->get();
+        return view("roll/chalanRegister",$data);
+    }
+
+    public function transPortDtlHtml($id,Request $request){
+        try{
+            $transport = $this->_M_RollTransport->find($id);
+            $transportDtl = $this->_M_RollTransportDetail->where("roll_transport_id",$id)->where("lock_status",false)->get();
+            $transport->total_roll = $transportDtl->count();
+            $transport->total_return_roll = $transportDtl->where("is_roll_return",true)->count();
+            $auto = $this->_M_Auto->find($transport->auto_id);
+            $transporter = $this->_M_Transporter->find($transport->transporter_id);
+            $transport->auto_name = $auto->auto_name??"";
+            $transport->transporterLabel = $transporter ? ($transporter->is_bus ? "Bus Name : " : "Transporter Name : ") : "";
+            $transport->transporter_name = $transporter->transporter_name??"";
+            $transport->gstLabel = $transporter ? ($transporter->is_bus ? "Bus No : " : "GST No : ") : "";
+            $transport->gst_no = $transporter->gst_no??"";
+
+
+            $rolls = $this->_M_RollDetail->whereIn("id",$transportDtl->pluck("roll_id"))->get()->map(function($item)use($transportDtl){
+                $item->is_roll_return = $transportDtl->where("roll_id",$item->id)->first()?->is_roll_return;
+                $item->quality = $item->getQualityType()->first()?->quality;
+                return $item;
+            });
+            $clientDtl = $this->_M_ClientDetails->find($transport->client_id);
+            $data["transport"]=$transport;
+            $data["transportDtl"]=$transportDtl;
+            $data["auto"]=$auto;
+            $data["transporter"]=$transporter;
+            $data["clientDtl"]=$clientDtl;
+            $data["rolls"]=$rolls;
+            $html = view('Roll/transportDtl', $data)->render();
+            return responseMsg(true,"html",$html);
+
+        }catch(MyException $e){
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            return responseMsg(false,"Server Error","");
+        }
+    }
+
+    public function sellRegister(Request $request){
+        
+        if($request->ajax())
+        {
+            $data = $this->_M_RollTransportDetail->select("roll_transport_details.*","roll_transports.transport_date","roll_transports.invoice_no",
+                        "roll_transports.chalan_unique_id",
+                        "roll_details.roll_no","roll_details.roll_type","roll_details.roll_color","roll_details.gsm",
+                        "roll_details.gsm_json","roll_details.size","roll_details.net_weight","roll_details.gross_weight","roll_details.hardness",
+                        "roll_quality_masters.quality",
+                        "auto_details.auto_name","client_detail_masters.client_name",                        
+                        "transporter_details.transporter_name",
+                    )
+                    ->join("roll_transports","roll_transports.id","roll_transport_details.roll_transport_id")
+                    ->join("roll_details","roll_details.id","roll_transport_details.roll_id")
+                    ->leftJoin("roll_quality_masters","roll_quality_masters.id","roll_details.quality_id")
+                    ->join("client_detail_masters","client_detail_masters.id","roll_transports.client_id")
+                    ->leftJoin("auto_details","auto_details.id","roll_transports.auto_id")
+                    ->leftJoin("transporter_details","transporter_details.id","roll_transports.transporter_id")
+                    ->where("roll_transport_details.lock_status",false)
+                    ->where("roll_transports.lock_status",false)
+                    ->orderBy("roll_transports.transport_date","DESC")
+                    ->orderBy("roll_transports.chalan_unique_id");
+
+            if($request->fromDate && $request->uptoDate){
+                $data->WhereBetween("roll_transports.transport_date",[$request->fromDate,$request->uptoDate]);
+            }elseif($request->fromDate){
+                $data->Where("roll_transports.transport_date",$request->fromDate);
+            }elseif($request->uptoDate){
+                $data->Where("roll_transports.transport_date",$request->uptoDate);
+            }
+
+            if($request->autoId){
+                $data->where("roll_transports.auto_id",$request->autoId);
+            }
+
+            if($request->transporterId){
+                $data->where("roll_transports.transporter_id",$request->transporterId);
+            }
+            if($request->billNo){
+                $data->where("roll_transports.bill_no",$request->billNo);
+            }
+            if($request->invoiceNo){
+                $data->where("roll_transports.invoice_no",$request->invoiceNo);
+            }
+            
+            $list = DataTables::of($data)
+                ->addIndexColumn()                
+                ->addColumn('transport_date', function ($val) { 
+                    return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
+                })
+                ->addColumn('action', function ($val) {                   
+                    $button='<button class="btn btn-sm btn-info" onClick="openPreviewChalanModel('."'".$val->chalan_unique_id."'".')" >View Chalan</button>';
+                    if(in_array(Auth()->user()->user_type_id,[1,2])){
+                        // $button.='<button class="btn btn-sm btn-danger" onclick="showConfirmDialog('."'Are you sure you want to deactivate this item?', function() { deleteTransPortDtl('$val->id'); })".'" >Delete</button>';
+                    }
+                    if(in_array(Auth()->user()->user_type_id,[1,2])){
+                        if(!$val->is_roll_return){
+                            $button.='<button class="btn btn-sm btn-danger" onclick="showConfirmDialog('."'Are you sure you want to Sell Return this item?', function() { sellRollBak('$val->id'); })".'" >Sell Return</button>';
+                        }else{
+                            $button.='<span class="btn btn-sm btn-warning">Roll Is Returned</span>';
+                        }
+                    }
+                    return $button;
+                })
+                ->rawColumns(['row_color', 'action'])
+                ->make(true);
+            return $list;
+
+        }
+        $data["autoList"] = $this->_M_Auto->getAutoListOrm()->orderBy("id","ASC")->get();
+        $data["transporterList"] = $this->_M_Transporter->getAutoListOrm()->orderBy("id","ASC")->get();
+        
+        return view("Roll/roll_transport",$data);
+    }
+
+    public function returnSell($id,Request $request){
+        try{
+            
+            $tranportDtl = $this->_M_RollTransportDetail->find($id);
+            $roll = $this->_M_RollDetail->find($tranportDtl->roll_id);
+            $tranportDtl->is_roll_return=true;
+            $roll->is_roll_sell = false;
+            DB::beginTransaction();  
+            $roll->update();          
+            $tranportDtl->update();
+            DB::commit();
+            return responseMsg(true,"Roll Return","");
+        }catch(MyException $e){
+            DB::rollBack();
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            DB::rollBack();
+            return responseMsg(false,"Server error!!!","");
+        }
     }
 
     public function rollDtl($id,Request $request){
@@ -1379,7 +1773,8 @@ class RollController extends Controller
                             $join->on("cutting_schedule_details.roll_id","=","roll_details.id")
                             ->where("cutting_schedule_details.lock_status",false);
                         })
-                        ->where("roll_details.lock_status",false);
+                        ->where("roll_details.lock_status",false)                        
+                        ->where("roll_details.is_roll_sell",false);
                 if($flag=="printing"){
                     $data->where("roll_details.is_printed",false)
                     ->whereNotNull(DB::raw("json_array_length(roll_details.printing_color)"))
@@ -1537,6 +1932,7 @@ class RollController extends Controller
                         ->where("printing_schedule_details.lock_status",false);
                     })
                     ->where("roll_details.lock_status",false)
+                    ->where("roll_details.is_roll_sell",false)
                     ->where("roll_details.is_printed",false)
                     ->orderBy("printing_schedule_details.sl","ASC");
             if($machineId==1){                
@@ -1615,6 +2011,7 @@ class RollController extends Controller
                     })
                     ->where("roll_details.lock_status",false)
                     ->where("roll_details.is_cut",false)
+                    ->where("roll_details.is_roll_sell",false)
                     ->orderBy("cutting_schedule_details.sl","ASC");                     
 
             if($fromDate && $uptoDate){             
@@ -1806,7 +2203,7 @@ class RollController extends Controller
                 "operatorId" => "required|exists:".$this->_M_User->getTable().",id",
                 "helperId" => "required|exists:".$this->_M_User->getTable().",id",
                 "roll" => "required|array",
-                "roll.*.id"=>"required|exists:".$this->_M_RollDetail->getTable().",id,lock_status,false,is_printed,false,is_cut,false",
+                "roll.*.id"=>"required|exists:".$this->_M_RollDetail->getTable().",id,lock_status,false,is_roll_sell,false,is_printed,false,is_cut,false",
             ];
             $validate = Validator::make($request->all(),$rule);
             if($validate->fails()){
@@ -1891,7 +2288,7 @@ class RollController extends Controller
                 "operatorId" => "required|exists:".$this->_M_User->getTable().",id",
                 "helperId" => "required|exists:".$this->_M_User->getTable().",id",
                 "roll" => "required|array",
-                "roll.*.id"=>"required|exists:".$this->_M_RollDetail->getTable().",id,lock_status,false,is_cut,false",
+                "roll.*.id"=>"required|exists:".$this->_M_RollDetail->getTable().",id,lock_status,false,is_roll_sell,false,is_cut,false",
                 // "roll.*.totalQtr"=>"required",
                 "client.*.orderId"=>"required",
                 "client.*.rollId.*.id"=>"required",
@@ -2177,7 +2574,8 @@ class RollController extends Controller
                     ->leftJoin("roll_quality_masters","roll_quality_masters.id","roll_details.quality_id")
                     ->where("roll_details.is_cut",false)
                     ->where("roll_details.is_printed",false)
-                    ->where("roll_details.lock_status",false);
+                    ->where("roll_details.lock_status",false)
+                    ->where("roll_details.is_roll_sell",false);
                     
             $transit = $this->_M_RollTransit->select("roll_transits.*",DB::raw("'transit' as stock, client_detail_masters.client_name,vendor_detail_masters.vendor_name,roll_quality_masters.quality"))
                         ->leftJoin("client_detail_masters","client_detail_masters.id","roll_transits.client_detail_id")
@@ -2185,7 +2583,8 @@ class RollController extends Controller
                         ->leftJoin("roll_quality_masters","roll_quality_masters.id","roll_transits.quality_id")
                         ->where("roll_transits.is_cut",false)
                         ->where("roll_transits.is_printed",false)
-                        ->where("roll_transits.lock_status",false);
+                        ->where("roll_transits.lock_status",false)
+                        ->where("roll_transits.is_roll_sell",false);
                         
             if($request->bagQuality){
                 $roll->where("roll_details.roll_type",$request->bagQuality);
@@ -3698,6 +4097,9 @@ class RollController extends Controller
             if($roll->is_cut){
                 throw new Exception("Roll is cut");
             }
+            if($roll->is_roll_sell){
+                throw new Exception("Roll is Sell");
+            }
             DB::beginTransaction();
             if($roll->client_detail_id){
                 $orderRoll = $this->_M_OrderRollBagType->where("roll_id",$roll->id)->where("lock_status",false)->first();
@@ -3954,6 +4356,9 @@ class RollController extends Controller
             if($roll->is_cut){
                 throw new Exception("Roll Is Cut");
             }
+            if($roll->is_roll_sell){
+                throw new Exception("Roll Is Sell");
+            }
             $roll->quality_id = $request->qualityId;
             $roll->roll_type = $request->rollType;
             $roll->hardness = $request->hardness;
@@ -3978,10 +4383,10 @@ class RollController extends Controller
         try{
             $rules = [
                 "roll" => "required|array",
-                "roll.firstRoll.*" => "required|exists:" . $this->_M_RollDetail->getTable() . ",roll_no,is_printed,false,is_cut,false",
+                "roll.firstRoll.*" => "required|exists:" . $this->_M_RollDetail->getTable() . ",roll_no,is_printed,false,is_cut,false,is_roll_sell,false",
                 "roll.secondRoll.*" => [
                     "required",
-                    "exists:" . $this->_M_RollDetail->getTable() . ",roll_no,is_printed,false,is_cut,false",
+                    "exists:" . $this->_M_RollDetail->getTable() . ",roll_no,is_printed,false,is_cut,false,is_roll_sell,false",
                     function ($attr, $value, $fail) use ($request) {
                         $key = explode(".",$attr)[2];
                         $firstRollNo = $request->input('roll.firstRoll.'.$key);
@@ -4063,10 +4468,10 @@ class RollController extends Controller
         try{
             $rules = [
                 "roll" => "required|array",
-                "roll.firstRoll.*" => "required|exists:" . $this->_M_RollDetail->getTable() . ",id,is_printed,false,is_cut,false",
+                "roll.firstRoll.*" => "required|exists:" . $this->_M_RollDetail->getTable() . ",id,is_printed,false,is_cut,false,is_roll_sell,false",
                 "roll.secondRoll.*" => [
                     "required",
-                    "exists:" . $this->_M_RollDetail->getTable() . ",id,is_printed,false,is_cut,false",
+                    "exists:" . $this->_M_RollDetail->getTable() . ",id,is_printed,false,is_cut,false,is_roll_sell,false",
                     function ($attr, $value, $fail) use ($request) {
                         $key = explode(".",$attr)[2];
                         $firstRollId = $request->input('roll.firstRoll.'.$key);

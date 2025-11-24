@@ -24,6 +24,7 @@
                     <label class="form-check-label" for="printedRollOnly">Only Printed</label> <input class="form-check-input" type="checkbox" id="printedRollOnly" name="printedRollOnly" onclick="searchData()" />
                  </div>
                  <button class="btn btn-primary" onclick="swapSelectedRoll()">Swap The Roll</button>
+                 <button class="btn btn-danger" onclick="sellRoll()">Sell The Roll</button>
              </div>
             
         </div>
@@ -67,9 +68,14 @@
     </div>
 
     <!-- Modal -->
+
+    
+    
+
     <x-pending-order-book />
     <x-roll.edit-roll />
     <x-roll.roll-swap />
+    <x-roll.transport-model />
 </main>
 <script>
     const rules = {
@@ -870,6 +876,23 @@
                 modelInfo("Server error", "error");
             }
         });
+    }
+
+    function sellRoll(){
+        let rollId = $("#selectedRollId").val().split(",").filter(Boolean);
+
+        if (rollId.length < 1) {
+            alert("Please select 1 rolls");
+            return;
+        } 
+        $("#hiddenDiv").empty();
+        // Append hidden inputs for each rollId
+        rollId.forEach(function (id) {
+            $("#hiddenDiv").append(
+                `<input type="hidden" name="rolls[][id]" value="${id}">`
+            );
+        });
+        $("#transportModel").modal("show");
     }
 
 

@@ -103,7 +103,7 @@ class PackingController extends Controller
                         string_agg(roll_details.id::text,',') as roll_ids
                     from roll_details
                     join order_roll_bag_types on order_roll_bag_types.roll_id = roll_details.id
-                    where order_roll_bag_types.lock_status = false and roll_details.is_cut = true
+                    where order_roll_bag_types.lock_status = false and roll_details.is_cut = true and roll_details.is_roll_sell=false
                     group by order_id
                 ) as roll
             "),"roll.order_id","order_punch_details.id")
@@ -466,11 +466,11 @@ class PackingController extends Controller
                     ->where("bag_packings.lock_status",false)
                     ->orderBy("bag_packings.order_id","DESC")
                     ->orderBy("bag_packings.id","DESC");
-            $data = $data->get();
+            // $data = $data->get();
             $summary=[
                 "totalWeight"=>roundFigure($data->sum("packing_weight")),
             ];
-            $list = DataTables::of($data)
+            $list = DataTables::eloquent($data)
                 ->addIndexColumn()
                 ->addColumn('packing_date', function ($val) { 
                     return $val->packing_date ? Carbon::parse($val->packing_date)->format("d-m-Y") : "";

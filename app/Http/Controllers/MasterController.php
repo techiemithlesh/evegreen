@@ -893,7 +893,7 @@ class MasterController extends Controller
                             select sum(net_weight) as total_net_weight,count(id) as total_roll,sum(length) as total_length,
                                 size,roll_color,gsm,quality_id
                             from roll_details
-                            where is_cut=false
+                            where is_cut=false and is_roll_sell=false
                             group by size,roll_color,gsm,quality_id 
                         ) as stock on stock.roll_color = rolls.roll_color
                             and stock.size = rolls.size
@@ -903,7 +903,7 @@ class MasterController extends Controller
                             select sum(net_weight) as total_net_weight,count(id) as total_roll,sum(length) as total_length,
                                 size,roll_color,gsm,quality_id
                             from roll_transits
-                            where is_cut=false
+                            where is_cut=false and is_roll_sell=false
                                 AND size>2
                             group by size,roll_color,gsm,quality_id 
                         )as transit on transit.roll_color = rolls.roll_color
