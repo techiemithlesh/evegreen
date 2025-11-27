@@ -60,24 +60,30 @@
         <tr>
             <td colspan="2">
                 Chalan No   : <b>{{$chalan_no}}</b><br>
-                Client Name : <b>{{$client['client_name']}}</b> <br>
-                Mobile NO.  : <b>{{$client['mobile_no']}}</b><br>
-                Address     : <b>{{$client['address']}}</b>
+                @if($client)
+                    Client Name : <b>{{$client['client_name']}}</b> <br>
+                    Mobile No.  : <b>{{$client['mobile_no']}}</b><br>
+                    Address     : <b>{{$client['address']}}</b>
+                @endif
+                @if($vendor)
+                    Vendor Name : <b>{{$vendor['vendor_name']}}</b> <br>
+                    Vendor GST No. : <b>{{$vendor['gst_no']}}</b><br>
+                    Mobile No.  : <b>{{$vendor['mobile_no']}}</b><br>
+                    Address     : <b>{{$vendor['address']}}</b>
+                @endif
+                
             </td>
             <td colspan="2"></td>
             <td colspan="2">
                 Date            : <b> {{$chalan_date}}</b><br>
-                Auto Name       : <b>{{$auto['auto_name']??"N/A"}}</b><br>
-                Auto No         : <b>{{$auto['auto_no']??"N/A"}}</b><br>
-                Auto Mobile No  : <b>{{$auto['mobile_no']??"----------"}}</b> <br>
-                @if(!$is_local)
-                    @if($bus_no)
-                        Bus Name          : <b>{{$transposer['transporter_name']??"N/A"}}</b><br>
-                        Bus No            : <b>{{$bus_no??"N/A"}}</b><br>
-                    @else
-                        Transporter Name  : <b>{{$transposer['transporter_name']??"N/A"}}</b><br>
-                        GST No            : <b>{{$transposer['gst_no']??"N/A"}}</b><br>
-                    @endif
+                @if($auto)
+                    Auto Name       : <b>{{$auto['auto_name']??"N/A"}}</b><br>
+                    Auto No         : <b>{{$auto['auto_no']??"N/A"}}</b><br>
+                    Auto Mobile No  : <b>{{$auto['mobile_no']??"----------"}}</b> <br>
+                @endif
+                @if($transposer)
+                    Transporter Name  : <b>{{$transposer['transporter_name']??"N/A"}}</b><br>
+                    GST No            : <b>{{$transposer['gst_no']??"N/A"}}</b><br>
                 @endif
             </td>
         </tr>

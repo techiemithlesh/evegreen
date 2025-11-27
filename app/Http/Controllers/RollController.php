@@ -991,8 +991,8 @@ class RollController extends Controller
             }
             // dd($parentTable);
             
-            $client = $this->_M_ClientDetails->find($request->bookingForClientId);
-           
+            $client = $this->_M_ClientDetails->find($request->saleClintId);
+            $vendor = $this->_M_VendorDetail->find($request->vendorId);
             $auto = $this->_M_Auto->find($request->autoId);
             $transposer = $this->_M_Transporter->find($request->transporterId);
             $fyear=getFY();
@@ -1007,7 +1007,7 @@ class RollController extends Controller
             $chalanNo .=substr("O",0,1)."-";
             $chalanNo .=str_pad((string)$count,4,"0",STR_PAD_LEFT); 
             
-            if($client->id==1){
+            if($client && $client->id==1){
                 $godownDtl = Config::get("customConfig.godownDtl");
                 foreach($godownDtl as $key=>$val){
                     $client->$key=$val;
@@ -1022,6 +1022,7 @@ class RollController extends Controller
             $data["auto"]=$auto;
             $data["chalan_no"] = $chalanNo;
             $data["client"] = $client;
+            $data["vendor"] = $vendor;
             // dd($parentTable);
             $pdf = Pdf::loadView('pdf.rollSell', $data);
             $pdfContent = $pdf->output();
@@ -1047,9 +1048,11 @@ class RollController extends Controller
     public function sellRole(Request $request){
         try{
             $rules=[
-                "bookingForClientId"=>"required",
+                "saleClintId"   => "required_without:vendorId",
+                "vendorId"      => "required_without:saleClintId",
                 "dispatchedDate" => "required|date", // Ensures dispatchedDate is a valid date
                 "invoiceNo" => "required", // Invoice number is mandatory
+                "purpose" => "required|array",
                 "rolls"=>"required|array",
                 "rolls.*.id"=>"required|exists:".$this->_M_RollDetail->getConnectionName().".".$this->_M_RollDetail->getTable().",id,lock_status,false,is_cut,false,is_roll_sell,false",
             ];
@@ -1057,7 +1060,8 @@ class RollController extends Controller
             if($validate->fails()){
                 return validationError($validate);
             }
-            $request->merge(["clientId"=>$request->bookingForClientId]);
+            $request->merge(["clientId"=>$request->saleClintId]);
+            $request->merge(["venderId"=>$request->vendorId]);
             DB::beginTransaction();
             $tranId = $this->_M_RollTransport->store($request);
             foreach($request->rolls as $index=> $val){
@@ -1150,7 +1154,10 @@ class RollController extends Controller
         if($request->ajax()){
             $data = $this->_M_RollTransport->select("roll_transports.*","client_detail_masters.client_name",
                         "roll_transport_details.total_rolls","roll_transport_details.total_return_rolls",
-                        "auto_details.auto_name", "transporter_details.transporter_name"
+                        DB::raw("
+                        CASE WHEN client_detail_masters.id IS NULL THEN vendor_detail_masters.vendor_name ELSE client_detail_masters.client_name END AS client_name,
+                        CASE WHEN auto_details.id IS NULL THEN transporter_details.transporter_name ELSE auto_details.auto_name END AS auto_name
+                        "),
                     )
                     ->join(DB::raw("(
                             select roll_transport_id, count(roll_id) AS total_rolls, 
@@ -1160,6 +1167,7 @@ class RollController extends Controller
                             group by roll_transport_id
                             ) AS roll_transport_details"),"roll_transport_details.roll_transport_id","roll_transports.id")
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_transports.client_id")
+                    ->leftJoin("vendor_detail_masters","vendor_detail_masters.id","roll_transports.vendor_id")
                     ->leftJoin("auto_details","auto_details.id","roll_transports.auto_id")
                     ->leftJoin("transporter_details","transporter_details.id","roll_transports.transporter_id")
                     ->where("roll_transports.lock_status",false)
@@ -1198,6 +1206,9 @@ class RollController extends Controller
                         ->first()["type"] ?? "";
                     
                 })
+                ->addColumn('purpose', function ($val) { 
+                    return $val->purpose ? json_decode($val->purpose) : [];
+                })
                 ->addColumn('transport_date', function ($val) { 
                     return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
                 })
@@ -1230,11 +1241,13 @@ class RollController extends Controller
                 return $item;
             });
             $clientDtl = $this->_M_ClientDetails->find($transport->client_id);
+            $vendorDtl = $this->_M_VendorDetail->find($transport->vendor_id);
             $data["transport"]=$transport;
             $data["transportDtl"]=$transportDtl;
             $data["auto"]=$auto;
             $data["transporter"]=$transporter;
             $data["clientDtl"]=$clientDtl;
+            $data["vendorDtl"]=$vendorDtl;
             $data["rolls"]=$rolls;
             $html = view('Roll/transportDtl', $data)->render();
             return responseMsg(true,"html",$html);
@@ -1250,18 +1263,22 @@ class RollController extends Controller
         
         if($request->ajax())
         {
-            $data = $this->_M_RollTransportDetail->select("roll_transport_details.*","roll_transports.transport_date","roll_transports.invoice_no",
+            $data = $this->_M_RollTransportDetail->select("roll_transport_details.*","roll_transports.transport_date","roll_transports.invoice_no","roll_transports.purpose",
                         "roll_transports.chalan_unique_id",
                         "roll_details.roll_no","roll_details.roll_type","roll_details.roll_color","roll_details.gsm",
-                        "roll_details.gsm_json","roll_details.size","roll_details.net_weight","roll_details.gross_weight","roll_details.hardness",
-                        "roll_quality_masters.quality",
-                        "auto_details.auto_name","client_detail_masters.client_name",                        
-                        "transporter_details.transporter_name",
+                        "roll_details.gsm_json","roll_details.size","roll_details.net_weight","roll_details.gross_weight","roll_details.hardness","roll_details.length",
+                        "roll_quality_masters.quality","grade_masters.grade",
+                        DB::raw("
+                        CASE WHEN client_detail_masters.id IS NULL THEN vendor_detail_masters.vendor_name ELSE client_detail_masters.client_name END AS client_name,
+                        CASE WHEN auto_details.id IS NULL THEN transporter_details.transporter_name ELSE auto_details.auto_name END AS auto_name
+                        "),
                     )
                     ->join("roll_transports","roll_transports.id","roll_transport_details.roll_transport_id")
                     ->join("roll_details","roll_details.id","roll_transport_details.roll_id")
                     ->leftJoin("roll_quality_masters","roll_quality_masters.id","roll_details.quality_id")
-                    ->join("client_detail_masters","client_detail_masters.id","roll_transports.client_id")
+                    ->join("grade_masters","grade_masters.id","roll_quality_masters.grade_id")
+                    ->leftJoin("client_detail_masters","client_detail_masters.id","roll_transports.client_id")
+                    ->leftJoin("vendor_detail_masters","vendor_detail_masters.id","roll_transports.vendor_id")
                     ->leftJoin("auto_details","auto_details.id","roll_transports.auto_id")
                     ->leftJoin("transporter_details","transporter_details.id","roll_transports.transporter_id")
                     ->where("roll_transport_details.lock_status",false)
@@ -1295,6 +1312,9 @@ class RollController extends Controller
                 ->addIndexColumn()                
                 ->addColumn('transport_date', function ($val) { 
                     return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
+                })
+                ->addColumn('purpose', function ($val) { 
+                    return $val->purpose ? json_decode($val->purpose) : [];
                 })
                 ->addColumn('action', function ($val) {                   
                     $button='<button class="btn btn-sm btn-info" onClick="openPreviewChalanModel('."'".$val->chalan_unique_id."'".')" >View Chalan</button>';

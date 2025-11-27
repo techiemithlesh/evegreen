@@ -48,11 +48,11 @@
                     <tr>
                         <th>Transport Date</th>
                         <th>Chalan No.</th>
-                        <th>Auto Name</th>
-                        <th>Transporter Name</th>
+                        <th>Auto / Transporter Name</th>
                         <th>Total Roll</th>
                         <th>Return Roll</th>
-                        <th>Client Name</th>
+                        <th>Client / Vendor Name</th>
+                        <th>Purpose</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -130,10 +130,10 @@
                 { data:"transport_date",name:"transport_date" },
                 { data: "invoice_no", name: "invoice_no" },
                 { data: "auto_name", name: "auto_name" },
-                { data: "transporter_name", name: "transporter_name" },
                 { data: "total_rolls", name: "total_rolls" },
                 { data: "total_return_rolls", name: "total_return_rolls" },
                 { data: "client_name", name: "client_name" },
+                { data: "purpose", name: "purpose",render:function(row,type,data){return (data.purpose ? (Array.isArray(data.purpose) ? data.purpose : JSON.parse(data.purpose)).join(" , ") :"")} },
                 
             ],
             createdRow: function(row, data, dataIndex) {
@@ -147,6 +147,9 @@
                     <i class="bi bi-info-circle-fill" data-placement="bottom" data-toggle="tooltip" title="View detail" style="cursor:pointer;" onclick="showDtlModel(${data.id})"></i>
                 `);
 
+            },            
+            initComplete: function () {
+                addFilter('postsTable',[]);
             },
             dom: 'lBfrtip', // This enables the buttons
             language: {
@@ -161,10 +164,7 @@
                 text: 'Export to Excel',
                 className: 'btn btn-success',
 
-            }],            
-            initComplete: function () {
-                addFilter('postsTable',[]);
-            },
+            }],
         });
     });
 

@@ -24,6 +24,55 @@
                         </div>
                         <div class="col-sm-4">
                             <div class="form-group">
+                                <label class="form-label" for="purpose">Purpose<span class="text-danger">*</span></label>
+                                <select name="purpose[]" id="purpose" class="form-select select2" multiple="multiple" onchange="disableOther()" required >
+                                    <!-- <option value="">select</option> -->
+                                    @foreach($purpose as $val)
+                                        <option value="{{$val}}">{{$val}}</option>
+                                    @endforeach
+                                </select>
+                                <span class="error-text" id="purpose-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 client" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label" for="saleClintId">Client Name<span class="text-danger">*</span></label>
+                                <div class="col-md-12">
+                                    <select name="saleClintId" id="saleClintId" class="form-select select2" required>
+                                        <option value="">Select</option>
+                                        @foreach ($clientList as $val)
+                                            <option value="{{ $val->id }}">{{ $val->client_name }}</option>
+                                        @endforeach
+                                    </select><br>
+                                    <label class="error-text" id="saleClintId-error"></label>
+                                </div>                                       
+                                <span class="error-text" id="busNo-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 vendor" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label" for="vendorId">Vendor Name<span class="text-danger">*</span></label>
+                                <div class="col-md-12">
+                                    <select name="vendorId" id="vendorId" class="form-select select2" required>
+                                        <option value="">Select</option>
+                                        @foreach ($vendorList as $val)
+                                            <option value="{{ $val->id }}">{{ $val->vendor_name }}</option>
+                                        @endforeach
+                                    </select><br>
+                                    <label class="error-text" id="vendorId-error"></label>
+                                </div>                                       
+                                <span class="error-text" id="busNo-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4" id="isLocalTransportDiv">
+                            <label class="form-label" for="isLocalTransport">Local Transport</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isLocalTransport" name="isLocalTransport" onclick="toggleTransporterDiv()" />
+                                <span id="transportStatus" style="margin-left:10px;">Yes</span>
+                            </div>                        
+                        </div>
+                        <div class="col-sm-4 autoDiv">
+                            <div class="form-group">
                                 <label class="form-label" for="autoId">Auto<span class="text-danger">*</span></label>
                                 <select name="autoId" id="autoId" class="form-select select2"  required >
                                     <option value="">select</option>
@@ -34,16 +83,11 @@
                                 <span class="error-text" id="autoId-error"></span>
                             </div>
                         </div>
-                        <div class="col-sm-4" id="isLocalTransportDiv">
-                            <label class="form-label" for="isLocalTransport">Is Local Transport</label>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="isLocalTransport" name="isLocalTransport" onclick="toggleTransporterDiv()" />
-                            </div>                        
-                        </div>
-                        <div class="col-sm-4 transposerDiv">
+                        
+                        <div class="col-sm-4 transposerDiv" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label" for="transporterId">Transporter<span class="text-danger">*</span></label>
-                                <select name="transporterId" id="transporterId" class="form-select select2"  required onchange="toggleBusNoDiv()" >
+                                <select name="transporterId" id="transporterId" class="form-select select2"  required >
                                     <option value="" data-item="">select</option>
                                     @foreach($transporterList as $val)
                                         <option value="{{$val->id}}" data-item="{{$val->is_bus}}" >{{$val->transporter_name}}</option>
@@ -52,40 +96,6 @@
                                 <span class="error-text" id="transporterId-error"></span>
                             </div>
                         </div>
-                        <div class="col-sm-4 transposerDiv BussNo">
-                            <div class="form-group">
-                                <label class="form-label" for="busNo">Buss No<span class="text-danger">*</span></label>
-                                <input name="busNo" id="busNo" class="form-control" placeholder="Enter Bus No"/>                                        
-                                <span class="error-text" id="busNo-error"></span>
-                            </div>
-                        </div>
-                        <div class="col-sm-4 client">
-                            <div class="form-group">
-                                <label class="form-label" for="bookingForClientId">Client Name<span class="text-danger">*</span></label>
-                                <div class="col-md-12">
-                                    <select name="bookingForClientId" id="bookingForClientId" class="form-control select2">
-                                        <option value="">Select</option>
-                                        @foreach ($clientList as $val)
-                                            <option value="{{ $val->id }}">{{ $val->client_name }}</option>
-                                        @endforeach
-                                    </select><br>
-                                    <label class="error-text" id="bookingForClientId-error"></label>
-                                </div>                                       
-                                <span class="error-text" id="busNo-error"></span>
-                            </div>
-                        </div>
-                        <!-- <div class="col-sm-4" id="rateTypeDiv">
-                            <div class="form-group">
-                                <label class="form-label" for="rateTypeId">Rate Type</label>
-                                <select name="rateTypeId" id="rateTypeId" class="form-select" >
-                                    <option value="">select</option>
-                                    @foreach($rateType as $val)
-                                        <option value="{{$val->id}}">{{$val->rate_type}}</option>
-                                    @endforeach
-                                </select>
-                                <span class="error-text" id="rateTypeId-error"></span>
-                            </div>
-                        </div> -->
                     </div>
                 </form>
             </div>
@@ -134,7 +144,7 @@
                 dispatchedDate: {
                     required: true,
                 },
-                bookingForClientId:{
+                purpose:{
                     required: true,
                 },
             },
@@ -143,24 +153,53 @@
             }
         });
     });
-    function toggleTransporterDiv(){
-        $(".transposerDiv").show();
-        $("#transporterId").attr("required",true);
-        if($("#isLocalTransport").is(":checked")){
-            $(".transposerDiv").hide();
-            $("#transporterId").val("").trigger("change");
-            $("#transporterId").attr("required",false);
+
+    function disableOther() {
+
+        isUpdating = true;
+
+        let selectedItem = $("#purpose").val(); // array of selected values
+
+        // If "Sale" is selected
+        if (selectedItem && selectedItem.includes("Sale")) {
+            $("#purpose").val(["Sale"]);
+            $("#purpose option").each(function () {
+                $(this).prop("disabled", $(this).val() !== "Sale");
+            });
+            $(".client").show();
+            $(".vendor").hide();
+            $("#vendorId").val("").trigger("change");
+
+        } else {
+            $("#purpose option").prop("disabled", false);
+            $(".vendor").show();
+            $(".client").hide();
+            $("#saleClintId").val("").trigger("change");
         }
+
+        // Refresh Select2 UI (this will not call change again)
+        $("#purpose").select2({
+            width:"100%",
+            display:"block",
+            dropdownCssClass: 'form-control',
+            dropdownParent: $('#transportModel'), 
+        });
     }
 
-    function toggleBusNoDiv(){
-        let option= $("#transporterId").find("option:selected");
-        $(".BussNo").show();
-        $("#busNo").attr("required",true);
-        if(!option.attr("data-item")){
-            $(".BussNo").hide();
-            $("#busNo").attr("required",false).val("");
+
+    function toggleTransporterDiv(){
+        if ($("#isLocalTransport").is(":checked")) {
+            $("#transportStatus").html("No");
+            $(".transposerDiv").show();
+            $(".autoDiv").hide();
+            $("#autoId").val("").trigger("change");
+        } else {
+            $("#transportStatus").html("Yes");            
+            $(".transposerDiv").hide();
+            $("#transporterId").val("").trigger("change");
+            $(".autoDiv").show();
         }
+
     }
 
     function generateChalan(){
@@ -227,6 +266,7 @@
                                 } else {
                                     console.log(data);
                                     modelInfo("Internal Server Error", "warning");
+                                    $("#transportRoll").prop("disabled", false);
                                 }
                             },
                             error: function (errors) {

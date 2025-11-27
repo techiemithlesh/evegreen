@@ -19,6 +19,8 @@ class RollTransport extends Model
         "invoice_no",
         "transport_status",
         "client_id",
+        "vendor_id",
+        "purpose",
         "user_id",
         "reiving_user_id",
         "reiving_date",

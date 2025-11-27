@@ -47,7 +47,8 @@
                     <thead>
                         <tr>
                             <th>Dispatch Date</th>
-                            <th>Client Name</th>
+                            <th>Client / Vendor Name</th>
+                            <th>Purpose</th>
                             <th>Roll No</th>
                             <th>Role Type</th>
                             <th>Quality</th>
@@ -56,9 +57,9 @@
                             <th>Size</th>
                             <th>Net Weight</th>
                             <th>Gross Weight</th>
-                            <th>Hardness</th>
-                            <th>Auto Name</th>
-                            <th>Transporter Name</th>
+                            <th>Length</th>
+                            <th>Grade</th>
+                            <th>Auto /Transporter Name</th>
                             <th>Chalan No</th>
                             <th>Action</th>
                         </tr>
@@ -125,17 +126,18 @@
             columns: [
                 { data: "transport_date", name: "transport_date" },
                 { data: "client_name", name: "client_name" },
+                { data: "purpose", name: "purpose",render:function(row,type,data){return (data.purpose ? (Array.isArray(data.purpose) ? data.purpose : JSON.parse(data.purpose)).join(" , ") :"")} },
                 { data: "roll_no", name: "roll_no" },
                 { data: "roll_type", name: "roll_type" },
-                { data: "quality", name: "quality" },                
+                { data: "quality", name: "quality", render:function(row,type,data){return (`${data.quality} (${data?.hardness})` )}},                
                 { data: "roll_color", name: "roll_color" },                
                 { data: "gsm", name: "gsm" },
                 { data: "size", name: "size" },
                 { data: "net_weight", name: "net_weight" },
                 { data: "gross_weight", name: "gross_weight" },
-                { data: "hardness", name: "hardness" },
+                { data: "length", name: "length" },
+                { data: "grade", name: "grade" },
                 { data: "auto_name", name: "auto_name" },
-                { data: "transporter_name", name: "transporter_name" },
                 { data: "invoice_no", name: "invoice_no" },
                 { data: "action", name: "action", orderable: false, searchable: false },
                 
@@ -162,7 +164,10 @@
                     pageSize: 'A4',
 
                 },
-            ],    
+            ], 
+            initComplete: function () {
+                addFilter('postTable',[$('#postTable thead tr:nth-child(1) th').length - 1]);
+            },   
         });
     });
 

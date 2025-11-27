@@ -11,18 +11,18 @@
     <div class="row mb-3">
         <label class="control-label col-md-2" for="clientName">Chalan No :</label>
         <b class="col-md-4">{{$transport->invoice_no}}</b>
-        <label class="control-label col-md-2" for="clientName">Type :</label>
-        <b class="col-md-4">{{$transport->transition_type}}</b>
     </div>
     <div class="row mb-3">
-        <label class="control-label col-md-2" for="clientName">Total bags :</label>
-        <b class="col-md-4">{{$transport->total_bag}}</b>
-        <label class="control-label col-md-2" for="clientName">Return Bag :</label>
-        <b class="col-md-4 text-danger">{{$transport->total_return_bag}}</b>
+        <label class="control-label col-md-2" for="clientName">Total Role :</label>
+        <b class="col-md-4">{{$transport->total_roll}}</b>
+        <label class="control-label col-md-2" for="clientName">Return Role :</label>
+        <b class="col-md-4 text-danger">{{$transport->total_return_roll}}</b>
     </div>
     <div class="row mb-3">
-        <label class="control-label col-md-2" for="clientName">Auto Name :</label>
-        <b class="col-md-2">{{$transport->auto_name}}</b>
+        @if($auto)
+            <label class="control-label col-md-2" for="clientName">Auto Name :</label>
+            <b class="col-md-2">{{$transport->auto_name}}</b>
+        @endif
         <label class="control-label col-md-2" for="clientName">{{$transport->transporterLabel}}</label>
         <b class="col-md-2">{{$transport->transporter_name}}</b>
         <label class="control-label col-md-2" for="clientName">{{$transport->gstLabel}}</label>
@@ -30,29 +30,48 @@
     </div>
 </div>
 <div class ="panel-body">
-    <div class="panel-heading">
-        <span class="panel-title">Client Detail</span>
-    </div>
-    <div class ="panel-body">
-        <div class="row mb-3">
-            <label class="control-label col-md-2" for="clientName">Client Name :</label>
-            <b class="col-md-4">{{$clientDtl->client_name??""}}</b>
-            <label class="control-label col-md-2" for="clientName">Mobile No :</label>
-            <b class="col-md-4">{{$clientDtl->mobile_no??""}}</b>
+    @if($clientDtl)
+        <div class="panel-heading">
+            <span class="panel-title">Client Detail</span>
         </div>
-        <div class="row mb-3">
-            <label class="control-label col-md-2" for="clientName">Address :</label>
-            <b class="col-md-6">{{$clientDtl->address??""}}</b>
-            <label class="control-label col-md-2" for="clientName">Sector :</label>
-            <b class="col-md-2 ">{{$clientDtl->sector??""}}</b>
+        <div class ="panel-body">
+            <div class="row mb-3">
+                <label class="control-label col-md-2" for="clientName">Client Name :</label>
+                <b class="col-md-4">{{$clientDtl->client_name??""}}</b>
+                <label class="control-label col-md-2" for="clientName">Mobile No :</label>
+                <b class="col-md-4">{{$clientDtl->mobile_no??""}}</b>
+            </div>
+            <div class="row mb-3">
+                <label class="control-label col-md-2" for="clientName">Address :</label>
+                <b class="col-md-6">{{$clientDtl->address??""}}</b>
+                <label class="control-label col-md-2" for="clientName">Sector :</label>
+                <b class="col-md-2 ">{{$clientDtl->sector??""}}</b>
+            </div>
+            <div class="row mb-3">
+                <label class="control-label col-md-2" for="clientName">State :</label>
+                <b class="col-md-4">{{$clientDtl->state??""}}</b>
+                <label class="control-label col-md-2" for="clientName">City</label>
+                <b class="col-md-4">{{$clientDtl->city??""}}</b>
+            </div>
+        </div>  
+    @endif
+    @if($vendorDtl)
+        <div class="panel-heading">
+            <span class="panel-title">Vendor Detail</span>
         </div>
-        <div class="row mb-3">
-            <label class="control-label col-md-2" for="clientName">State :</label>
-            <b class="col-md-4">{{$clientDtl->state??""}}</b>
-            <label class="control-label col-md-2" for="clientName">City</label>
-            <b class="col-md-4">{{$clientDtl->city??""}}</b>
+        <div class ="panel-body">
+            <div class="row mb-3">
+                <label class="control-label col-md-2" for="clientName">Vendor Name :</label>
+                <b class="col-md-4">{{$vendorDtl->vendor_name??""}}</b>
+                <label class="control-label col-md-2" for="clientName">Mobile No :</label>
+                <b class="col-md-4">{{$vendorDtl->mobile_no??""}}</b>
+            </div>
+            <div class="row mb-3">
+                <label class="control-label col-md-2" for="clientName">Address :</label>
+                <b class="col-md-6">{{$vendorDtl->address??""}}</b>
+            </div>            
         </div>
-    </div>  
+    @endif
     
     <div class="panel-heading">
         <span class="panel-title">Roll Detail</span>
