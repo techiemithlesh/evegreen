@@ -1217,7 +1217,7 @@ class RollController extends Controller
         }
         $data["autoList"] = $this->_M_Auto->getAutoListOrm()->orderBy("id","ASC")->get();
         $data["transporterList"] = $this->_M_Transporter->getAutoListOrm()->orderBy("id","ASC")->get();
-        return view("roll/chalanRegister",$data);
+        return view("Roll/chalanRegister",$data);
     }
 
     public function transPortDtlHtml($id,Request $request){
