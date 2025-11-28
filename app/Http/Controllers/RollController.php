@@ -1060,6 +1060,7 @@ class RollController extends Controller
             if($validate->fails()){
                 return validationError($validate);
             }
+            $request->merge(["transport_date"=>$request->dispatchedDate??Carbon::now()->format("d-m-Y")]);
             $request->merge(["clientId"=>$request->saleClintId]);
             $request->merge(["venderId"=>$request->vendorId]);
             DB::beginTransaction();
