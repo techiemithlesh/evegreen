@@ -1134,13 +1134,13 @@
         $("#bagGsm").attr("required",false);
         $("#bagGsmJson").attr("required",false);
         if($("#bagQuality").val()=="BOPP" || $("#bagQuality").val()=="LAM"){
-            $("#bookingPrintingColorDiv").hide();
+            // $("#bookingPrintingColorDiv").hide();
             $("#singleGsm").hide();
             $("#multipleGsm").show();
             $("#bagGsm").val("");
             $("#bagGsmJson").attr("required",true);
         }else{
-            $("#bookingPrintingColorDiv").show();
+            // $("#bookingPrintingColorDiv").show();
             $("#singleGsm").show();
             $("#multipleGsm").hide();
             $("#bagGsmJson").val("");

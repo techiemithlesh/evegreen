@@ -294,3 +294,76 @@ function base64Encode(str) {
 function base64Decode(str) {
     return decodeURIComponent(escape(atob(str)));
 }
+
+function cssColorToRgb(color) {
+    const temp = document.createElement("div");
+    temp.style.color = color;
+    document.body.appendChild(temp);
+
+    const rgb = getComputedStyle(temp).color;
+    document.body.removeChild(temp);
+
+    const match = rgb.match(/\d+/g);
+    return match ? match.map(Number) : null;
+}
+
+function getContrastTextColor(bgColor) {
+    const rgb = cssColorToRgb(bgColor);
+    if (!rgb) return "#000000";
+
+    // Perceived brightness formula
+    const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
+
+    return brightness > 160 ? "#000000" : "#ffffff";
+}
+
+
+function isValidCssColor(color) {
+    if (!color) return false;
+
+    const s = new Option().style;
+    s.color = '';
+    s.color = color;
+    return s.color !== '';
+}
+
+function normalizeColor(color) {
+    return color.replace(/\s+/g, '');
+}
+
+
+function formatOption(option) {
+    if (!option.id) {
+        return option.text;
+    }
+
+    let rawColor = $(option.element).data('color');
+    let color = normalizeColor(rawColor);
+
+    let isValid = isValidCssColor(color);
+
+    let bgColor = isValid ? color : "#ffffff";
+    let textColor = isValid ? getContrastTextColor(bgColor) : "#000000";
+    let border = isValid ? "none" : "1px solid #ccc";
+
+    return $(`
+        <span style="
+            background-color:${bgColor};
+            color:${textColor};
+            padding:4px 10px;
+            border-radius:4px;
+            display:inline-block;
+            border:${border};
+        ">
+            ${option.text}
+        </span>
+    `);
+}
+function destroySelect2(selector) {
+    $(selector).each(function () {
+        if ($(this).hasClass('select2-hidden-accessible')) {
+            $(this).select2('destroy');
+        }
+    });
+}
+
