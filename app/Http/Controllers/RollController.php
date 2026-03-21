@@ -1406,15 +1406,23 @@ class RollController extends Controller
             // dd($request->ajax());
             $fromDate = $request->fromDate;
             $uptoDate = $request->uptoDate;
-            $data = $this->_M_RollDetail->select("roll_details.*","vendor_detail_masters.vendor_name",
+            $data = $this->_M_RollDetail->select("roll_details.*",
+                                "vendor_detail_masters.vendor_name",
                                 "client_detail_masters.client_name",
                                 "bag_type_masters.bag_type",
                                 DB::raw("printing_schedule_details.printing_date AS schedule_date_for_print , 
-                                cutting_schedule_details.cutting_date AS schedule_date_for_cutting")
+                                        cutting_schedule_details.cutting_date AS schedule_date_for_cutting,
+                                        printing_machine.name AS printing_machine_name,
+                                        cutting_machine.name as cutting_machine_name,
+                                        roll_quality_masters.quality"
+                                ),
                                 )
                     ->join("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
+                    ->leftJoin("machine_maters AS printing_machine","printing_machine.id","roll_details.printing_machine_id")
+                    ->leftJoin("machine_maters AS cutting_machine","cutting_machine.id","roll_details.cutting_machine_id")
                     ->leftJoin("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")
+                    ->leftJoin("roll_quality_masters","roll_quality_masters.id","roll_details.quality_id")
                     ->leftJoin("printing_schedule_details",function($join){
                         $join->on("printing_schedule_details.roll_id","=","roll_details.id")
                         ->where("printing_schedule_details.lock_status",false);
@@ -1425,8 +1433,16 @@ class RollController extends Controller
                     })
                     ->where("roll_details.lock_status",false)
                     ->orderBy("roll_details.id","DESC"); 
-            $loop = $this->_M_LoopDetail->select("loop_details.*","vendor_detail_masters.vendor_name",DB::raw("loop_color as roll_color , null as w , null as l , null as g , null as bag_type , null as bag_unit , null as client_name"))
+            $loop = $this->_M_LoopDetail->select("loop_details.*","vendor_detail_masters.vendor_name",
+                                                DB::raw("loop_color as roll_color , null as w , null as l , 
+                                                null as g , null as bag_type , null as bag_unit , 
+                                                null as client_name,
+                                                null AS printing_machine_name,
+                                                null as cutting_machine_name,
+                                                roll_quality_masters.quality
+                                                "))
                     ->join("vendor_detail_masters","vendor_detail_masters.id","loop_details.vender_id")
+                    ->leftJoin("roll_quality_masters","roll_quality_masters.id","loop_details.quality_id")
                     ->where("loop_details.lock_status",false)
                     ->orderBy("loop_details.id","DESC"); 
 
@@ -2191,6 +2207,7 @@ class RollController extends Controller
                         $orderRollBag = $val->getOrderRollBagType()->first();
                         $val->order_id = $orderRollBag->order_id??"";
                         $val->client_name = $val->getClient()->first()->client_name??"";
+                        $val->bag_size = (float)$val->w." x ".(float)$val->l.($val->g ?(" x ".(float)$val->g) :"");
                         return $val;
                     });
             $orderIds = $rolls->pluck("order_id")->unique();
@@ -2201,11 +2218,13 @@ class RollController extends Controller
                     return $item;
                 });
                 $client_name = $roll->pluck("client_name")->unique();
+                $bag_size = $roll->pluck("bag_size")->unique();
                 $data[]=[
                     "order_id"=>$val,
                     "client_name"=>$client_name,
                     "roll_ids"=>$roll->pluck("id")->toArray(),
                     "total_weight"=>$roll->sum("weight") ,
+                    "bag_size"=>$bag_size,
                 ];
             }
             return responseMsgs(true,"modal Data",$data);
@@ -2557,11 +2576,12 @@ class RollController extends Controller
                     ->get()
                     ->map(function($val){
                         $val->stereo_type_id = $val->stereo_type_id ? 2:null;
+                        $val->bag_gsm = is_Numeric($val->bag_gsm) ? json_encode([$val->bag_gsm]):$val->bag_gsm ;
                         return $val;
                     });
 
             // Remove duplicates based on the specified columns
-            $roll = $roll->unique(function ($item) {
+            $roll = $roll->sortByDesc('created_at')->unique(function ($item) {
                 return implode('|', [
                     $item->bag_type_id, $item->bag_quality, $item->bag_gsm, $item->units, 
                     $item->total_units, $item->rate_per_unit, $item->bag_w, $item->bag_l, 
@@ -2571,7 +2591,7 @@ class RollController extends Controller
                 ]);
             })->values();
 
-                    // dd(DB::getQueryLog());
+                    // dd(DB::getQueryLog(),$roll);
             return responseMsgs(true,"old history",$roll);
             
 
@@ -2757,7 +2777,7 @@ class RollController extends Controller
                 $request->merge(["bagGsmJson"=>null]);
             }
             if($request->bagQuality=="BOPP"){
-                $request->merge(["bagGsm"=>array_sum(explode("/",$request->bagGsmJson))]);
+                $request->merge(["bagGsm"=>json_encode(array_sum(explode("/",$request->bagGsmJson)))]);
                 $request->merge(["bagGsmJson"=>(explode("/",$request->bagGsmJson))]);
             }
             if($request->saveAsDraft){

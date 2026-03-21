@@ -335,6 +335,7 @@
 
                         return $("<tr>").append(
                             `<td>${val?.client_name}</td>`,
+                            `<td>${val?.bag_size}</td>`,
                             `<td>
                                 <input type='hidden' name='client[${index}][orderId]' value='${val?.order_id}' />
                                 ${rollInput}
@@ -351,6 +352,7 @@
                             $("<thead>").append(
                                 $("<tr>").append(
                                     "<th>Client Name</th>",
+                                    "<th>Bag Size</th>",
                                     "<th>Garbage</th>",
                                     "<th>Garbage %</th>"
                                 )
