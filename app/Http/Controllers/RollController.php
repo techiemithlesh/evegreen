@@ -931,6 +931,9 @@ class RollController extends Controller
                     if(!($val->is_cut || $val->is_printed || $val->is_roll_sell)){
                         $button.='<button class="btn btn-sm btn-primary" onClick="editRoll('.$val->id.')" >Edit</button>';
                     }
+                    if(!($val->is_cut || $val->is_roll_sell)){
+                        $button.='<button class="btn btn-sm btn-secondary" onClick="splitRole('.$val->id.')" >Split</button>';
+                    }
                     if(in_array($user_type,[1,2]) && !$val->client_detail_id){
                         $button .= '<button class="btn btn-sm btn-warning" onClick="openModelBookingModel('.$val->id.')" >Book</button>';
                     }if(in_array($user_type,[1,2]) && $val->client_detail_id && !$val->is_printed){
@@ -1147,6 +1150,131 @@ class RollController extends Controller
             }
             DB::commit();
             return responseMsgs(true,"roll shall","");
+        }catch(Exception $e){
+            return responseMsgs(false,$e->getMessage(),"");
+        }
+    }
+
+    public function splitRoll(Request $request){
+        try{
+            $roll = $this->_M_RollDetail->find($request->rollSplitId);
+            $rules=[
+                "rollSplitId"   => "required|exists:".$this->_M_RollDetail->getConnectionName().".".$this->_M_RollDetail->getTable().",id,lock_status,false,is_cut,false,is_roll_sell,false",
+                "rollSplitNetWight"      => "required|numeric|min:0.1|max:".($roll ? $roll->net_weight:"0"),
+                "rollSplitGrossWeight"      => "required|numeric|min:0.1|max:".($roll ? $roll->gross_weight:"0"),
+                "rollSplitLength" => "required|numeric|min:0.1|max:".($roll ? $roll->length:"0"),
+            ];
+            $validate = Validator::make($request->all(),$rules);
+            if($validate->fails()){
+                return validationError($validate);
+            }
+            
+            $parentRoll = $roll;
+            $orderRollBag = $this->_M_OrderRollBagType->where("roll_id",$roll->id)->where("lock_status",false)->orderBy("id","DESC")->first();
+            $split_role_id = $roll->id;
+            if($roll->split_role_id){
+                $split_role_id = $roll->split_role_id;
+                $parentRoll =  $this->_M_RollDetail->find($roll->split_role_id);
+            }
+            $rollNo =  generateSubRoll($parentRoll->roll_no);
+            $rollNo2 =  generateSubRoll($parentRoll->roll_no,1);
+                     
+            
+            DB::beginTransaction();  
+
+            //copy Old Roll In rollTransit and then transfer It On roll Detail
+            $copyOne = $roll->replicate();
+            $copyOne->setTable($this->_M_RollTransit->getTable());
+            $copyOne->roll_no = $rollNo;
+            $copyOne->split_role_id = $parentRoll->id;
+            $copyOne->save();
+
+            $roll1 = $copyOne->replicate();
+            $roll1->setTable($this->_M_RollDetail->getTable());
+            $roll1->id = $copyOne->id;
+            $roll1->save();
+
+            $copyOne->delete();
+
+            $copyTwo = $roll->replicate();
+            $copyTwo->setTable($this->_M_RollTransit->getTable());
+            $copyTwo->roll_no = $rollNo2;
+            $copyTwo->split_role_id = $parentRoll->id;
+            $removeVal=["client_detail_id","estimate_delivery_date","delivery_date","bag_type_id","bag_unit","w","l","g","loop_color"];
+            foreach($removeVal as $column){
+                $copyTwo->$column = null;
+            }
+            $copyTwo->save();
+
+            $roll2 = $copyTwo->replicate();
+            $roll2->setTable($this->_M_RollDetail->getTable());
+            $roll2->id = $copyTwo->id;
+            $roll2->save();
+
+            $copyTwo->delete();
+
+            $avg1 = 0;
+            $bag1 = $this->_M_BagType->find($roll->bag_type_id);
+            if($bag1){
+                $newRequest = new Request();
+                $newRequest->merge([
+                    "formula"=>$bag1->roll_size_find,
+                    "bookingBagUnits"=>"M",                    
+                    // "gsm" => $request->bagGsm,
+                    "bagL"=> $roll->l,
+                    "bagW"=> $roll->w,
+                    "bagG"=> $roll->g,
+                ]);
+                $result = $this->calculatePossibleProduction($newRequest);
+                
+
+                // possible production 
+
+                $bestFind = "";
+                $bestFind2 = ""; 
+                if($roll->bag_unit=="Kg"){
+                    $bestFind = "RW";
+                    $bestFind2 = "RW";
+                }elseif($roll->bag_unit=="Piece"){
+                    $bestFind = $bag1->roll_find;                    
+                    $bestFind2 = $bag1->roll_find_as_weight;
+                }
+
+                $newRequestOld = new Request($roll->toArray());
+                $newRequestOld->merge([
+                    "formula"=>$bestFind,
+                    "bookingBagUnits"=>$roll->bag_unit,
+                    "length" => $roll->length,
+                    "netWeight" => $roll->net_weight,
+                    "size" => $roll->size,
+                    "gsm" => $roll->gsm,
+                    "bagL"=> $roll->l,
+                    "bagW"=> $roll->w,
+                    "bagG"=> $roll->g,
+                ]);
+                $newRequestOld2 = new Request($newRequestOld->all());
+                $newRequestOld2->merge([
+                    "formula"=>$bestFind2
+                ]);
+                $result = $this->calculatePossibleProduction($newRequestOld);
+                $result1 = $this->calculatePossibleProduction($newRequestOld2);
+                $avg1 = round((($result["result"]??0)+($result1["result"]??0))/2);
+            }
+            // update from booking;  
+            if($orderRollBag){
+                $order1 = $this->_M_OrderPunches->find($orderRollBag->order_id);
+                $order1->booked_units = $order1->booked_units - $avg1 ;
+                $order1->disbursed_units = 0;
+                
+                // change roll_id
+                $orderRollBag->roll_id = $roll1->id;
+                $orderRollBag->update();
+                $order1->update();
+            } 
+            $roll->lock_status = true;
+            $roll->update();
+            DB::commit();
+            return responseMsgs(true,"roll Split","");
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
         }

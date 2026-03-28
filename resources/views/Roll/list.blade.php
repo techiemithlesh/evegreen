@@ -76,6 +76,7 @@
     <x-roll.edit-roll />
     <x-roll.roll-swap />
     <x-roll.transport-component-model />
+    <x-roll.split-roll />
 </main>
 <script>
     const rules = {
@@ -893,6 +894,11 @@
             );
         });
         $("#transportModel").modal("show");
+    }
+
+    function splitRole(rollId){
+        $("#rollSplitId").val(rollId);
+        $("#rollSplitModal").modal("show");
     }
 
 

@@ -231,6 +231,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post("roll/swap", "swapRollNo")->name("roll.swap");
         Route::post("roll/swap/selected", "swapSelectedRoll")->name("roll.swap.selected");
         Route::post("roll/sell/selected", "sellRole")->name("roll.sell.selected");
+        Route::post("roll/split", "splitRoll")->name("roll.split");
         Route::match(["get","post"],"roll/sell/generate-chalan","generateRollChalan")->name("roll.sell.generate.chalan");
         Route::get("roll/chalan/register", "chalanRegister")->name("roll.chalan.register");
         Route::get("roll/transport/dtlHtml/{id}","transPortDtlHtml")->name("roll.transport.dtlhtml");

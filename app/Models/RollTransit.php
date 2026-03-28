@@ -52,6 +52,7 @@ class RollTransit extends Model
         "quality_id",
         "roll_receiving_at",
         "is_roll_sell",
+        "split_role_id",
     ];
 
     public function store($request){        
