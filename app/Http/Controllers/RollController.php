@@ -1199,6 +1199,9 @@ class RollController extends Controller
             $copyTwo = $roll->replicate();
             $copyTwo->setTable($this->_M_RollTransit->getTable());
             $copyTwo->roll_no = $rollNo2;
+            $copyTwo->net_weight = $request->rollSplitNetWight;
+            $copyTwo->gross_weight = $request->rollSplitGrossWeight;
+            $copyTwo->length = $request->rollSplitLength;
             $copyTwo->split_role_id = $parentRoll->id;
             $removeVal=["client_detail_id","estimate_delivery_date","delivery_date","bag_type_id","bag_unit","w","l","g","loop_color"];
             foreach($removeVal as $column){
@@ -1240,14 +1243,14 @@ class RollController extends Controller
                     $bestFind2 = $bag1->roll_find_as_weight;
                 }
 
-                $newRequestOld = new Request($roll->toArray());
+                $newRequestOld = new Request($roll2->toArray());
                 $newRequestOld->merge([
                     "formula"=>$bestFind,
                     "bookingBagUnits"=>$roll->bag_unit,
-                    "length" => $roll->length,
-                    "netWeight" => $roll->net_weight,
-                    "size" => $roll->size,
-                    "gsm" => $roll->gsm,
+                    "length" => $roll2->length,
+                    "netWeight" => $roll2->net_weight,
+                    "size" => $roll2->size,
+                    "gsm" => $roll2->gsm,
                     "bagL"=> $roll->l,
                     "bagW"=> $roll->w,
                     "bagG"=> $roll->g,
@@ -1269,11 +1272,12 @@ class RollController extends Controller
                 // change roll_id
                 $orderRollBag->roll_id = $roll1->id;
                 $orderRollBag->update();
-                $order1->update();
+                // $order1->update();
             } 
             $roll->lock_status = true;
             $roll->update();
-            DB::commit();
+            dd($order1,$avg1);
+            // DB::commit();
             return responseMsgs(true,"roll Split","");
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");
