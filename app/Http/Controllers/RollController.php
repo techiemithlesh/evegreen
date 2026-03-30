@@ -773,6 +773,9 @@ class RollController extends Controller
                     ->where("roll_details.lock_status",false);  
             if($request->printedRollOnly){
                 $data->where("roll_details.is_printed",true);
+            }
+            if($request->notBookedRollOnly){
+                $data->whereNull("roll_details.client_detail_id");
             }                  
             if($flag!="register"){
                 $data->where("roll_details.is_cut",false)
@@ -1162,6 +1165,7 @@ class RollController extends Controller
                 "rollSplitId"   => "required|exists:".$this->_M_RollDetail->getConnectionName().".".$this->_M_RollDetail->getTable().",id,lock_status,false,is_cut,false,is_roll_sell,false",
                 "rollSplitNetWight"      => "required|numeric|min:0.1|max:".($roll ? $roll->net_weight:"0"),
                 "rollSplitGrossWeight"      => "required|numeric|min:0.1|max:".($roll ? $roll->gross_weight:"0"),
+                "rollSplitSize" => "required|numeric|min:0.1|max:".($roll ? $roll->size:"0"),
                 "rollSplitLength" => "required|numeric|min:0.1|max:".($roll ? $roll->length:"0"),
             ];
             $validate = Validator::make($request->all(),$rules);
@@ -1201,6 +1205,7 @@ class RollController extends Controller
             $copyTwo->roll_no = $rollNo2;
             $copyTwo->net_weight = $request->rollSplitNetWight;
             $copyTwo->gross_weight = $request->rollSplitGrossWeight;
+            $copyTwo->size = $request->rollSplitSize;
             $copyTwo->length = $request->rollSplitLength;
             $copyTwo->split_role_id = $parentRoll->id;
             $removeVal=["client_detail_id","estimate_delivery_date","delivery_date","bag_type_id","bag_unit","w","l","g","loop_color"];
@@ -1246,14 +1251,14 @@ class RollController extends Controller
                 $newRequestOld = new Request($roll2->toArray());
                 $newRequestOld->merge([
                     "formula"=>$bestFind,
-                    "bookingBagUnits"=>$roll->bag_unit,
+                    "bookingBagUnits"=>$roll1->bag_unit,
                     "length" => $roll2->length,
                     "netWeight" => $roll2->net_weight,
                     "size" => $roll2->size,
                     "gsm" => $roll2->gsm,
-                    "bagL"=> $roll->l,
-                    "bagW"=> $roll->w,
-                    "bagG"=> $roll->g,
+                    "bagL"=> $roll1->l,
+                    "bagW"=> $roll1->w,
+                    "bagG"=> $roll1->g,
                 ]);
                 $newRequestOld2 = new Request($newRequestOld->all());
                 $newRequestOld2->merge([
@@ -1276,7 +1281,7 @@ class RollController extends Controller
             } 
             $roll->lock_status = true;
             $roll->update();
-            dd($order1,$avg1);
+            // dd($order1,$avg1);
             // DB::commit();
             return responseMsgs(true,"roll Split","");
         }catch(Exception $e){

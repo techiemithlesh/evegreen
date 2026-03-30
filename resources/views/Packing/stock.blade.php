@@ -235,7 +235,10 @@
             },
 
             columns: [
-                { data: "packing_no", name: "packing_no",render: function(data, type, row, meta) {
+                { data: "packing_no", name: "packing_no",
+                defaultContent: '<input type="checkbox" class="row-check">',
+                className: 'dt-body-center checkbox-column',
+                render: function(data, type, row, meta) {
                             const rowDataEncoded = base64Encode(JSON.stringify(row));
                             return `${row.packing_no} <i class="bi bi-info-circle-fill" data-placement="bottom" data-toggle="tooltip" title="${row.order_no}"></i> <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
                         }
@@ -272,6 +275,18 @@
             initComplete: function () {
                 addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1]);
             },
+        });
+        $('#postsTable tbody').on('click', 'td.checkbox-column', function (e) {
+            // Find the checkbox inside the clicked cell
+            const checkbox = $(this).find('input[type="checkbox"]');
+
+            // Prevent double-toggle if the user clicked the actual checkbox
+            if (!$(e.target).is(':checkbox')) {
+                checkbox.prop('checked', !checkbox.prop('checked'));
+            }
+
+            // Optional: Add a 'selected' class to the row for styling
+            $(this).closest('tr').toggleClass('selected', checkbox.prop('checked'));
         });
         $('#bookingForClientId').select2({
             width:"100%",

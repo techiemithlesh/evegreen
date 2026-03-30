@@ -23,6 +23,9 @@
                  <div class="form-check form-switch" style="cursor:pointer">
                     <label class="form-check-label" for="printedRollOnly">Only Printed</label> <input class="form-check-input" type="checkbox" id="printedRollOnly" name="printedRollOnly" onclick="searchData()" />
                  </div>
+                 <div class="form-check form-switch" style="cursor:pointer">
+                    <label class="form-check-label" for="notBookedRollOnly">Not Book Only</label> <input class="form-check-input" type="checkbox" id="notBookedRollOnly" name="notBookedRollOnly" onclick="searchData()" />
+                 </div>
                  <button class="btn btn-primary" onclick="swapSelectedRoll()">Swap The Roll</button>
                  <button class="btn btn-danger" onclick="sellRoll()">Sell The Roll</button>
              </div>
@@ -153,6 +156,9 @@
                     });
                     if($("#printedRollOnly").is(":checked")){
                         d["printedRollOnly"] = $("#printedRollOnly").is(":checked");
+                    }
+                    if($("#notBookedRollOnly").is(":checked")){
+                        d["notBookedRollOnly"] = $("#notBookedRollOnly").is(":checked");
                     }
 
                 },

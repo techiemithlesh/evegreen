@@ -12,7 +12,7 @@
                     <input type="hidden" id="rollSplitId" name="rollSplitId" value="">
 
                     <div class="row g-3"> 
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold" for="rollSplitNetWight">Net Weight <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="number" name="rollSplitNetWight" id="rollSplitNetWight" class="form-control" placeholder="0.00" required>
@@ -21,7 +21,7 @@
                             <small class="text-danger error-text" id="rollSplitNetWight-error"></small>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold" for="rollSplitGrossWeight">Gross Weight <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="number" name="rollSplitGrossWeight" id="rollSplitGrossWeight" class="form-control" placeholder="0.00" required>
@@ -29,8 +29,16 @@
                             </div>
                             <small class="text-danger error-text" id="rollSplitGrossWeight-error"></small>
                         </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" for="rollSplitSize">Size <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" name="rollSplitSize" id="rollSplitSize" class="form-control" placeholder="0" required>
+                                <span class="input-group-text">m</span>
+                            </div>
+                            <small class="text-danger error-text" id="rollSplitSize-error"></small>
+                        </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold" for="rollSplitLength">Length <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="number" name="rollSplitLength" id="rollSplitLength" class="form-control" placeholder="0" required>
@@ -70,6 +78,7 @@
                 rollSplitId: "required",
                 rollSplitNetWight: { required: true, number: true },
                 rollSplitGrossWeight: { required: true, number: true },
+                rollSplitSize: {required:true,number:true},
                 rollSplitLength: { required: true, number: true }
             },
             errorElement: 'span',
