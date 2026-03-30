@@ -22,7 +22,18 @@
                                 <span class="error-text" id="dispatchedDate-error"></span>
                             </div>
                         </div>
-                        
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="form-label" for="purpose">Purpose<span class="text-danger">*</span></label>
+                                <select name="purpose[]" id="purpose" class="form-select select2" multiple="multiple" onchange="disableOther()" required >
+                                    <!-- <option value="">select</option> -->
+                                    @foreach($purpose as $val)
+                                        <option value="{{$val}}">{{$val}}</option>
+                                    @endforeach
+                                </select>
+                                <span class="error-text" id="purpose-error"></span>
+                            </div>
+                        </div>
                         <div class="col-sm-4 client" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label" for="saleClintId">Client Name<span class="text-danger">*</span></label>
