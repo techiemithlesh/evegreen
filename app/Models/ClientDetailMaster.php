@@ -21,6 +21,7 @@ class ClientDetailMaster extends Model
         "city_id",
         "state_id",
         "sector_id",
+        "trade_name",
         "secondary_mobile_no",
         "temporary_mobile_no",
         'lock_status',
@@ -55,5 +56,8 @@ class ClientDetailMaster extends Model
 
     public function getState(){
         return $this->belongsTo(StateMaster::class,"state_id","id")->first();
+    }
+    public function getSector(){
+        return $this->belongsTo(Sector::class,"sector_id","id")->first();
     }
 }

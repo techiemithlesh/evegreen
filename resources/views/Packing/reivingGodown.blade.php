@@ -34,12 +34,13 @@
 </main>
 <x-bag-godown-receiving />
 <script>
+    let godownTypeId = <?=$godownTypeId??0;?>;
     $(document).ready(function(){
         const table = $("#postsTable").DataTable({
             processing: true,
             serverSide: false,
             ajax: {
-                url: "{{route('packing.godown.reiving')}}", // The route where you're getting data from
+                url: "{{route('packing.godown.reiving',':godownTypeId')}}".replace(':godownTypeId', godownTypeId), // The route where you're getting data from
                 data: function(d) {
                     // Add custom form data to the AJAX request
                     var formData = $("#searchForm").serializeArray();
@@ -128,7 +129,7 @@
         $.ajax({
             url:"{{route('packing.godown.add')}}",
             type:"post",
-            data:{"id":bagId},
+            data:{"id":bagId,godownTypeId:godownTypeId},
             beforeSend:function(){
                 $("#loadingDiv").show();
             },

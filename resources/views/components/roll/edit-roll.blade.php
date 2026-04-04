@@ -111,6 +111,17 @@
                                 <span class="error-text" id="grossWeight-error"></span>
                             </div>
                         </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label class="control-label" for="printingColor">Printing Color</label>
+                                <select name="printingColor[]" id="printingColor" class="form-select select22" multiple="multiple"> 
+                                    @foreach($color as $val)
+                                    <option data-color="{{$val->color}}" value="{{$val->color}}" style="background-color:{{$val->color}};">{{$val->color}}</option>
+                                    @endforeach
+                                </select>
+                                <span class="error-text" id="printingColor-error"></span>
+                            </div>
+                        </div>
                     </div>
                     <!-- Submit Button -->
                     <div class="row mt-4">
@@ -125,6 +136,16 @@
 </div>
 <script>
     $(document).ready(function(){
+        $('#printingColor').select2({
+            placeholder: "Select tags",
+            allowClear: false,
+            maximumSelectionLength: 4,
+            dropdownCssClass: 'form-control',
+            dropdownParent: $('#rollModal'),            
+            width:"100%",
+            templateResult: formatOption,
+            templateSelection: formatOption 
+        });
         $("#rollEditForm").validate({
             rules: {
                 id: {
@@ -138,6 +159,14 @@
         });
 
     });
+
+    function formatOption(option) {
+        if (!option.id) {
+            return option.text; // return default option text if no ID
+        }
+        var color = $(option.element).data('color');
+        return $('<span style="background-color: ' + color + '; padding: 3px 10px; color: white; border-radius: 3px; z-index:40000">' + option.text + '</span>');
+    }
 
     function editRoll(id){
         $.ajax({
@@ -296,6 +325,7 @@
         $("#size").val(roll?.size);
         $("#netWeight").val(roll?.net_weight);
         $("#grossWeight").val(roll?.gross_weight);
+        $("#printingColor").val(roll?.printing_color).trigger("change");
         setQualityDropDune(roll?.quality_id)
     }
 

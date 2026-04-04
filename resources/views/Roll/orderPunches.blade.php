@@ -68,14 +68,16 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="orderDate">Order Date</label>
-                                <input type="date" max="{{date('Y-m-d')}}" value="{{date('Y-m-d')}}" name="orderDate" id="orderDate" class="form-control" required/>                                  
+                                <!-- <input type="date" max="{{date('Y-m-d')}}" value="{{date('Y-m-d')}}" name="orderDate" id="orderDate" class="form-control" required/>                                   -->
+                                 <input type="date" max="{{date('Y-m-d')}}" value="2025-04-01" name="orderDate" id="orderDate" class="form-control" required/> 
                                 <span class="error-text" id="orderDate-error"></span>
                             </div>
                         </div>                        
                         <div class="col-sm-4">
                             <div class="form-group">
                                 <label class="form-label" for="bookingEstimatedDespatchDate">Dispatch Date</label>
-                                <input type="date" min="{{date('Y-m-d')}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" value="{{date('Y-m-d',strtotime(date('Y-m-d').' 10 days'))}}" required/>                                  
+                                <!-- <input type="date" min="{{date('Y-m-d')}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" value="{{date('Y-m-d',strtotime(date('Y-m-d').' 10 days'))}}" required/>  -->
+                                <input type="date" min="{{date('Y-m-d')}}" name="bookingEstimatedDespatchDate" id="bookingEstimatedDespatchDate" class="form-control" value="2025-04-10" required/>                                  
                                 <span class="error-text" id="bookingEstimatedDespatchDate-error"></span>
                             </div>
                         </div>
@@ -91,30 +93,20 @@
                     </div>
                 </div>
 
-                <div class="row mb-3">                     
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <label class="form-label" for="w">W</label>
-                            <input name="w" id="w" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                
-                            <span class="error-text" id="w-error"></span>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <label class="form-label" for="l">L </label>
-                            <input name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()"/>                                                                    
-                            <span class="error-text" id="l-error"></span>
-                        </div>
-                    </div>
-                    <div class="col-sm-4" id="gussetDiv">
-                        <div class="form-group">
-                            <label class="form-label" for="g">G </label>
-                            <input name="g" id="g" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                                                    
-                            <span class="error-text" id="g-error"></span>
-                        </div>
-                    </div>
-                </div>
+                
                 <div class="row mb-3">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="form-label" for="bookingBagTypeId">Bag Type </label>
+                            <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop();showAlternativeOption();getBalance()">
+                                <option value="">Select</option>
+                                @foreach ($bagType as $val)
+                                    <option value="{{ $val->id }}">{{ $val->bag_type }}</option>
+                                @endforeach
+                            </select>                                                                       
+                            <span class="error-text" id="bookingBagTypeId-error"></span>
+                        </div>
+                    </div>
                     <div class="col-sm-4">
                         <div class="form-group" id='singleGsm'>
                             <label class="form-label" for="bagGsm">GSM</label>
@@ -145,19 +137,47 @@
                             <span class="error-text" id="bookingBagColor-error"></span>
                         </div>
                     </div>
-                    <div class="col-sm-4">
+                    
+                </div>
+
+                <div class="row mb-3">                     
+                    <div class="col-sm-3">
                         <div class="form-group">
-                            <label class="form-label" for="bookingBagTypeId">Bag Type </label>
-                            <select name="bookingBagTypeId" id="bookingBagTypeId" class="form-select" onchange="showHideLoop();showAlternativeOption();getBalance()">
-                                <option value="">Select</option>
-                                @foreach ($bagType as $val)
-                                    <option value="{{ $val->id }}">{{ $val->bag_type }}</option>
+                            <label class="form-label" for="w">W</label>
+                            <input name="w" id="w" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                
+                            <span class="error-text" id="w-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label class="form-label" for="l">L </label>
+                            <input name="l" id="l" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()"/>                                                                    
+                            <span class="error-text" id="l-error"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm-3" id="gussetDiv">
+                        <div class="form-group">
+                            <label class="form-label" for="g">G </label>
+                            <input name="g" id="g" class="form-control" onkeypress="return isNumDot(event);" required onchange="showAlternativeOption()" />                                                                    
+                            <span class="error-text" id="g-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-3" id="loopColorDiv">
+                        <div class="form-group">
+                            <label class="form-label" for="looColor">Loop Color</label>
+                            <select name="looColor" id="looColor" class="form-control"  required onchange="testLoop()">
+                                <option value="">select</option>
+                                @foreach($loopColor as $val)
+                                    <option value="{{$val->loop_color}}" id="{{$val->loop_color}}" data-item="{{json_encode($val)}}">{{$val->loop_color}}</option>
                                 @endforeach
-                            </select>                                                                       
-                            <span class="error-text" id="bookingBagTypeId-error"></span>
+                            </select>
+                            <!-- <input name="looColor" id="looColor" class="form-control" required />                                -->
+                            <span class="error-text" id="looColor-error"></span>
                         </div>
                     </div>
                 </div>
+
                 <div class="row mb-3"> 
                     <div class="col-sm-4">
                         <div class="form-group">
@@ -188,7 +208,11 @@
                 <div class="row mb-3">
                     <div class="col-sm-4" id="bookingPrintingColorDiv">
                         <div class="form-group">
-                            <label class="form-label" for="bookingPrintingColor">Printing Color</label>
+                            <label class="form-label" for="bookingPrintingColor">Printing Color 
+                                <span class="text-info text-xs text" style="font-size: x-small; text-decoration-line: underline;"> 
+                                    <i> if Plane Bag Then Check It <input type="checkbox" onchange="makeReadOlyPrinting(event)"/></i>
+                                </span>
+                            </label>
                             <div class="col-md-12">
                                 <select name="bookingPrintingColor[]" id="bookingPrintingColor" class="form-select select22" multiple="multiple" required> 
                                                                         
@@ -200,19 +224,7 @@
                             <span class="error-text" id="bookingPrintingColor-error"></span>
                         </div>
                     </div>
-                    <div class="col-sm-4" id="loopColorDiv">
-                        <div class="form-group">
-                            <label class="form-label" for="looColor">Loop Color</label>
-                            <select name="looColor" id="looColor" class="form-control"  required onchange="testLoop()">
-                                <option value="">select</option>
-                                @foreach($loopColor as $val)
-                                    <option value="{{$val->loop_color}}" id="{{$val->loop_color}}" data-item="{{json_encode($val)}}">{{$val->loop_color}}</option>
-                                @endforeach
-                            </select>
-                            <!-- <input name="looColor" id="looColor" class="form-control" required />                                -->
-                            <span class="error-text" id="looColor-error"></span>
-                        </div>
-                    </div>
+                    
                     <div class="col-sm-4">
                         <div class="form-group">
                             <label class="form-label" for="totalUnits">QTY</label>
@@ -369,6 +381,7 @@
                 </div>
                 <div class="col-12">
                     <button type="button" class="btn btn-primary" onclick="showRollSuggestion()">Check</button>
+                    <button type="button" name="draft" value="draft" class="btn btn-warning" onclick="savAsDraft();">Save As Draft</button>
                     <button type="submit" class="btn btn-primary" onclick="setHintCollapse();">Submit</button>
                 </div>
             </form>
@@ -454,16 +467,6 @@
                         return $("#bagQuality").val()!=="BOPP"
                     },
                 },
-                // bagGsm:{
-                //     required: function(){
-                //         return $("#bagQuality").val()!=="BOPP"
-                //     },
-                // },
-                // bagGsmJson:{
-                //     required: function(){
-                //         return $("#bagQuality").val()=="BOPP"
-                //     },
-                // },
                 roll_id:{
                     required:true,
                 }
@@ -477,6 +480,18 @@
             width:"100%",
         }); 
     });
+
+    function makeReadOlyPrinting(event){
+        if (event.target.checked) {
+            $("#bookingPrintingColor")
+                .val("")
+                .trigger("change")
+                .attr("disabled", true);
+        } else {
+            $("#bookingPrintingColor").attr("disabled", false);
+        }
+
+    }
     function openRollBookingClineModel(){
         $('#rollBookingModal').css("z-index",0);
         $('#clientModal').css("z-index",1060);
@@ -510,6 +525,15 @@
     }
     function showPrivOrder(event) {
         const clientId = $(event.target).val();
+        if(clientId==1){
+            $("#rateTypeId").attr("required",false);
+            $("#ratePerUnit").attr("required",false);
+            $("#brokerId").attr("required",false);
+        }else{
+            $("#rateTypeId").attr("required",true);
+            $("#ratePerUnit").attr("required",true);
+            $("#brokerId").attr("required",true);
+        }
         if (clientId != "") {
             $.ajax({
                 url: "{{route('client.old.order')}}",
@@ -667,8 +691,8 @@
         let inputs = [
             { id: "#bookingBagTypeId", name: "Bag Type" },
             { id: "#bookingBagUnits", name: "Bag Units" },
-            { id: "#totalUnits", name: "Total Units" },
-            { id : "#bagQuality" , name : "bag Quality"},
+            // { id: "#totalUnits", name: "Total Units" },
+            // { id : "#bagQuality" , name : "bag Quality"},
             { id: "#l", name: "Bag Length" },
             { id: "#w", name: "Bag Width" },
             { id: "#bagGsm", name: "Bag GSM" },
@@ -1033,11 +1057,26 @@
         }
         return false;
     }
-    function saveOrder(){
+
+    function savAsDraft(){
+        if(!$("#bookingForClientId").val()){
+            alert("please select client");
+            $("#bookingForClientId").focus();
+            return false;
+        }
+        (showConfirmDialog('Are you sure you want to As Draft Order?', function(){saveOrder(true);}));
+    }
+    function saveOrder(isDraft=false){
+        let data = new FormData($("#myForm")[0]);
+        if(isDraft){
+            data.append("saveAsDraft", true);
+        }
         $.ajax({
             url:"{{route('order.punches.save')}}",
             type:"post",
-            data:$("#myForm").serialize(),
+            data:data,
+            processData: false,     // ✅ must be false for FormData
+            contentType: false,     // ✅ must be false for FormData
             beforeSend:function(){
                 $("#loadingDiv").show();
             },
@@ -1048,7 +1087,7 @@
                     $("#orderHistory").hide();
                     $("#suggestion").hide();
                     $("#orderRoll tbody").empty();
-                    modelInfo(data.messages);
+                    modelInfo(data.message);
                     setHintDefault();
                     getBalance();
                     resetForm("myForm");
@@ -1095,13 +1134,13 @@
         $("#bagGsm").attr("required",false);
         $("#bagGsmJson").attr("required",false);
         if($("#bagQuality").val()=="BOPP" || $("#bagQuality").val()=="LAM"){
-            $("#bookingPrintingColorDiv").hide();
+            // $("#bookingPrintingColorDiv").hide();
             $("#singleGsm").hide();
             $("#multipleGsm").show();
             $("#bagGsm").val("");
             $("#bagGsmJson").attr("required",true);
         }else{
-            $("#bookingPrintingColorDiv").show();
+            // $("#bookingPrintingColorDiv").show();
             $("#singleGsm").show();
             $("#multipleGsm").hide();
             $("#bagGsmJson").val("");

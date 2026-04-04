@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BagTypeMaster;
+use App\Models\ClientDetailMaster;
 use App\Models\GarbageEntry;
 use App\Models\MachineMater;
 use App\Models\OrderBroker;
 use App\Models\OrderPunchDetail;
+use App\Models\OrderRollBagType;
 use App\Models\RollDetail;
+use App\Models\RollQualityMaster;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -18,20 +22,26 @@ class ReportController extends Controller
     //
 
     protected $_M_Machine;
-    protected $_RollDetails;
+    protected $_M_RollDetails;
     protected $_M_OrderPunches;
+    protected $_M_OrderRollBagType;
     protected $_M_Brokers;
     protected $_M_User;
     protected $_M_GarbageEntry;
+    protected $_M_ClientDetails;
+    protected $_M_BagType;
 
     function __construct()
     {
         $this->_M_Machine = new MachineMater();
-        $this->_RollDetails = new RollDetail();
+        $this->_M_RollDetails = new RollDetail();
         $this->_M_OrderPunches = new OrderPunchDetail();
+        $this->_M_OrderRollBagType = new OrderRollBagType();
         $this->_M_Brokers = new OrderBroker();
         $this->_M_User = new User();
         $this->_M_GarbageEntry = new GarbageEntry();
+        $this->_M_ClientDetails = new ClientDetailMaster();
+        $this->_M_BagType = new BagTypeMaster();
     }
 
     public function dailyProduction(Request $request){
@@ -49,15 +59,15 @@ class ReportController extends Controller
             $fromMonth = $currentDate->copy()->subDays(35)->format("Y-m-d");
             $fromWeak = $currentDate->copy()->subWeek()->format("Y-m-d");
             if($val->is_cutting){
-                $monthly = $this->_RollDetails->where("cutting_machine_id",$val->id)->whereBetween("cutting_date",[$fromYear,$today])->count()/12;
-                $weakly = $this->_RollDetails->where("cutting_machine_id",$val->id)->whereBetween("cutting_date",[$fromMonth,$today])->count()/5;
-                $daily = $this->_RollDetails->where("cutting_machine_id",$val->id)->whereBetween("cutting_date",[$fromWeak,$today])->count()/7;
-                $todayProduction = $this->_RollDetails->where("cutting_machine_id",$val->id)->where("cutting_date",$today)->orderBy("updated_at","ASC")->get();
+                $monthly = $this->_M_RollDetails->where("cutting_machine_id",$val->id)->whereBetween("cutting_date",[$fromYear,$today])->count()/12;
+                $weakly = $this->_M_RollDetails->where("cutting_machine_id",$val->id)->whereBetween("cutting_date",[$fromMonth,$today])->count()/5;
+                $daily = $this->_M_RollDetails->where("cutting_machine_id",$val->id)->whereBetween("cutting_date",[$fromWeak,$today])->count()/7;
+                $todayProduction = $this->_M_RollDetails->where("cutting_machine_id",$val->id)->where("cutting_date",$today)->orderBy("updated_at","ASC")->get();
             }elseif($val->is_printing){
-                $monthly = $this->_RollDetails->where("printing_machine_id",$val->id)->whereBetween("printing_date",[$fromYear,$today])->count()/12;
-                $weakly = $this->_RollDetails->where("printing_machine_id",$val->id)->whereBetween("printing_date",[$fromMonth,$today])->count()/5;
-                $daily = $this->_RollDetails->where("printing_machine_id",$val->id)->whereBetween("printing_date",[$fromWeak,$today])->count()/7;
-                $todayProduction = $this->_RollDetails->where("printing_machine_id",$val->id)->where("printing_date",$today)->orderBy("updated_at","ASC")->get();
+                $monthly = $this->_M_RollDetails->where("printing_machine_id",$val->id)->whereBetween("printing_date",[$fromYear,$today])->count()/12;
+                $weakly = $this->_M_RollDetails->where("printing_machine_id",$val->id)->whereBetween("printing_date",[$fromMonth,$today])->count()/5;
+                $daily = $this->_M_RollDetails->where("printing_machine_id",$val->id)->whereBetween("printing_date",[$fromWeak,$today])->count()/7;
+                $todayProduction = $this->_M_RollDetails->where("printing_machine_id",$val->id)->where("printing_date",$today)->orderBy("updated_at","ASC")->get();
             }
             $val->monthly = roundFigure($monthly);
             $val->weakly = roundFigure($weakly);
@@ -309,5 +319,89 @@ class ReportController extends Controller
         $data["fromDate"] = $from."-04-01";
         $data["uptoDate"] = Carbon::now()->format("Y-m-d");
         return view("Reports/garbage",$data);
+    }
+
+    /**
+     * order data status
+     */
+
+    public function rollStatus(Request $request){
+        if($request->ajax()){
+            $data=$this->_M_RollDetails->select("roll_details.*","vendor_detail_masters.vendor_name")
+                  ->join("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
+                  ->where("roll_details.lock_status",false);
+            if($request->uptoDate){
+                $data->where(DB::raw("cast(roll_details.roll_receiving_at as date)"),"<=",$request->uptoDate)
+                ->where(function($query)use($request){
+                    $query->whereNull("roll_details.cutting_date")
+                    ->orWhere("roll_details.cutting_date",">=",$request->uptoDate);
+                });
+            }
+            $data = $data->orderBy("purchase_date","ASC")->get()->map(function($val)use($request){
+                
+                $val->printing_color = collect(json_decode($val->printing_color,true))->implode(",");
+                $val->gsm_json = collect(json_decode($val->gsm_json,true))->implode(",");
+
+                $val->purchase_date = $val->purchase_date ? Carbon::parse($val->purchase_date)->format("d-m-Y"):"";
+                $val->printing_date = $val->printing_date && $val->printing_date<=$request->uptoDate ? $val->printing_date:null;
+                $val->cutting_date = $val->cutting_date ? Carbon::parse($val->cutting_date)->format("d-m-Y"):"";
+                $bookRoll = $this->_M_OrderRollBagType->where("roll_id",$val->id)->where(DB::raw("cast(created_at as date)"),"<=",$request->uptoDate)->orderBy("id","DESC")->first();
+                $orderKeys=["client_detail_id","estimate_delivery_date","delivery_date","is_delivered","bag_type_id","bag_type","client_name","bag_unit","w","l","g","printing_color","is_printed","printing_date","weight_after_print","printing_machine_id","is_cut","cutting_date","weight_after_cutting","cutting_machine_id","loop_color"];
+                if(!$bookRoll || !$val->client_detail_id){
+                    foreach ($orderKeys as $key) {
+                        $val->$key = null;
+                    }
+                }elseif($val->client_detail_id){
+                    $val->client_name = $this->_M_ClientDetails->find($val->client_detail_id)->client_name??"";
+                    $val->bag_type = $this->_M_BagType->find($val->bag_type_id)->bag_type??"";
+                }
+                return $val;
+            });
+            $summary=[
+                "totalWeight"=>roundFigure($data->sum("net_weight")),
+            ];
+            $list = DataTables::of($data)
+                ->addIndexColumn() 
+                ->addColumn('row_color', function ($val) {
+                    $color = "";
+                    $gsmVariationPer = $val->gsm_variation;
+                    if(!is_between($gsmVariationPer,-8,8)){
+                        $color="tr-gsm_variation_danger";
+                    }
+                    elseif(!is_between($gsmVariationPer,-4,4)){
+                        $color="tr-gsm_variation";
+                    }
+                    if($val->for_client_id && $val->is_printed){
+                        $color="tr-client-printed";
+                    }elseif($val->is_printed){
+                        $color="tr-printed";
+                    }
+                    elseif($val->for_client_id){
+                        $color="tr-client";
+                    }
+                    return $color;
+                })
+                ->addColumn('gsm_variation', function ($val) {                        
+                    return roundFigure($val->gsm_variation)."%";
+                })
+                ->addColumn("grade",function($val){
+                    $quality = RollQualityMaster::find($val->quality_id);
+                    $grade = $quality ? $quality->getGrade()->first()->grade??"":"";
+                    return $grade ;                        
+                })
+                ->addColumn("quality",function($val){
+                    $quality = RollQualityMaster::find($val->quality_id);
+                    return ($quality->quality??"").(" (".$val->hardness.")") ;                        
+                })
+                ->addColumn("bag_size",function ($val) {
+                    return $val->bag_type_id ? ((float)$val->w." x ".(float)$val->l.($val->g?(" x ".(float)$val->g):"")):null;
+                }) 
+                ->rawColumns(['row_color', 'action'])
+                ->with($summary)
+                ->make(true);
+            return $list;
+        }
+        $data=[];
+        return view("Reports/rollStatus",$data);
     }
 }

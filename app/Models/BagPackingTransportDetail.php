@@ -16,6 +16,7 @@ class BagPackingTransportDetail  extends Model
         "bag_packing_id",
         "is_delivered",
         "reiving_user_id",
+        "is_bag_return",
         "lock_status",
     ];
 

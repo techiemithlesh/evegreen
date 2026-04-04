@@ -21,32 +21,34 @@
         </div>
     </div>
     <div class="container">
-        <table id="postsTable" class="table table-striped table-bordered">
-            <thead>
-                <tr>
-                    <th rowspan="2">#</th>
-                    <th rowspan="2">Size</th>
-                    <th rowspan="2">Roll Color</th>
-                    <th rowspan="2">GSM</th>
-                    <th rowspan="2">Quality</th>
-                    <th rowspan="2">Limit</th>
-                    <th colspan="3">Stock</th>
-                    <th colspan="3">In Transit</th>
-                    <th rowspan="2">Action</th>
-                </tr>
-                <tr>
-                    <th>Net Total Weight</th>
-                    <th>Total Roll</th>
-                    <th>Total Length</th>
-                    <th>Net Total Weight</th>
-                    <th>Total Roll</th>
-                    <th>Total Length</th>
-                </tr>
-            </thead>
-            <tbody>
+        <div class="tableStickyDiv">
+            <table id="postsTable" class="table table-striped table-bordered table-fixed">
+                <thead>
+                    <tr>
+                        <th rowspan="2">#</th>
+                        <th rowspan="2">Size</th>
+                        <th rowspan="2">Roll Color</th>
+                        <th rowspan="2">GSM</th>
+                        <th rowspan="2">Quality</th>
+                        <th rowspan="2">Limit</th>
+                        <th colspan="3">Stock</th>
+                        <th colspan="3">In Transit</th>
+                        <th rowspan="2">Action</th>
+                    </tr>
+                    <tr>
+                        <th>Net Total Weight</th>
+                        <th>Total Roll</th>
+                        <th>Total Length</th>
+                        <th>Net Total Weight</th>
+                        <th>Total Roll</th>
+                        <th>Total Length</th>
+                    </tr>
+                </thead>
+                <tbody>
 
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     
@@ -121,7 +123,7 @@
     $(document).ready(function(){
         $('#postsTable').DataTable({
             processing: true,
-            serverSide: true,
+            serverSide: false,
             ajax: "{{route('master.roll.shortage.list')}}",
             columns: [
                 { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
@@ -153,6 +155,21 @@
                 $(row).attr('data-id', data.DT_RowIndex);
                 $(row).attr('data-item', JSON.stringify(data));
             },
+            dom: 'lBfrtip', // This enables the buttons
+            language: {
+                lengthMenu: "Show _MENU_" // Removes the "entries" text
+            },
+            lengthMenu: [
+                [10, 25, 50, 100, -1], // The internal values
+                ["10 Row", "25 Row", "50 Row", "100 Row", "All"] // The display values, replace -1 with "All"
+            ],
+            buttons: [
+                {
+                    extend: 'excel',
+                    text: '<i class="bi bi-file-earmark-excel-fill text-success"></i> ',
+                    className: 'btn btn-success',
+                },
+            ],
         });
         $("#rollMinLimitForm").validate({
             rules: {

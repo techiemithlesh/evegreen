@@ -16,7 +16,8 @@
             <h5 class="panel-title">List</h5> 
             <div class="panel-control">
                 <!-- <a href="{{route('packing.transport.stock')}}" class="btn btn-warning btn-sm">Transport Bag</a> -->
-                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Godown')">Godown</button>
+                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Godown',1)">Godown 1</button>
+                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Godown',2)">Godown 2</button>
                 <button type="button" class="btn btn-sm btn-success" onclick="openTransportModel('For Delivery')">Client</button>
             </div>           
         </div>
@@ -234,17 +235,12 @@
             },
 
             columns: [
-                // { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                // { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false ,
-                //     render: function(data, type, row, meta) {
-                //             const rowDataEncoded = base64Encode(JSON.stringify(row));
-                //             return `${meta.row + 1} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
-                //         }
-                // },
-                // { data: "packing_date", name: "packing_date" },
-                { data: "packing_no", name: "packing_no",render: function(data, type, row, meta) {
+                { data: "packing_no", name: "packing_no",
+                defaultContent: '<input type="checkbox" class="row-check">',
+                className: 'dt-body-center checkbox-column',
+                render: function(data, type, row, meta) {
                             const rowDataEncoded = base64Encode(JSON.stringify(row));
-                            return `${row.packing_no} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
+                            return `${row.packing_no} <i class="bi bi-info-circle-fill" data-placement="bottom" data-toggle="tooltip" title="${row.order_no}"></i> <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
                         }
                 },
                 { data: "client_name", name: "client_name" },
@@ -252,7 +248,6 @@
                 { data: "bag_type", name: "bag_type" },
                 { data: "bag_color", name: "bag_color" },
                 { data: "bag_gsm", name: "bag_gsm" },
-                // { data: "units", name: "units" },
                 { data: "packing_weight", name: "packing_weight",render:function(data, type, row, meta){return `${row.packing_weight} (Kg)`} },
                 { data: "packing_bag_pieces", name: "packing_bag_pieces",render:function(data, type, row, meta){return `${row.packing_bag_pieces ? row.packing_bag_pieces +" (Pcs)" : "NA"} `} },
                 { data: "action", name: "action", orderable: false, searchable: false },
@@ -280,6 +275,18 @@
             initComplete: function () {
                 addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1]);
             },
+        });
+        $('#postsTable tbody').on('click', 'td.checkbox-column', function (e) {
+            // Find the checkbox inside the clicked cell
+            const checkbox = $(this).find('input[type="checkbox"]');
+
+            // Prevent double-toggle if the user clicked the actual checkbox
+            if (!$(e.target).is(':checkbox')) {
+                checkbox.prop('checked', !checkbox.prop('checked'));
+            }
+
+            // Optional: Add a 'selected' class to the row for styling
+            $(this).closest('tr').toggleClass('selected', checkbox.prop('checked'));
         });
         $('#bookingForClientId').select2({
             width:"100%",
@@ -430,7 +437,8 @@
         })
     }
 
-    function openTransportModel(transportType) {
+    function openTransportModel(transportType,godownType='') {
+        const storageType = ["For Godown", "For Factory"];
         let sequence = [];
 
         $(".checkbox").each(function () {
@@ -446,7 +454,7 @@
             return;
         }
         $("#isLocalTransportDiv").show();
-        if(transportType=="For Godown" || transportType=="For Factory"){
+        if(storageType.includes(transportType)){
             $("#isLocalTransportDiv").hide();
             $("#isLocalTransport").attr("checked",true).trigger("click");
         }
@@ -473,6 +481,7 @@
         });
         hidden+=`<input type='hidden' name='rateTypeIdNew' value="${rate}" />`;
         hidden+=`<input type='hidden' id='transPortType' name='transPortType' value="${transportType}" />`;
+        hidden += `<input type='hidden' name="godownTypeId" value="${godownType}" />`;
         
         console.log(rateType);
         if (Object.keys(rateType).length > 1 && transportType=="For Delivery") {
@@ -487,19 +496,19 @@
         $("#rateTypeDiv").show();
         $("#rateTypeId").val(rate);
         $("#transporterId").attr("required",true);
-        if(is_local_order || transportType=="For Godown" || transportType=="For Factory"){
+        if(is_local_order || storageType.includes(transportType)){
             $(".transposerDiv").hide();            
             $("#transporterId").attr("required",false);
             $("#rateTypeDiv").hide();
         }
         $("#bookingForClientId").attr({"disabled":true,"required":false});
         $(".client").hide();
-        if(clientId==1 && !(transportType=="For Godown" || transportType=="For Factory")){
+        if(clientId==1 && !storageType.includes(transportType)){
             $("#bookingForClientId").attr({"disabled":false,"required":true});
             $(".client").show();
         }
         $("#hiddenDiv").html(hidden);
-        $("#transportModelLabel").html(transportType);
+        $("#transportModelLabel").html(transportType+(godownType?(' '+ godownType):""));
         $("#transportModel").modal("show");
 
     }
