@@ -65,7 +65,7 @@
                         <div class="col-sm-3">
                             <div class="form-group">
                                 <label class="form-label" for="helperId">Helper <span class="text-danger">*</span></label>
-                                <select type="date" name="helperId" id="helperId" class="form-select"  required >
+                                <select name="helperId" id="helperId" class="form-select"  required >
                                     <option value="">Select</option>
                                         @foreach($helper as $val)
                                             <option value="{{$val->id}}">{{$val->name}}</option>
