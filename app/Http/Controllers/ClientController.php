@@ -37,6 +37,7 @@ class ClientController extends Controller
             if($validate->fails()){
                 return validationError($validate);
             }
+            $request->merge(["hasAddressTwo"=>$request->hasAddressTwo ? true:false]);
             $id = $request->id;
             if($request->id){
                 $this->_M_ClientDetail->edit($request);

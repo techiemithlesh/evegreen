@@ -47,6 +47,14 @@
                             <textarea id="address" name="address" class="form-control" placeholder="Enter Client Address" rows="3" required></textarea>
                             <span class="error-text" id="address-error"></span>
                         </div>
+
+                        <label class="control-label col-md-3" for="hasAddressTwo">Has Multiple Address<span class="text-danger">*</span></label>
+                        <div class="col-md-3 form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="hasAddressTwo" name="hasAddressTwo" />
+                            <div class="">
+                            </div>  
+                            <span class="error-text" id="hasAddressTwo-error"></span>
+                        </div>
                         
                     </div>
 

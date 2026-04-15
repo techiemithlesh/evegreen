@@ -1019,6 +1019,11 @@ class RollController extends Controller
                     $client->$key=$val;
                 }
             }
+            if($client){
+                $client->address = $request->address??$client->address;
+            }if($vendor){
+                $vendor->address = $request->address??$vendor->address;
+            }
             $data["unique_id"]=getFY()."-".$key.$count;
             $data["table"]=$parentTable;
             $data["chalan_date"]=$request->dispatchedDate??Carbon::now()->format("d-m-Y");
@@ -1282,7 +1287,7 @@ class RollController extends Controller
             $roll->lock_status = true;
             $roll->update();
             // dd($order1,$avg1);
-            // DB::commit();
+            DB::commit();
             return responseMsgs(true,"roll Split","");
         }catch(Exception $e){
             return responseMsgs(false,$e->getMessage(),"");

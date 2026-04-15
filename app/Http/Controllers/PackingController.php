@@ -457,7 +457,7 @@ class PackingController extends Controller
             $rateType = $this->_M_RateType->all();
             $data = $this->_M_BagPacking->select("order_punch_details.*","bag_packings.*",
                         "bag_type_masters.bag_type","client_detail_masters.client_name","client_detail_masters.city_id",
-                        "client_detail_masters.state_id",
+                        "client_detail_masters.state_id","client_detail_masters.has_address_two"
                     )
                     ->join("order_punch_details","order_punch_details.id","bag_packings.order_id")
                     ->join("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")
@@ -688,6 +688,9 @@ class PackingController extends Controller
                 foreach($godownDtl as $key=>$val){
                     $client->$key=$val;
                 }
+            }
+            if($client){
+                $client->address = $request->address??$client->address;
             }
             $data["unique_id"]=getFY()."-".$key.$count;
             $data["table"]=$parentTable;

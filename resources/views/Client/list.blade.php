@@ -31,6 +31,7 @@
                     <th>Address</th>
                     <th>Sector</th>
                     <th>Trade Name</th>
+                    <th>Has Multiple Address</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -79,6 +80,11 @@
                 {
                     data: "trade_name",
                     name: "trade_name",
+                },
+                {
+                    data: "has_address_two",
+                    name: "has_address_two",
+                    render:function(row,type,data){return (data.has_address_two ? "Yes" :"No")}
                 },
                 {
                     data: "action",
@@ -227,6 +233,7 @@
                     $("#email").val(clientDtl?.email);
                     $("#mobileNo").val(clientDtl?.mobile_no);
                     $("#address").val(clientDtl?.address);
+                    $("#hasAddressTwo").attr("checked",(clientDtl?.has_address_two ? true:false));
                     $("#location").val(clientDtl?.location);
                     $("#secondaryMobileNo").val(clientDtl?.secondary_mobile_no);
                     $("#temporaryMobileNo").val(clientDtl?.temporary_mobile_no);

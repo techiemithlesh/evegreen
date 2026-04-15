@@ -24,6 +24,7 @@ class ClientDetailMaster extends Model
         "trade_name",
         "secondary_mobile_no",
         "temporary_mobile_no",
+        "has_address_two",
         'lock_status',
     ];
 

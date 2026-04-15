@@ -149,10 +149,10 @@
                                 <div class="form-group">
                                     <label class="form-label" for="bookingForClientId">Client Name<span class="text-danger">*</span></label>
                                     <div class="col-md-12">
-                                        <select name="bookingForClientId" id="bookingForClientId" class="form-control">
+                                        <select name="bookingForClientId" id="bookingForClientId" class="form-control" onchange="showHideAddress(event)">
                                             <option value="">Select</option>
                                             @foreach ($clientList as $val)
-                                                <option value="{{ $val->id }}">{{ $val->client_name }}</option>
+                                                <option value="{{ $val->id }}" data-item="{{$val->has_address_two?'true':'false'}}" >{{ $val->client_name }}</option>
                                             @endforeach
                                         </select><br>
                                         <label class="error-text" id="bookingForClientId-error"></label>
@@ -170,6 +170,14 @@
                                         @endforeach
                                     </select>
                                     <span class="error-text" id="rateTypeId-error"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-8 addressField" style="display: none;">
+                                <div class="form-group">
+                                    <label class="form-label" for="address">Address</label>
+                                    <textarea id="address" name="address" class="form-control" placeholder="Enter Client Address" rows="3" ></textarea>                   
+                                    <span class="error-text" id="address-error"></span>
                                 </div>
                             </div>
                         </div>
@@ -437,6 +445,18 @@
         })
     }
 
+    function showHideAddress(e){ 
+        const selectElement = e.target;
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const itemValue = selectedOption.getAttribute('data-item');
+        if (itemValue === "true") {
+            $('.addressField').show();
+        } else {
+            $('.addressField').hide();
+            $("#address").val("");
+        }
+    }
+
     function openTransportModel(transportType,godownType='') {
         const storageType = ["For Godown", "For Factory"];
         let sequence = [];
@@ -465,11 +485,15 @@
         let client=[];
         let clientId="";
         let rate = "";
+        let has_address_two = false;
 
         // ✅ Fix: Use `forEach` correctly
         sequence.forEach((item) => {            
             rate=item.rate_type_id;
             clientId = item.client_detail_id;
+            if(!has_address_two){
+                has_address_two = item.has_address_two;
+            }
             if (!rateType[item.rate_type_id]) {
                 rateType[item.rate_type_id] = item.rate_type;
             }
@@ -492,6 +516,13 @@
             popupAlert("Cannot generate Chalan for more then one client");
             return;
         }
+        if(transportType=="For Delivery" && has_address_two){
+            $(".addressField").show();
+        }else{
+            $(".addressField").hide();
+            $("#address").val("");
+        }
+        console.table([transportType,has_address_two,transportType=="For Delivery" && has_address_two]);
         $(".transposerDiv").show();
         $("#rateTypeDiv").show();
         $("#rateTypeId").val(rate);

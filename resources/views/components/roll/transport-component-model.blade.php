@@ -38,15 +38,23 @@
                             <div class="form-group">
                                 <label class="form-label" for="saleClintId">Client Name<span class="text-danger">*</span></label>
                                 <div class="col-md-12">
-                                    <select name="saleClintId" id="saleClintId" class="form-select select2" required>
+                                    <select name="saleClintId" id="saleClintId" class="form-select select2" required onchange="showHideAddress(event)">
                                         <option value="">Select</option>
                                         @foreach ($clientList as $val)
-                                            <option value="{{ $val->id }}">{{ $val->client_name }}</option>
+                                            <option value="{{ $val->id }}" data-item="{{$val->has_address_two?'true':'false'}}" >{{ $val->client_name }}</option>
                                         @endforeach
                                     </select><br>
                                     <label class="error-text" id="saleClintId-error"></label>
                                 </div>                                       
                                 <span class="error-text" id="busNo-error"></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 client" style="display: none;">
+
+                            <div class="form-group" id="addressField">
+                                <label class="form-label" for="address">Address</label>
+                                <textarea id="address" name="address" class="form-control" placeholder="Enter Client Address" rows="3" ></textarea>                   
+                                <span class="error-text" id="address-error"></span>
                             </div>
                         </div>
                         <div class="col-sm-4 vendor" style="display: none;">
@@ -184,6 +192,20 @@
             dropdownCssClass: 'form-control',
             dropdownParent: $('#transportModel'), 
         });
+    }
+
+    function showHideAddress(e){
+        console.log(e);
+        const selectElement = e.target;
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const itemValue = selectedOption.getAttribute('data-item');
+        console.log("Selected Data-Item:", itemValue);
+        if (itemValue === "true") {
+            $('#addressField').show();
+        } else {
+            $('#addressField').hide();
+            $("#address").val("");
+        }
     }
 
 
