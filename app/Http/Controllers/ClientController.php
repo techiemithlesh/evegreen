@@ -77,6 +77,12 @@ class ClientController extends Controller
                 }
                 return DataTables::of($data)
                     ->addIndexColumn()
+                    ->addColumn("state_name",function($val){
+                        return $val->getState()?->state_name;
+                    })
+                    ->addColumn("city_name",function($val){
+                        return $val->getCity()?->city_name;
+                    })
                     ->addColumn('action', function ($val) {
                         return <<<EOD
                             <i class="bi bi-pencil-square btn btn-sm" style ="color: #0d6efd" onClick="openModelEdit('$val->id')" ></i>

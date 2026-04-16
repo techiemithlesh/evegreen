@@ -28,6 +28,8 @@
                     <th>Clint Name</th>
                     <th>Mobile No</th>
                     <th>Email</th>
+                    <th>State</th>
+                    <th>City</th>
                     <th>Address</th>
                     <th>Sector</th>
                     <th>Trade Name</th>
@@ -68,6 +70,14 @@
                 {
                     data: "email",
                     name: "email"
+                },
+                {
+                    data: "state_name",
+                    name: "state_name",
+                },
+                {
+                    data: "city_name",
+                    name: "city_name",
                 },
                 {
                     data: "address",
