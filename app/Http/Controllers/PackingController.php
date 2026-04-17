@@ -361,7 +361,17 @@ class PackingController extends Controller
             DB::beginTransaction();
             foreach(collect($request->roll)->sortBy("sl_no") as $val){
                 $newRequest = new Request();
+                $orderDate = Carbon::parse($request->packing_date);
+                $rolNo = $orderDate->clone()->format("d/m/y")."-";
+                $sl = $val["sl_no"];
+                $slNo =str_pad((string)$sl,2,"0",STR_PAD_LEFT);
+                $rolNo.=$slNo;
+                $test = BagPacking::where("packing_no",$rolNo)->count();
+                if(($test)){ 
+                    throw new Exception("Bora No ".$rolNo." Already Exist Please Enter Next");
+                }
                 $newRequest->merge([
+                    "packing_no"=>$rolNo,
                     "packing_weight"=>$val["weight"],
                     "packing_bag_pieces"=>$val["pieces"]??null,
                     "order_id"=>$val["id"],
