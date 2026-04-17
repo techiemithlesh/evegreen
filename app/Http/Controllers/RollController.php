@@ -4697,7 +4697,7 @@ class RollController extends Controller
             
             if ($validate->fails()) {
                 return validationError($validate);
-            }
+            }DB::enableQueryLog();
             DB::beginTransaction();
             foreach($request->roll["firstRoll"] as $index=> $val){
                 $rollId1 = $val;
@@ -4855,17 +4855,20 @@ class RollController extends Controller
                     }
                 }
                 
-                $order1=[];
-                $order2=[];
+                $orderKey1=[];
+                $orderKey2=[];
                 foreach($order_filed as $key){
-                    $order1[$key]=$roll1[$key];
-                    $order2[$key]=$roll2[$key];
+                    $orderKey1[$key]=$roll1[$key];
+                    $orderKey2[$key]=$roll2[$key];
                 }
                 $orderRollBag1 = $this->_M_OrderRollBagType->where("roll_id",$roll1->id)->where("lock_status",false)->orderBy("id","DESC")->first();
                 $orderRollBag2 = $this->_M_OrderRollBagType->where("roll_id",$roll2->id)->where("lock_status",false)->orderBy("id","DESC")->first();
                 if($testSize1){
-                    foreach($order1 as $key=>$orderVal){
+                    foreach($orderKey1 as $key=>$orderVal){
                         $roll2[$key] = $orderVal;
+                    }
+                    foreach($orderKey2 as $key=>$orderVal){
+                        $roll1[$key] = $orderVal;
                     }
 
                     if($orderRollBag1){
@@ -4883,8 +4886,12 @@ class RollController extends Controller
                         elseif($order1->disbursed_units && $newDisbursed_units>0 && $newDisbursed_units < round(($total_units)/100*95)){
                             $order1->disbursed_units = 0;
                         }
+                        $orderRollBag1->roll_id= $roll2->id;
+                        
+                        $orderRollBag1->update();
                         $order1->update();
-                    } 
+                    }
+                    
                 }
                 else{
                     // remover from booking;  
@@ -4900,8 +4907,11 @@ class RollController extends Controller
                 }
 
                 if($testSize2){
-                    foreach($order2 as $key=>$orderVal){
+                    foreach($orderKey2 as $key=>$orderVal){
                         $roll1[$key] = $orderVal;
+                    }
+                    foreach($orderKey1 as $key=>$orderVal){
+                        $roll2[$key] = $orderVal;
                     }
                     if($orderRollBag2){
                         $order2 = $this->_M_OrderPunches->find($orderRollBag2->order_id);
@@ -4918,6 +4928,10 @@ class RollController extends Controller
                         elseif($order2->disbursed_units && $newDisbursed_units>0 && $newDisbursed_units < round(($total_units)/100*95)){
                             $order2->disbursed_units = 0;
                         }
+
+                        $orderRollBag2->roll_id= $roll1->id;
+                        
+                        $orderRollBag2->update();
                         $order2->update();
                     } 
                 }
@@ -4964,7 +4978,7 @@ class RollController extends Controller
             return responseMsgs(true,"Roll No. Swap","");
         }catch(MyException $e){
             return responseMsgs(false,$e->getMessage(),"");
-        }catch(Exception $e){
+        }catch(Exception $e){dd($e);
             return responseMsgs(false,"server error!!!","");
         }
     }
