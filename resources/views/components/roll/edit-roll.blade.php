@@ -160,6 +160,19 @@
 
     });
 
+    $('#rollModal').on('show.bs.modal', function (e) {
+        $('#printingColor').select2({
+                placeholder: "Select tags",
+                allowClear: false,
+                maximumSelectionLength: 4,
+                dropdownCssClass: 'form-control',
+                dropdownParent: $('#rollModal'),            
+                width:"100%",
+                templateResult: formatOption,
+                templateSelection: formatOption 
+            });
+    });
+
     function formatOption(option) {
         if (!option.id) {
             return option.text; // return default option text if no ID
