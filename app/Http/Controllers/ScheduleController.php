@@ -44,10 +44,12 @@ class ScheduleController extends Controller
                 $data = $this->_M_RollDetail->select("roll_details.*","vendor_detail_masters.vendor_name",
                                     "client_detail_masters.client_name",
                                     "printing_schedule_details.sl",
-                                    "bag_type_masters.bag_type")
+                                    "bag_type_masters.bag_type",
+                                    DB::raw("concat(roll_quality_masters.quality ,'  (',roll_details.hardness,')') as quality "))
                         ->join("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
                         ->Join("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
                         ->leftJoin("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")
+                        ->leftJoin("roll_quality_masters","roll_quality_masters.id","roll_details.quality_id")
                         ->leftJoin("printing_schedule_details",function($join){
                             $join->on("printing_schedule_details.roll_id","=","roll_details.id")
                             ->where("printing_schedule_details.lock_status",false);
@@ -192,10 +194,12 @@ class ScheduleController extends Controller
                 $data = $this->_M_RollDetail->select("roll_details.*","vendor_detail_masters.vendor_name",
                                     "client_detail_masters.client_name",
                                     "cutting_schedule_details.sl",
-                                    "bag_type_masters.bag_type")
+                                    "bag_type_masters.bag_type",
+                                    DB::raw("concat(roll_quality_masters.quality ,'  (',roll_details.hardness,')') as quality "))
                         ->join("vendor_detail_masters","vendor_detail_masters.id","roll_details.vender_id")
                         ->Join("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
                         ->leftJoin("bag_type_masters","bag_type_masters.id","roll_details.bag_type_id")
+                        ->leftJoin("roll_quality_masters","roll_quality_masters.id","roll_details.quality_id")
                         ->leftJoin("cutting_schedule_details",function($join){
                             $join->on("cutting_schedule_details.roll_id","=","roll_details.id")
                             ->where("cutting_schedule_details.lock_status",false);

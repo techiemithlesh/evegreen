@@ -58,6 +58,7 @@ tr.selected {
                             <th>Roll Type</th>
                             <th>Roll Size</th>
                             <th>GSM</th>
+                            <th>Quality</th>
                             <th>Roll Color</th>
                             <th>Length</th>
                             <th>Roll No</th>
@@ -94,6 +95,7 @@ tr.selected {
                             <th>Roll Type</th>
                             <th>Roll Size</th>
                             <th>GSM</th>
+                            <th>Quality</th>
                             <th>Roll Color</th>
                             <th>Length</th>
                             <th>Roll No</th>
@@ -175,6 +177,7 @@ tr.selected {
                 { data: "roll_type", name: "roll_type" },
                 { data: "size", name: "size" },
                 { data: "gsm", name: "gsm" },
+                { data: "quality", name: "quality" },
                 { data: "roll_color", name: "roll_color" },
                 { data: "length", name: "length" },
                 { data: "roll_no", name: "roll_no" },
@@ -213,7 +216,7 @@ tr.selected {
                     orientation: 'portrait',
                     pageSize: 'A4',
                     exportOptions: {
-                        columns: [0, 1,2, 3,4,5,6,7,8,9,10]  // Export only Name, Position, and Age columns
+                        columns: [0, 1,2, 3,4,5,6,7,8,9,10,11]  // Export only Name, Position, and Age columns
                     }
 
                 },
@@ -396,6 +399,7 @@ tr.selected {
                         `<td>${item.roll_type}</td>`,
                         `<td>${item.size || "N/A"}</td>`,
                         `<td>${item.gsm}</td>`,
+                        `<td>${item.quality}</td>`,
                         `<td>${item.roll_color || "N/A"}</td>`,
                         `<td>${item.length || "N/A"}</td>`,
                         `<td>${item.roll_no || "N/A"}</td>`,
@@ -495,7 +499,7 @@ tr.selected {
         }
 
         // Define the column indexes you want to include in the PDF (0-based index)
-        let columnsToPrint = [1, 2, 3, 4, 5,6,8,10,12,13,14,15,16,17,19,21];
+        let columnsToPrint = [1, 2, 3, 4, 5,6,8,10,12,13,14,15,16,17,19,21,22];
 
         let body = [];
 
