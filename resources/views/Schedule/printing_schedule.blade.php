@@ -499,7 +499,7 @@ tr.selected {
         }
 
         // Define the column indexes you want to include in the PDF (0-based index)
-        let columnsToPrint = [1, 2, 3, 4, 5,6,8,10,12,13,14,15,16,17,19,21,22];
+        let columnsToPrint = [1, 2, 3, 4, 5,6,7,8,9,10,11,13,14,15,16,17,18,19,20,21,22];
 
         let body = [];
 
@@ -537,24 +537,24 @@ tr.selected {
             ],
             styles: {
                 header: {
-                    fontSize: 18,
+                    fontSize: 16,
                     bold: true,
                     alignment: 'center',
                     margin: [0, 0, 0, 10]
                 },
                 subheader: {
-                    fontSize: 12,
+                    fontSize: 10,
                     italics: true,
                     alignment: 'right',
                     margin: [0, 0, 0, 10]
                 }
             },
             defaultStyle: {
-                fontSize: 10
+                fontSize: 7
             },
             pageSize: 'A4',
             pageOrientation: 'landscape',  // Use 'portrait' if you prefer
-            pageMargins: [20, 20, 20, 20]  // Margins for better spacing
+            pageMargins: [15, 15, 15, 15]  // Margins for better spacing
         };
 
         // Generate and download the PDF
