@@ -35,7 +35,7 @@
                     <table class="table table-bordered table-responsive table-fixed" id="orderRoll">
                         <thead>
                             <tr>
-                                <th>Order No</th>
+                                <!-- <th>Order No</th> -->
                                 <th>Client Name</th>
                                 <th>Bag Size</th>
                                 <th>Bag Type</th>
@@ -43,6 +43,7 @@
                                 <th>Bag GSM</th>
                                 <th>Total Bag Weight</th>
                                 <th>Total Bag In Pieces</th>
+                                <th>Garbage</th>
                                 <th>Unit</th>
                                 <th>%</th>
                                 <th>Action</th>
@@ -94,7 +95,7 @@
                 },
             },
             columns: [
-                { data: "order_no", name: "order_no", orderable: false, searchable: false },
+                // { data: "order_no", name: "order_no", orderable: false, searchable: false },
                 { data: "client_name", name: "client_name" },
                 { data: "bag_size", name: "bag_size" ,render: function(item) {  return `<pre>${item}</pre>`; }},
                 { data: "bag_type", name: "bag_type" },
@@ -102,6 +103,7 @@
                 { data: "bag_gsm", name: "bag_gsm" },
                 { data: "balance",name: "balance",render: function(row, type, data) { return parseFloat(data.balance).toFixed(2);}},
                 { data: "balance_in_pieces",name: "balance_in_pieces",render: function(row, type, data) { return (data.balance_in_pieces ? data?.balance_in_pieces : "N/A");}},
+                { data: "total_garbage",name: "total_garbage",render: function(row, type, data) { return (data.total_garbage ? data?.total_garbage : "0");}},
                 { data: "units", name: "units" },
                 {data : "balance_prc", name: "balance_prc"},
                 { data: null, orderable: false, searchable: false, render: function(row, type, data) {
@@ -138,8 +140,12 @@
                     className: 'btn btn-success'
                 }
             ],
+            createdRow: function(row, data, dataIndex) {
+                let td = $('td', row).eq(0); 
+                td.attr("title", data?.order_no);
+            },
             initComplete: function () {
-                addFilter('orderRoll',[0,$("#orderRoll th").length-1]);
+                addFilter('orderRoll',[$("#orderRoll th").length-1]);
             }, 
         });
 

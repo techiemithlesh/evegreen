@@ -37,7 +37,8 @@ class ScheduleController extends Controller
         try{
 
             $flag= $request->flag;
-            $machineId = $request->machineId;            
+            $machineId = $request->machineId; 
+            $machine =  $this->_M_Machine->find($machineId);              
             if($request->ajax())
             {
                 $bags = $this->_M_BagTypeMaster->get();
@@ -137,11 +138,11 @@ class ScheduleController extends Controller
                 return $list;
     
             }
-            if(!in_array($machineId,[1,2])){
+            if(!($machine?->is_printing)){
                 flashToast("message","This is not Printing Machine");
                 return redirect()->back();
             }
-            $data["machine"]=$this->_M_Machine->find($machineId);
+            $data["machine"]=$machine;
             $data["machineId"] = $machineId;
             $data["flag"]=$flag;
             return view("Schedule/printing_schedule",$data);
@@ -188,7 +189,8 @@ class ScheduleController extends Controller
         try{
 
             $flag= $request->flag;    
-            $machineId = $request->machineId;           
+            $machineId = $request->machineId; 
+            $machine =  $this->_M_Machine->find($machineId);         
             if($request->ajax())
             {
                 $data = $this->_M_RollDetail->select("roll_details.*","vendor_detail_masters.vendor_name",
@@ -269,9 +271,9 @@ class ScheduleController extends Controller
                     ->addColumn('print_color', function ($val) {                    
                         return collect(json_decode($val->printing_color,true))->implode(",");
                     })
-                    ->addColumn("loop_color",function($val){
-                        return"";
-                    })
+                    // ->addColumn("loop_color",function($val){
+                    //     return"";
+                    // })
                     ->addColumn("gsm_json",function($val){
                         return $val->gsm_json ? "(".collect(json_decode($val->gsm_json,true))->implode(",").")" : "";                        
                     })
@@ -280,11 +282,11 @@ class ScheduleController extends Controller
                 return $list;
     
             }
-            if(!in_array($machineId,[3,4])){
+            if(!($machine?->is_cutting)){
                 flashToast("message","This is not Cutting Machine");
                 return redirect()->back();
             }
-            $data["machine"]=$this->_M_Machine->find($machineId);
+            $data["machine"]= $machine;
             $data["machineId"] = $machineId;
             $data["flag"]=$flag;
             return view("Schedule/cutting_schedule",$data);

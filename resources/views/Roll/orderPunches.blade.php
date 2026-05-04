@@ -563,8 +563,10 @@
                             $("<tr>").append(
                                 "<th>Bag Size</th>",
                                 "<th>Bag Color</th>",
+                                "<th>Loop Color</th>",
                                 "<th>GSM</th>",
                                 "<th>Bag Type</th>",
+                                "<th>Bag Quality</th>",
                                 "<th>Rate</th>",
                                 "<th>Action</th>",
                             )
@@ -574,6 +576,7 @@
                         
                         // Populate the rows
                         response.data.forEach((item,index) => {
+                            console.log("item",item);
                             const bag_gsm = JSON.parse(item?.bag_gsm || "[]").map(value => parseInt(value, 10) || 0);
                             const bagGsmString = bag_gsm.join(",");
                             const bag_color = JSON.parse(item?.bag_color || "[]");
@@ -582,10 +585,12 @@
 
                             tbody.append(                               
                                 $("<tr>").append(
-                                    `<td>${parseFloat(item.bag_w) + parseFloat(item.bag_g ? item.bag_g : 0) } X ${ parseFloat(item.bag_l)}</td>`,
+                                    `<td>${parseFloat(item.bag_w)} X ${ parseFloat(item.bag_l) + (item?.bag_g ? (" X "+parseFloat(item?.bag_g)) :"")} </td>`,
                                     `<td>${bagColorString}</td>`,
+                                    `<td>${item?.bag_loop_color ? item?.bag_loop_color : ""}</td>`,
                                     `<td>${bagGsmString || "N/A"}</td>`,
                                     `<td>${item.bag_type || "N/A"}</td>`,
+                                    `<td>${item.grade || ""}</td>`,
                                     `<td>${item.rate_per_unit || "N/A"}</td>`,
                                     `<td><button type="button" data-item='${JSON.stringify(item)}' id="or${index}" onclick="setOrderValue('or${index}')" class="btn btn-sm btn-info">Place Order</button></td>`,
                                     
@@ -596,7 +601,11 @@
                         // Append the table structure
                         table.append(thead).append(tbody);
                         $("#history").append(table);
-                        table.DataTable();
+                        table.DataTable(
+                            {
+                                "ordering": false
+                            }
+                        );
 
                         // Optionally, style the table
                         $(".history-table").css({

@@ -2708,10 +2708,12 @@ class RollController extends Controller
                                     order_punch_details.fare_type_id,
                                     order_punch_details.stereo_type_id,
                                     bag_type_masters.bag_type,
-                                    order_punch_details.bag_printing_color::text
+                                    order_punch_details.bag_printing_color::text,
+                                    grade_masters.grade
                                       ")
                     )
                     ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")
+                    ->LeftJoin("grade_masters","grade_masters.id","order_punch_details.grade_id")
                     ->where("order_punch_details.client_detail_id",$request->clientId)
                     ->where("order_punch_details.lock_status",false)
                     ->orderBy("order_punch_details.created_at","DESC")
@@ -2725,11 +2727,15 @@ class RollController extends Controller
             // Remove duplicates based on the specified columns
             $roll = $roll->sortByDesc('created_at')->unique(function ($item) {
                 return implode('|', [
-                    $item->bag_type_id, $item->bag_quality, $item->bag_gsm, $item->units, 
-                    $item->total_units, $item->rate_per_unit, $item->bag_w, $item->bag_l, 
-                    $item->bag_g, $item->bag_loop_color, $item->bag_color, $item->bag_type,
-                    $item->grade_id,$item->rate_type_id,$item->fare_type_id,$item->stereo_type_id,
-                    $item->bag_printing_color,
+                    $item->bag_type_id, $item->bag_quality, $item->bag_gsm, 
+                    // $item->units, 
+                    // $item->total_units, 
+                    // $item->rate_per_unit, 
+                    $item->bag_w, $item->bag_l, 
+                    $item->bag_g,
+                    //  $item->bag_loop_color, $item->bag_color, $item->bag_type,
+                    // $item->grade_id,$item->rate_type_id,$item->fare_type_id,$item->stereo_type_id,
+                    // $item->bag_printing_color,
                 ]);
             })->values();
 
