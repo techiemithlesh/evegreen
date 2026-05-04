@@ -5,7 +5,7 @@
             <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
                 <ol class="breadcrumb fs-6">
                     <li class="breadcrumb-item fs-6"><a href="#">Bag</a></li>
-                    <li class="breadcrumb-item active fs-6" aria-current="page">Godown</li>
+                    <li class="breadcrumb-item active fs-6" aria-current="page">Godown {{$godownTypeId}}</li>
                 </ol>
             </nav>
 
@@ -15,9 +15,10 @@
         <div class="panel-heading">
             <h5 class="panel-title">List</h5>   
             <div class="panel-control">
-                <a href="{{route('packing.godown.reiving')}}" class="btn btn-primary btn-sm">Verify <span id="intTransPort" class="badge bg-danger"></span></a>
+                <a href="{{route('packing.godown.reiving',[$godownTypeId??0])}}" class="btn btn-primary btn-sm">Verify <span id="intTransPort" class="badge bg-danger"></span></a>
                 <!-- <a href="{{route('packing.transport.for','For Delivery')}}" class="btn btn-warning btn-sm">Transport Bag</a> -->
                 <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Factory')">Factory</button>
+                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Godown',<?=$godownTypeId==1?2:1?>)">Godown {{$godownTypeId==1?2:1}}</button>
                 <button type="button" class="btn btn-sm btn-success" onclick="openTransportModel('For Delivery')">Client</button>
             </div>         
         </div>
@@ -63,6 +64,11 @@
                     <!-- Hidden field for Client ID -->
                     <input type="hidden" id="id" name="id" value="">
                     <div class="row">
+                        <div class="form-group col-md-6 packing_no">
+                            <label for="packing_no" class="control-label">Packing No<span class="text-danger">*</span></label>
+                            <input name="packing_no"  id="packing_no" class="form-control" required />
+                            <span class="error-text" id="packing_no-error"></span>
+                        </div>
                         <div class="form-group col-md-6">
                             <label for="packing_weight" class="control-label">Weight<span class="text-danger">*</span></label>
                             <input name="packing_weight"  id="packing_weight" class="form-control" required onkeypress="return isNum(event);"/>
@@ -202,12 +208,13 @@
     </div>
 </main>
 <script>
+    let godownTypeId = <?=$godownTypeId??0;?>;
     $(document).ready(function(){
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
             ajax: {
-                url: "{{route('packing.godown')}}",// The route where you're getting data from
+                url: "{{route('packing.godown',':godownTypeId')}}".replace(':godownTypeId', godownTypeId),// The route where you're getting data from
                 data: function(d) {
 
                     // Add custom form data to the AJAX request
@@ -236,7 +243,7 @@
                 { data:"reiving_date",name:"reiving_date" },
                 { data: "packing_no", name: "packing_no",render: function(data, type, row, meta) {
                             const rowDataEncoded = base64Encode(JSON.stringify(row));
-                            return `${row.packing_no} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
+                            return `${row.packing_no} <i class="bi bi-info-circle-fill" data-placement="bottom" data-toggle="tooltip" title="${row.order_no}"></i> <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
                         }
                 },
                 { data: "client_name", name: "client_name" },
@@ -244,7 +251,6 @@
                 { data: "bag_type", name: "bag_type" },
                 { data: "bag_color", name: "bag_color" },
                 { data: "bag_gsm", name: "bag_gsm" },
-                // { data: "units", name: "units" },
                 { data: "packing_weight", name: "packing_weight",render:function(data, type, row, meta){return `${row.packing_weight} (Kg)`} },
                 { data: "packing_bag_pieces", name: "packing_bag_pieces",render:function(data, type, row, meta){return `${row.packing_bag_pieces ? row.packing_bag_pieces +" (Pcs)" : "NA"} `} },
                 { data: "action", name: "action", orderable: false, searchable: false },
@@ -341,9 +347,14 @@
                 $("#packing_bag_pieces").parent("label").find("span").css("display","none");
                 $("#packing_bag_pieces").closest(".form-group").find("label span.text-danger").css("display", "none");
                 $("#packing_bag_pieces").attr("required",false);
+                $("#packing_no").attr("readonly",true);
                 if(response.status && response.data.id){
                     let item = response.data;
                     $("#id").val(item.id);
+                    $("#packing_no").val(item.packing_no);
+                    if(!item?.packing_no){
+                        $("#packing_no").attr("readonly",false);
+                    }
                     $("#packing_weight").val(item.packing_weight);
                     $("#packing_bag_pieces").val(item.packing_bag_pieces);
                     if(item.units!="Kg"){
@@ -415,8 +426,9 @@
         })
     }
 
-    function openTransportModel(transportType) {
+    function openTransportModel(transportType,godownType='') {
         let sequence = [];
+        const storageType = ["For Godown", "For Factory"];
 
         $(".checkbox").each(function () {
             if ($(this).is(":checked")) {
@@ -431,7 +443,7 @@
             return;
         }
         $("#isLocalTransportDiv").show();
-        if(transportType=="For Godown" || transportType=="For Factory"){
+        if(storageType.includes(transportType)){
             $("#isLocalTransportDiv").hide();
             $("#isLocalTransport").attr("checked",true).trigger("click");
         }
@@ -459,7 +471,8 @@
         });
         hidden+=`<input type='hidden' name='rateTypeIdNew' value="${rate}" />`;
         hidden+=`<input type='hidden' id='transPortType' name='transPortType' value="${transportType}" />`;
-        
+        hidden += `<input type='hidden' name="godownTypeId" value="${godownType}" />`;
+
         console.log(rateType);
         if (Object.keys(rateType).length > 1 && transportType=="For Delivery") {
             popupAlert("Cannot generate different rate type Chalan");
@@ -473,14 +486,14 @@
         $("#transporterId").attr("required",true);
         $("#rateTypeDiv").show();
         $("#rateTypeId").val(rate);
-        if(is_local_order || transportType=="For Godown" || transportType=="For Factory"){
+        if(is_local_order || storageType.includes(transportType)){
             $(".transposerDiv").hide();            
             $("#transporterId").attr("required",false);
             $("#rateTypeDiv").hide();
         }
         $("#bookingForClientId").attr({"disabled":true,"required":false});
         $(".client").hide();
-        if(clientId==1 && !(transportType=="For Godown" || transportType=="For Factory")){
+        if(clientId==1 && !storageType.includes(transportType)){
             $("#bookingForClientId").attr({"disabled":false,"required":true});
             $(".client").show();
         }

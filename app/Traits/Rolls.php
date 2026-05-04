@@ -37,7 +37,8 @@ trait Rolls{
                                 )
                     )
                     ->leftJoin("client_detail_masters","client_detail_masters.id","roll_details.client_detail_id")
-                    ->where("roll_details.is_printed",false);
+                    ->where("roll_details.is_printed",false)
+                    ->where("roll_details.is_roll_sell",false);
     }
 
     public function rollSearchCuttingOrm(){

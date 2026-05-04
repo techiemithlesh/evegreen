@@ -211,10 +211,12 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post("roll/delete/transit", "deleteTransit")->name("roll.delete.transit");
         Route::post("roll/order/to/book", "bookRollToOrder")->name("roll.order.to.book");
         Route::post("roll/order/remove/booking", "removeBookedRoll")->name("roll.order.remove.booking");
+        Route::post("roll/stock/to/transit", "backInTransit")->name("roll.stock.to.transit");
 
         Route::match(["get", "post"], "roll/order/book", "bookedOrder")->name("order.book");
         Route::match(["get", "post"], "roll/order/book-delivered", "bookedOrderDelivered")->name("order.book.delivered");
         Route::match(["get", "post"], "roll/order/unbook", "unBookedOrder")->name("order.unbook");
+        Route::get("roll/order/draft", "draftOrder")->name("order.draft");
 
         Route::get("roll/order/status","orderStatus")->name("order.status");
 
@@ -228,6 +230,13 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post("roll/add", "addRoll")->name("roll.add");
         Route::post("roll/swap", "swapRollNo")->name("roll.swap");
         Route::post("roll/swap/selected", "swapSelectedRoll")->name("roll.swap.selected");
+        Route::post("roll/sell/selected", "sellRole")->name("roll.sell.selected");
+        Route::post("roll/split", "splitRoll")->name("roll.split");
+        Route::match(["get","post"],"roll/sell/generate-chalan","generateRollChalan")->name("roll.sell.generate.chalan");
+        Route::get("roll/chalan/register", "chalanRegister")->name("roll.chalan.register");
+        Route::get("roll/transport/dtlHtml/{id}","transPortDtlHtml")->name("roll.transport.dtlhtml");
+        Route::get("roll/sell/register", "sellRegister")->name("roll.sell.register");
+        Route::get("roll/sell/return/sell/{id}", "returnSell")->name("roll.sell.return");
         Route::post("roll/import", "importRoll")->name("roll.import");
         Route::get('roll/import-template', 'downloadCsvTemplate')->name('download.roll.import.template')->withoutMiddleware("auth:sanctum");
         Route::post("roll/book", "rollBook")->name("roll.book");
@@ -245,6 +254,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::get("roll/register/cutting/{machineId?}", "rollRegisterCutting")->name("roll.register.cutting");
         Route::get("roll/schedule/{flag?}", "rollSchedule")->name("roll.schedule");
         Route::post("roll/schedule-set/{flag}", "rollScheduleSet")->name("roll.schedule.set");
+        Route::post("roll/production/printing/updateWeight", "editPrintingWeight")->name("roll.production.edit.printing.weight");
         Route::get("roll/production/printing/{machineId?}", "rollProduction")->name("roll.production.printing");
         Route::get("roll/production/cutting/{machineId?}", "rollProductionCutting")->name("roll.production.cutting");
 
@@ -266,23 +276,27 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     Route::controller(PackingController::class)->group(function () {
         Route::get("packing/entry", "packingEnter")->name("packing.entry");
         Route::get("packing/wip", "WIPVerification")->name("packing.wip");
+        Route::get("packing/serial", "getPackingSerialNo")->name("packing.serial");
         Route::post("packing/wip/delete", "deleteWIP")->name("packing.wip.delete");
         Route::post("packing/wip/disburse/order", "disburseOrder")->name("packing.wip.disburse.order");
         Route::post("packing/entry-wip/add", "packingEnterWipAdd")->name("packing.entry.wip.add");
         Route::post("packing/entry/search", "searchRoll")->name("packing.entry.search");
         Route::post("packing/entry/add", "packingEnterAdd")->name("packing.entry.add");
         Route::match(["get", "post"], "packing/stock", "bagStock")->name("packing.stock");
-        Route::match(["get", "post"], "packing/godown", "bagGodown")->name("packing.godown");
+        Route::post("packing/godown/transport", "reivingTransport")->name("packing.godown.transport");
         Route::get("packing/inTransport", "addBagInTransport")->name("packing.inTransport");
+        Route::post("packing/godown/add", "addInGodown")->name("packing.godown.add");
+        Route::match(["get", "post"], "packing/godown/reiving/{godownTypeId}", "reivingGodown")->name("packing.godown.reiving");
+        Route::match(["get", "post"], "packing/godown/{godownTypeId}", "bagGodown")->name("packing.godown");
         Route::get("packing/transport/for/{flag}", "bagTransport")->name("packing.transport.for");
         Route::get("packing/transport/stock", "bagStockToGodown")->name("packing.transport.stock");
         Route::post("packing/transport/search", "searchPackingForTransport")->name("packing.transport.search");
         Route::post("packing/transport/save", "transportAdd")->name("packing.transport.save");
-        Route::match(["get", "post"], "packing/godown/reiving", "reivingGodown")->name("packing.godown.reiving");
-        Route::post("packing/godown/transport", "reivingTransport")->name("packing.godown.transport");
-        Route::post("packing/godown/add", "addInGodown")->name("packing.godown.add");
         Route::get("packing/transport/register", "transportRegister")->name("packing.transport.register");
+        Route::get("packing/transport/dtlHtml/{id}","transPortDtlHtml")->name("packing.transport.dtlhtml");
+        Route::get("packing/chalan/register", "chalanRegister")->name("packing.chalan.register");
         Route::get("packing/transport/delete/{id}", "deleteTransPortDtl")->name("packing.transport.delete");
+        Route::get("packing/transport/return/sell/{id}", "returnSell")->name("packing.transport.return.sell");
         Route::get("packing/bag/dtl/{id}","bagDtl")->name("packing.bag.dtl");
         Route::post("packing/bag/edit","editBag")->name("packing.bag.edit");
         Route::post("packing/bag/delete","deleteBag")->name("packing.bag.delete");
@@ -300,6 +314,8 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::match(["get", "post"], "import/order", "importOrders")->name("import.order");
         Route::match(["get", "post"], "import/order/roll/map", "orderRollMap")->name("import.order.roll.map");
         Route::match(["get", "post"], "import/despatch/history", "importDespatchHistory")->name("import.despatch.history");
+        Route::match(["get","post"],"import/client","importClient");
+        Route::match(["get","post"],"import/bag","importBag")->name("import.bag");
     });
 
     Route::prefix('report')->group(function () {
@@ -311,6 +327,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
             Route::get("/legacy/client/order", "legacyClientOrder")->name("legacy.client.order");
             Route::get("/roll/shortage", "rollShortage")->name("roll.shortage");
             Route::get("garbage", "garbageRegister")->name("report.garbage");
+            Route::get("roll/status", "rollStatus")->name("report.roll.status");
         });
     });
 

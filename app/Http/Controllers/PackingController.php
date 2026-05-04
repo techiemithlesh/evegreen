@@ -15,6 +15,7 @@ use App\Models\GarbageEntry;
 use App\Models\OrderPunchDetail;
 use App\Models\RateTypeMaster;
 use App\Models\RollDetail;
+use App\Models\Sector;
 use App\Models\TransporterDetail;
 use App\Traits\Formula;
 use Carbon\Carbon;
@@ -28,7 +29,7 @@ use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+// use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 
 
 class PackingController extends Controller
@@ -48,6 +49,7 @@ class PackingController extends Controller
     protected $_M_ChalanDtl;
     protected $_M_GarbageEntry;
     protected $_M_GarbageAcceptRegister;
+    protected $_M_Sector;
     function __construct()
     {
         $this->_M_RollDetail = new RollDetail();
@@ -63,6 +65,7 @@ class PackingController extends Controller
         $this->_M_ChalanDtl = new ChalanDtl();
         $this->_M_GarbageEntry = new GarbageEntry();
         $this->_M_GarbageAcceptRegister = new GarbageAcceptRegister();
+        $this->_M_Sector = new Sector();
     }
 
     public function packingEnter(Request $request){
@@ -100,7 +103,7 @@ class PackingController extends Controller
                         string_agg(roll_details.id::text,',') as roll_ids
                     from roll_details
                     join order_roll_bag_types on order_roll_bag_types.roll_id = roll_details.id
-                    where order_roll_bag_types.lock_status = false and roll_details.is_cut = true
+                    where order_roll_bag_types.lock_status = false and roll_details.is_cut = true and roll_details.is_roll_sell=false
                     group by order_id
                 ) as roll
             "),"roll.order_id","order_punch_details.id")
@@ -125,6 +128,7 @@ class PackingController extends Controller
             ->where("order_punch_details.is_delivered",false)
             ->where("order_punch_details.is_wip_disbursed",false)
             ->where("order_punch_details.lock_status",false)
+            ->where("order_punch_details.is_draft",false)
             // ->where("order_punch_details.id",261)
             ->orderBy("order_punch_details.id")
             ->get()
@@ -227,6 +231,30 @@ class PackingController extends Controller
         return view("Packing/wip");
     }
 
+    public function getPackingSerialNo(Request $request){
+        try{
+            $orderDate = Carbon::parse($request->packing_date);
+            $rolNo = $orderDate->clone()->format("d/m/y")."-";
+            $sl = BagPacking::where("packing_date",$orderDate->clone()->format('Y-m-d'))->count("id")+1;
+            $slNo ="";
+            while(true){   
+                $slNo = str_pad((string)$sl,2,"0",STR_PAD_LEFT);                       
+                $test = BagPacking::where("packing_no",$rolNo.$slNo)->count();
+                if((!$test)){                    
+                    $rolNo.=$slNo;
+                    break;
+                }
+                $sl=($sl+1);
+            }
+            $data["sl"]=$sl+(collect($request->sl_nos)->count());
+            return responseMsg(true,"sl",$data);
+        }catch(MyException $e){
+            return responseMsg(false,$e->getMessage(),$e->getMessage());
+        }catch(Exception $e){
+            return responseMsg(false,"server Error","");
+        }
+    }
+
     public function deleteWIP(Request $request){
         try{
             $order = $this->_M_OrderPunchDetail->find($request->orderId);
@@ -263,7 +291,6 @@ class PackingController extends Controller
             return responseMsg(false,$e->getMessage(),"");
         }catch(Exception $e){
             DB::rollBack();
-            dd($e);
             return responseMsg(false,"Server Error!!!",'');
         }
     }
@@ -334,7 +361,17 @@ class PackingController extends Controller
             DB::beginTransaction();
             foreach(collect($request->roll)->sortBy("sl_no") as $val){
                 $newRequest = new Request();
+                $orderDate = Carbon::parse($request->packing_date);
+                $rolNo = $orderDate->clone()->format("d/m/y")."-";
+                $sl = $val["sl_no"];
+                $slNo =str_pad((string)$sl,2,"0",STR_PAD_LEFT);
+                $rolNo.=$slNo;
+                $test = BagPacking::where("packing_no",$rolNo)->count();
+                if(($test)){ 
+                    throw new Exception("Bora No ".$rolNo." Already Exist Please Enter Next");
+                }
                 $newRequest->merge([
+                    "packing_no"=>$rolNo,
                     "packing_weight"=>$val["weight"],
                     "packing_bag_pieces"=>$val["pieces"]??null,
                     "order_id"=>$val["id"],
@@ -430,7 +467,7 @@ class PackingController extends Controller
             $rateType = $this->_M_RateType->all();
             $data = $this->_M_BagPacking->select("order_punch_details.*","bag_packings.*",
                         "bag_type_masters.bag_type","client_detail_masters.client_name","client_detail_masters.city_id",
-                        "client_detail_masters.state_id",
+                        "client_detail_masters.state_id","client_detail_masters.has_address_two"
                     )
                     ->join("order_punch_details","order_punch_details.id","bag_packings.order_id")
                     ->join("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")
@@ -439,11 +476,11 @@ class PackingController extends Controller
                     ->where("bag_packings.lock_status",false)
                     ->orderBy("bag_packings.order_id","DESC")
                     ->orderBy("bag_packings.id","DESC");
-            $data = $data->get();
+            // $data = $data->get();
             $summary=[
                 "totalWeight"=>roundFigure($data->sum("packing_weight")),
             ];
-            $list = DataTables::of($data)
+            $list = DataTables::eloquent($data)
                 ->addIndexColumn()
                 ->addColumn('packing_date', function ($val) { 
                     return $val->packing_date ? Carbon::parse($val->packing_date)->format("d-m-Y") : "";
@@ -501,7 +538,7 @@ class PackingController extends Controller
                 "id"=>"required|exists:".$this->_M_BagPacking->getTable().",id",
                 "packing_weight"=>"required|numeric",
                 "packing_bag_pieces"=>"nullable|numeric",
-                "client_id"=>"required"
+                "client_id"=>"nullable"
             ];
             $validate = Validator::make($request->all(),$rules);
             if($validate->fails()){
@@ -509,6 +546,9 @@ class PackingController extends Controller
             }
             $bag = $this->_M_BagPacking->find($request->id);
             $order = $bag->getOrderDtl();
+            if(!$request->client_id){
+                $request->merge(["client_id"=>$order->client_detail_id]);
+            }
             $bagStatus = flipConstants(collect(Config::get("customConfig.bagStatus")));
             if($bag->packing_status==$bagStatus["dispatched"]){
                 throw new MyException("Bag is Dispatch");
@@ -518,16 +558,19 @@ class PackingController extends Controller
             }
             $bag->packing_weight = $request->packing_weight;
             $bag->packing_bag_pieces = $request->packing_bag_pieces;
-            if($order->bag_printing_color && $order->client_detail_id != $request->client_id){
-                throw new MyException("This Bag is Printed Show Client Not Change.");
+            if(!$bag->packing_no){
+                $bag->packing_no = $request->packing_no ;
             }
-            if($order->client_detail_id != $request->client_id){
-                $bag->client_id = $request->client_id;
-                $bag->is_bag_assign = true;
-            }else{
-                $bag->client_id = null;
-                $bag->is_bag_assign = false;
-            }
+            // if($order->bag_printing_color && $order->client_detail_id != $request->client_id){
+            //     throw new MyException("This Bag is Printed Show Client Not Change.");
+            // }
+            // if($order->client_detail_id != $request->client_id){
+            //     $bag->client_id = $request->client_id;
+            //     $bag->is_bag_assign = true;
+            // }else{
+            //     $bag->client_id = null;
+            //     $bag->is_bag_assign = false;
+            // }
             DB::beginTransaction();
             $bag->update();
             DB::commit();
@@ -535,7 +578,7 @@ class PackingController extends Controller
         }catch(MyException $e){
             return responseMsg(false,$e->getMessage(),"");
         }catch(Exception $e){
-            return responseMsg(false,"Server Error","");
+            return responseMsg(false,"Server Error",$e->getMessage());
         }
     }
 
@@ -582,32 +625,38 @@ class PackingController extends Controller
             $bags = $this->_M_BagPacking->whereIn("id",collect($request->bag)->pluck("id"))->get();
             $bags->map(function($val){
                 $order = $val->getOrderDtl();
+                $val->units = $order->units;
                 $val->bag_type = $order->getBagType()->bag_type;
                 $val->bag_color = collect(json_decode($order->bag_color,true))->implode(","); 
                 $val->bag_size = (float)$order->bag_w." x ".(float)$order->bag_l.($order->bag_g ?(" x ".(float)$order->bag_g) :"");                
                 return $val;
             });
-            
-            $bagGroup = $bags->groupBy(["bag_type","bag_color","bag_size"]);
-            $table=[];
-            $table["grand_total"]=[
-                "total"=>$bags->count(),
-                "total_weight"=>$bags->sum("packing_weight"),
-            ];
-            foreach($bagGroup as $bagType=>$colorSize){
-                foreach($colorSize as $color=>$size){
-                    foreach($size as $key=>$val){
-                        $table["row"][]=[
-                            "bag_type"=>$bagType,
-                            "color"=>$color,
-                            "size"=>$key,
-                            "bags"=>$val->toArray(),
-                            "count"=>collect($val)->count(),
-                            "total_weight"=>collect($val)->sum("packing_weight"),
-                        ];
+            $parentTable=[];
+            $unitGroup = $bags->groupBy(["units"]);
+            foreach($unitGroup as $unit=>$bb){
+                $bagGroup = $bb->groupBy(["bag_type","bag_color","bag_size"]);
+                $table=[];
+                $table["grand_total"]=[
+                    "total"=>$bb->count(),
+                    "total_unit"=>$unit =="Kg" ? collect($bb)->sum("packing_weight") : collect($bb)->sum("packing_bag_pieces"),
+                ];
+                foreach($bagGroup as $bagType=>$colorSize){
+                    foreach($colorSize as $color=>$size){
+                        foreach($size as $key=>$val){
+                            $table["row"][]=[
+                                "bag_type"=>$bagType,
+                                "color"=>$color,
+                                "size"=>$key,
+                                "bags"=>$val->toArray(),
+                                "count"=>collect($val)->count(),
+                                "total_unit"=>$unit =="Kg" ? collect($val)->sum("packing_weight") : collect($val)->sum("packing_bag_pieces"),
+                            ];
+                        }
                     }
                 }
+                $parentTable[$unit]=$table;
             }
+            // dd($parentTable);
 
             $firstBag = $bags->first();
             $order = $firstBag->getOrderDtl();
@@ -627,12 +676,18 @@ class PackingController extends Controller
             $chalanNo="OO"."-";
             if($transPortStatus==4){
                 $chalanNo="FC"."-";
+                if(in_array($bags->first()->packing_status,[2,5])){
+                    $chalanNo="GC"."-";
+                }
             }
             elseif($transPortStatus==1){
                 $chalanNo="GF"."-";
             }
             elseif($transPortStatus==3){
                 $chalanNo="FG"."-";
+                if(in_array($bags->first()->packing_status,[2,5])){
+                    $chalanNo="GG"."-";
+                }
             }
             $key=$chalanNo;
             $chalanNo .=substr($rateType ? Str::upper($rateType->rate_type) :"O",0,1)."-";
@@ -644,9 +699,12 @@ class PackingController extends Controller
                     $client->$key=$val;
                 }
             }
+            if($client){
+                $client->address = $request->address??$client->address;
+            }
             $data["unique_id"]=getFY()."-".$key.$count;
-            $data["table"]=$table;
-            $data["chalan_date"]=Carbon::now()->format("d-m-Y");
+            $data["table"]=$parentTable;
+            $data["chalan_date"]=$request->dispatchedDate??Carbon::now()->format("d-m-Y");
             $data["transposer"]=$transposer;
             $data["bus_no"]=$request->busNo;
             $data["is_local"]=$request->isLocalTransport;
@@ -670,7 +728,7 @@ class PackingController extends Controller
         }catch(MyException $e){
             return responseMsg(false,$e->getMessage(),"");
         }catch(Exception $e){
-            // dd($e->getMessage(),$e->getLine());
+            dd($e->getMessage(),$e->getLine());
             return responseMsg(false,"Server Error","");
         }
     }
@@ -692,7 +750,7 @@ class PackingController extends Controller
         }
     }
 
-    public function bagGodown(Request $request){
+    public function bagGodown($godownTypeId,Request $request){
         $user = Auth()->user();
         $user_type = $user->user_type;
         if($request->ajax()){
@@ -701,15 +759,21 @@ class PackingController extends Controller
                     )
                     ->join("order_punch_details","order_punch_details.id","bag_packings.order_id")
                     ->join("client_detail_masters","client_detail_masters.id","order_punch_details.client_detail_id")
-                    ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")
-                    ->where("bag_packings.packing_status",2)
+                    ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")                    
                     ->where("bag_packings.lock_status",false)
                     ->orderBy("bag_packings.order_id","DESC")
-                    ->orderBy("bag_packings.id","DESC")
-                    ->get();
+                    ->orderBy("bag_packings.id","DESC");
+            if($godownTypeId==1){
+                $data->where("bag_packings.packing_status",2);
+            }elseif($godownTypeId==2){
+                $data->where("bag_packings.packing_status",5);
+            }
+            $data=$data->get();
+            $request->merge(["cli"=>true]);
+            $verificationPending = $this->reivingGodown($godownTypeId,$request);
             $summary=[
                 "totalWeight"=>roundFigure($data->sum("packing_weight")),
-                "intTransPort"=>$this->_M_BagPacking->where("packing_status",3)->count(),
+                "intTransPort"=>$verificationPending->sum("total_unverified_bag"),
             ];
             $list = DataTables::of($data)
                 ->addIndexColumn()
@@ -742,6 +806,7 @@ class PackingController extends Controller
             return $list;
 
         }
+        $data["godownTypeId"] = $godownTypeId;
         $data["autoList"] =$this->_M_Auto->where("lock_status",false)->orderBy("id","ASC")->get();
         $data["transporterList"] = $this->_M_Transporter->where("lock_status",false)->orderBy("id","ASC")->get();
         $data["rateType"] = $this->_M_RateType->all();
@@ -749,7 +814,7 @@ class PackingController extends Controller
         return view("Packing/godown",$data);
     }
 
-    public function reivingGodown(Request $request){
+    public function reivingGodown($godownTypeId,Request $request){
         if($request->ajax()){
             $data = $this->_M_PackTransport->select("bag_packing_transports.id","bag_packing_transports.bill_no","bag_packing_transports.invoice_no","bag_packing_transports.transport_date",
                         "auto_details.auto_name",
@@ -767,6 +832,17 @@ class PackingController extends Controller
                     ->where("bag_packing_transports.is_fully_reviewed",false)
                     ->where("bag_packing_transports.lock_status",false)
                     ->groupBy("bag_packing_transports.id","bag_packing_transports.bill_no","bag_packing_transports.invoice_no","bag_packing_transports.transport_date","auto_details.auto_name");
+            if($godownTypeId==1){
+                $data->where(function($query)use($godownTypeId){
+                    $query->where("bag_packing_transports.godown_type_id",$godownTypeId)
+                    ->orWhereNull("bag_packing_transports.godown_type_id");
+                });
+            }else{                
+                $data->where("bag_packing_transports.godown_type_id",$godownTypeId);
+            }
+            if($request->cli){
+                return $data->get();
+            }
                 
             $list = DataTables::of($data)
                 ->addIndexColumn()
@@ -780,14 +856,15 @@ class PackingController extends Controller
                 ->make(true);
             return $list;
         }
-        return view("Packing/reivingGodown");
+        $data["godownTypeId"] = $godownTypeId;
+        return view("Packing/reivingGodown",$data);
     }
 
     public function reivingTransport(Request $request){
         try{
             $client = $this->_M_ClientDetails->all();
             $bagType = $this->_M_BagType->all();
-            $data = $this->_M_TransportDetail->select("bag_packings.*","bag_packing_transport_details.*","order_punch_details.*")
+            $data = $this->_M_TransportDetail->select("bag_packings.*","order_punch_details.*","bag_packing_transport_details.*")
                     ->join("bag_packings","bag_packings.id","bag_packing_transport_details.bag_packing_id")
                     ->join("order_punch_details","order_punch_details.id","bag_packings.order_id")
                     ->where("bag_packing_transport_details.pack_transport_id",$request->id)
@@ -811,10 +888,12 @@ class PackingController extends Controller
         try{
             $validate = Validator::make($request->all(),[
                 "id"=>"required|exists:".$this->_M_TransportDetail->getTable().",id,is_delivered,false",
+                "godownTypeId"=>"required|int|in:1,2"
             ]);
             if($validate->fails()){
                 return validationError($validate);
             }
+            $status = Config::get("customConfig.godownBagStatus.".$request->godownTypeId);
             $currentDate = Carbon::now()->format("Y-m-d");
             $user = Auth()->user();
 
@@ -826,7 +905,7 @@ class PackingController extends Controller
             $transportDtl->reiving_user_id = $user->id;
             $transportDtl->reiving_date = $currentDate;
 
-            $bagPackage->packing_status = 2;
+            $bagPackage->packing_status = $status;
             $bagPackage->godown_reiving_date = Carbon::now();
             
             DB::beginTransaction();
@@ -850,7 +929,7 @@ class PackingController extends Controller
     public function bagTransport(Request $request){
         $flag = $request->flag;
         if($request->ajax()){
-            return $this->bagGodown($request);
+            // return $this->bagGodown($request);
         }
         $data["autoList"] =$this->_M_Auto->where("lock_status",false)->orderBy("id","ASC")->get();
         $data["transporterList"] = $this->_M_Transporter->where("lock_status",false)->orderBy("id","ASC")->get();
@@ -912,12 +991,12 @@ class PackingController extends Controller
                 "transPortType" => "required|in:For Godown,For Delivery,For Factory", // Fixed 'id' to 'in' for a set of allowed values
                 "dispatchedDate" => "required|date", // Ensures dispatchedDate is a valid date
                 "invoiceNo" => "required", // Invoice number is mandatory
-                // "billNo" => "required_if:transPortType,For Delivery", // Bill number is required only if transport type is 'For Delivery'
+                "godownTypeId" => "required_if:transPortType,For Godown", 
                 "bag" => "required|array", // Packing must be a non-empty array
                 "bag.*.id" => [
                         "required",
                         Rule::exists($this->_M_BagPacking->getTable(), "id")
-                            ->whereIn("packing_status", [1, 2]),
+                            ->whereIn("packing_status", [1, 2, 5]),
                     ], // Ensures the packing IDs exist with specific statuses
             ];
             $validate = Validator::make($request->all(),$rules);
@@ -1150,7 +1229,7 @@ class PackingController extends Controller
                         if ($statusType) { // Ensure config exists to prevent errors
                             $query->orWhere(function ($q) use ($statusType) {
                                 $q->where("bag_packing_transports.transport_status", $statusType["transport_status"])
-                                  ->where("bag_packing_transports.transport_init_status", $statusType["transport_init_status"]);
+                                  ->whereIn("bag_packing_transports.transport_init_status", $statusType["transport_init_status"]);
                             });
                         }
             
@@ -1160,7 +1239,12 @@ class PackingController extends Controller
             $list = DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn("transition_type",function($val){
-                    return $transition_type = collect(Config::get("customConfig.transportationDropDownType"))->where("transport_status",$val->transport_status)->where("transport_init_status",$val->transport_init_status)->first()["type"]??"";
+                    return $transition_type = collect(Config::get("customConfig.transportationDropDownType"))
+                                                ->filter(function ($item) use ($val) {
+                                                    return $item["transport_status"] == $val->transport_status &&
+                                                        in_array($val->transport_init_status, $item["transport_init_status"]);
+                                                })
+                                                ->first()["type"] ?? "";
                     
                 })
                 ->addColumn('transport_date', function ($val) { 
@@ -1179,10 +1263,17 @@ class PackingController extends Controller
                     return collect(json_decode($val->bag_gsm,true))->implode(",");
                 })
                 ->addColumn('action', function ($val) {                   
-                    $button='<button class="btn btn-sm btn-info" onClick="openPreviewChalanModel('."'".$val->chalan_unique_id."'".')" >Chalan</button>';
+                    $button='<button class="btn btn-sm btn-info" onClick="openPreviewChalanModel('."'".$val->chalan_unique_id."'".')" >View Chalan</button>';
                     if(in_array(Auth()->user()->user_type_id,[1,2])){
-                        $button.='<button class="btn btn-sm btn-danger" onclick="showConfirmDialog('."'Are you sure you want to deactivate this item?', function() { deleteTransPortDtl('$val->id'); })".'" >Delete</button>';
-
+                        // $button.='<button class="btn btn-sm btn-danger" onclick="showConfirmDialog('."'Are you sure you want to deactivate this item?', function() { deleteTransPortDtl('$val->id'); })".'" >Delete</button>';
+                    }
+                    $deliveryStatus = Config::get("customConfig.transportType.For Delivery");
+                    if(in_array(Auth()->user()->user_type_id,[1,2]) && $val->transport_status==$deliveryStatus){
+                        if(!$val->is_bag_return){
+                            $button.='<button class="btn btn-sm btn-danger" onclick="showConfirmDialog('."'Are you sure you want to Sell Return this item?', function() { sellRollBak('$val->id'); })".'" >Sell Return</button>';
+                        }else{
+                            $button.='<span class="btn btn-sm btn-warning">Bag Is Return in '.($val->transport_init_status==5?"Godown 2":($val->transport_init_status==2?"Godown 1":"Factory")).'</span>';
+                        }
                     }
                     return $button;
                 })
@@ -1214,6 +1305,28 @@ class PackingController extends Controller
             $tranportDtl->update();
             DB::commit();
             return responseMsg(true,"Bag Delete From Transport","");
+        }catch(MyException $e){
+            DB::rollBack();
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            DB::rollBack();
+            return responseMsg(false,"Server error!!!","");
+        }
+    }
+
+    public function returnSell($id,Request $request){
+        try{
+            
+            $tranportDtl = $this->_M_TransportDetail->find($id);
+            $transport = $this->_M_PackTransport->find($tranportDtl->pack_transport_id);
+            $bag = $this->_M_BagPacking->find($tranportDtl->bag_packing_id);
+            $tranportDtl->is_bag_return=true;
+            $bag->packing_status = $transport->transport_init_status;
+            DB::beginTransaction();  
+            $bag->update();          
+            $tranportDtl->update();
+            DB::commit();
+            return responseMsg(true,"Bag Return","");
         }catch(MyException $e){
             DB::rollBack();
             return responseMsg(false,$e->getMessage(),"");
@@ -1271,5 +1384,137 @@ class PackingController extends Controller
             return json_decode(json_encode(["id"=>$index,"type"=>$val]));
         });
         return view("Packing/bag_history",$data);
+    }
+
+    public function chalanRegister(Request $request){
+        if($request->ajax()){
+            $data = $this->_M_PackTransport->select("bag_packing_transports.*",
+                        "bag_packing_transport_details.total_bags","bag_packing_transport_details.total_return_bags",
+                        "auto_details.auto_name", "transporter_details.transporter_name"
+                    )
+                    ->join(DB::raw("(
+                            select pack_transport_id, count(bag_packing_id) AS total_bags, 
+                                count(case when is_bag_return=true then bag_packing_id else null end) AS total_return_bags
+                            from bag_packing_transport_details
+                            where bag_packing_transport_details.lock_status = false
+                            group by pack_transport_id
+                            ) AS bag_packing_transport_details"),"bag_packing_transport_details.pack_transport_id","bag_packing_transports.id")
+                    ->leftJoin("auto_details","auto_details.id","bag_packing_transports.auto_id")
+                    ->leftJoin("transporter_details","transporter_details.id","bag_packing_transports.transporter_id")
+                    ->where("bag_packing_transports.lock_status",false)
+                    ->orderBy("bag_packing_transports.transport_date","DESC");
+
+            if($request->fromDate && $request->uptoDate){
+                $data->WhereBetween("bag_packing_transports.transport_date",[$request->fromDate,$request->uptoDate]);
+            }elseif($request->fromDate){
+                $data->Where("bag_packing_transports.transport_date",$request->fromDate);
+            }elseif($request->uptoDate){
+                $data->Where("bag_packing_transports.transport_date",$request->uptoDate);
+            }
+
+            if($request->autoId){
+                $data->where("bag_packing_transports.auto_id",$request->autoId);
+            }
+
+            if($request->transporterId){
+                $data->where("bag_packing_transports.transporter_id",$request->transporterId);
+            }
+            if($request->billNo){
+                $data->where("bag_packing_transports.bill_no",$request->billNo);
+            }
+            if($request->invoiceNo){
+                $data->where("bag_packing_transports.invoice_no",$request->invoiceNo);
+            }
+            if($request->transportTypeId){
+                $data->where(function($query) use($request){
+                    foreach($request->transportTypeId as $index=> $val){
+                        $statusType=Config::get("customConfig.transportationDropDownType.".$val);
+                        if ($statusType) {
+                            // Ensure config exists to prevent errors
+                            $query->orWhere(function ($q) use ($statusType) {
+                                $q->where("bag_packing_transports.transport_status", $statusType["transport_status"])
+                                  ->whereIn("bag_packing_transports.transport_init_status", $statusType["transport_init_status"]);
+                            });
+                        }
+            
+                    }
+                });
+            }
+
+            $list = DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn("transition_type",function($val){
+                    return $transition_type = collect(Config::get("customConfig.transportationDropDownType"))
+                        ->filter(function ($item) use ($val) {
+                            return $item["transport_status"] == $val->transport_status &&
+                                in_array($val->transport_init_status, $item["transport_init_status"]);
+                        })
+                        ->first()["type"] ?? "";
+                    
+                })
+                ->addColumn('transport_date', function ($val) { 
+                    return $val->transport_date ? Carbon::parse($val->transport_date)->format("d-m-Y") : "";
+                })
+                ->make(true);
+            return $list;
+        }
+        $data["autoList"] = $this->_M_Auto->getAutoListOrm()->orderBy("id","ASC")->get();
+        $data["transporterList"] = $this->_M_Transporter->getAutoListOrm()->orderBy("id","ASC")->get();
+        $data["transportType"] = collect(Config::get("customConfig.transportationDropDownType"))->map(function($val,$index){
+            return json_decode(json_encode(["id"=>$index,"type"=>$index]));
+        });
+        return view("Packing/chalanRegister",$data);
+    }
+
+    public function transPortDtlHtml($id,Request $request){
+        try{
+            $transport = $this->_M_PackTransport->find($id);
+            $transportDtl = $this->_M_TransportDetail->where("pack_transport_id",$id)->where("lock_status",false)->get();
+            $transport->total_bag = $transportDtl->count();
+            $transport->total_return_bag = $transportDtl->where("is_bag_return",true)->count();
+            $transport->transition_type = collect(Config::get("customConfig.transportationDropDownType"))
+                                            ->filter(function ($item) use ($transport) {
+                                                return $item["transport_status"] == $transport->transport_status &&
+                                                    in_array($transport->transport_init_status, $item["transport_init_status"]);
+                                            })
+                                            ->first()["type"] ?? "";
+            $auto = $this->_M_Auto->find($transport->auto_id);
+            $transporter = $this->_M_Transporter->find($transport->transporter_id);
+            $transport->auto_name = $auto->auto_name??"";
+            $transport->transporterLabel = $transporter ? ($transporter->is_bus ? "Bus Name : " : "Transporter Name : ") : "";
+            $transport->transporter_name = $transporter->transporter_name??"";
+            $transport->gstLabel = $transporter ? ($transporter->is_bus ? "Bus No : " : "GST No : ") : "";
+            $transport->gst_no = $transporter->gst_no??"";
+
+
+            $bags = $this->_M_BagPacking->whereIn("id",$transportDtl->pluck("bag_packing_id"))->get();
+            $order = $this->_M_OrderPunchDetail->whereIn("id",$bags->pluck("order_id"))->get()->map(function($val)use($bags,$transportDtl){
+                $val->clientDtl = $this->_M_ClientDetails->find($val->client_detail_id); 
+                if($val->clientDtl){
+                    $val->clientDtl->sector = $this->_M_Sector->find($val->clientDtl->sector_id)->sector??"";
+                    $val->clientDtl->state = $val->clientDtl->getState()->state??"";
+                    $val->clientDtl->city = $val->clientDtl->getCity()->city??"";
+                }
+                $val->bags = $bags->where("order_id",$val->id)->map(function($val)use($transportDtl){
+                    $returnBag = $transportDtl->where("is_bag_return",true)->where("bag_packing_id",$val->id)->first();
+                    $val->is_bag_return = $returnBag ? true:false;
+                    return $val;
+                });
+                return $val;
+            });
+            $data["transport"]=$transport;
+            $data["transportDtl"]=$transportDtl;
+            $data["auto"]=$auto;
+            $data["transporter"]=$transporter;
+            $data["order"]=$order;
+            $html = view('Packing.Parts.transportDtl', $data)->render();
+            return responseMsg(true,"html",$html);
+
+        }catch(MyException $e){
+            return responseMsg(false,$e->getMessage(),"");
+        }catch(Exception $e){
+            dd($e);
+            return responseMsg(false,"Server Error","");
+        }
     }
 }

@@ -28,7 +28,12 @@
                     <th>Clint Name</th>
                     <th>Mobile No</th>
                     <th>Email</th>
+                    <th>State</th>
+                    <th>City</th>
                     <th>Address</th>
+                    <th>Sector</th>
+                    <th>Trade Name</th>
+                    <th>Has Multiple Address</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -67,8 +72,29 @@
                     name: "email"
                 },
                 {
+                    data: "state_name",
+                    name: "state_name",
+                },
+                {
+                    data: "city_name",
+                    name: "city_name",
+                },
+                {
                     data: "address",
                     name: "address",
+                },
+                {
+                    data: "sector",
+                    name: "sector",
+                },
+                {
+                    data: "trade_name",
+                    name: "trade_name",
+                },
+                {
+                    data: "has_address_two",
+                    name: "has_address_two",
+                    render:function(row,type,data){return (data.has_address_two ? "Yes" :"No")}
                 },
                 {
                     data: "action",
@@ -76,6 +102,73 @@
                     orderable: false,
                     searchable: false
                 },
+            ],
+            dom: 'lBfrtip', // This enables the buttons
+            language: {
+                lengthMenu: "Show _MENU_" // Removes the "entries" text
+            },
+            lengthMenu: [
+                [10, 25, 50, 100, -1], // The internal values
+                ["10 Row", "25 Row", "50 Row", "100 Row", "All"] // The display values, replace -1 with "All"
+            ],
+            buttons: [
+                {
+                    text: '<i class="bi bi-file-earmark-excel-fill text-success"></i>',
+                    className: 'btn btn-success',
+                    action: function () {
+                        let dt = $('#postsTable').DataTable();
+                        let ajaxUrl = dt.ajax.url(); 
+                        let params = dt.ajax.params();
+
+                        let columns = [];
+                        let headings = [];
+
+
+                        dt.columns().every(function () {
+                            const col = this;
+                            const settings = col.settings()[0].aoColumns[col.index()];
+                            const colData = settings.data;
+
+                            if (col.visible() && colData && colData !== 'action' && colData !== 'DT_RowIndex') {
+                                columns.push(colData);
+                                const thText = $(col.header()).text().trim();
+                                headings.push(thText);
+
+                            }
+                        });
+
+                        params.export = 'excel';
+                        params.export_columns = JSON.stringify(columns);
+                        params.export_headings = JSON.stringify(headings); 
+
+                        // Now trigger an AJAX call to export and handle download
+                        $.ajax({
+                            url: ajaxUrl,
+                            method: 'GET',
+                            data: params,
+                            xhrFields: {
+                                responseType: 'blob' // Important: receive binary
+                            },
+                            success: function (blob, status, xhr) {
+                                const filename = xhr.getResponseHeader('Content-Disposition')
+                                    ?.split('filename=')[1]
+                                    ?.replace(/['"]/g, '') || 'auto-list.xlsx';
+
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = filename;
+                                document.body.appendChild(a);
+                                a.click();
+                                a.remove();
+                                window.URL.revokeObjectURL(url);
+                            },
+                            error: function (xhr) {
+                                alert('Export failed!');
+                            }
+                        });
+                    }
+                }
             ],
         });
         $('button[data-bs-target="#clientModal"]').on("click",()=>{
@@ -150,6 +243,7 @@
                     $("#email").val(clientDtl?.email);
                     $("#mobileNo").val(clientDtl?.mobile_no);
                     $("#address").val(clientDtl?.address);
+                    $("#hasAddressTwo").attr("checked",(clientDtl?.has_address_two ? true:false));
                     $("#location").val(clientDtl?.location);
                     $("#secondaryMobileNo").val(clientDtl?.secondary_mobile_no);
                     $("#temporaryMobileNo").val(clientDtl?.temporary_mobile_no);
@@ -157,6 +251,7 @@
                     $("#cityId").val(clientDtl?.city_id).trigger("change");
                     $("#cityHidden").val(clientDtl?.city_id);
                     $("#sectorId").val(clientDtl?.sector_id);
+                    $("#tradeName").val(clientDtl?.trade_name);
                     $("#clientModal").modal("show");
                 
                 } 

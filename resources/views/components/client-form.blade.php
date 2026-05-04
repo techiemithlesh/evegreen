@@ -47,6 +47,14 @@
                             <textarea id="address" name="address" class="form-control" placeholder="Enter Client Address" rows="3" required></textarea>
                             <span class="error-text" id="address-error"></span>
                         </div>
+
+                        <label class="control-label col-md-3" for="hasAddressTwo">Has Multiple Address<span class="text-danger">*</span></label>
+                        <div class="col-md-3 form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="hasAddressTwo" name="hasAddressTwo" />
+                            <div class="">
+                            </div>  
+                            <span class="error-text" id="hasAddressTwo-error"></span>
+                        </div>
                         
                     </div>
 
@@ -87,6 +95,11 @@
                         <div class="col-md-4">
                             <input type="email" maxlength="100" id="email" name="email" class="form-control" placeholder="client@example.com">
                             <span class="error-text" id="email-error"></span>
+                        </div>
+                        <label class="control-label col-md-2" for="tradeName">Trade Name</label>
+                        <div class="col-md-4">
+                            <input type="text" maxlength="100" id="tradeName" name="tradeName" class="form-control" placeholder="">
+                            <span class="error-text" id="tradeName-error"></span>
                         </div>
                     </div>
 

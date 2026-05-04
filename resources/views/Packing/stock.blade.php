@@ -16,7 +16,8 @@
             <h5 class="panel-title">List</h5> 
             <div class="panel-control">
                 <!-- <a href="{{route('packing.transport.stock')}}" class="btn btn-warning btn-sm">Transport Bag</a> -->
-                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Godown')">Godown</button>
+                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Godown',1)">Godown 1</button>
+                <button type="button" class="btn btn-sm btn-warning" onclick="openTransportModel('For Godown',2)">Godown 2</button>
                 <button type="button" class="btn btn-sm btn-success" onclick="openTransportModel('For Delivery')">Client</button>
             </div>           
         </div>
@@ -148,10 +149,10 @@
                                 <div class="form-group">
                                     <label class="form-label" for="bookingForClientId">Client Name<span class="text-danger">*</span></label>
                                     <div class="col-md-12">
-                                        <select name="bookingForClientId" id="bookingForClientId" class="form-control">
+                                        <select name="bookingForClientId" id="bookingForClientId" class="form-control" onchange="showHideAddress(event)">
                                             <option value="">Select</option>
                                             @foreach ($clientList as $val)
-                                                <option value="{{ $val->id }}">{{ $val->client_name }}</option>
+                                                <option value="{{ $val->id }}" data-item="{{$val->has_address_two?'true':'false'}}" >{{ $val->client_name }}</option>
                                             @endforeach
                                         </select><br>
                                         <label class="error-text" id="bookingForClientId-error"></label>
@@ -169,6 +170,14 @@
                                         @endforeach
                                     </select>
                                     <span class="error-text" id="rateTypeId-error"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-8 addressField" style="display: none;">
+                                <div class="form-group">
+                                    <label class="form-label" for="address">Address</label>
+                                    <textarea id="address" name="address" class="form-control" placeholder="Enter Client Address" rows="3" ></textarea>                   
+                                    <span class="error-text" id="address-error"></span>
                                 </div>
                             </div>
                         </div>
@@ -234,17 +243,12 @@
             },
 
             columns: [
-                // { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
-                // { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false ,
-                //     render: function(data, type, row, meta) {
-                //             const rowDataEncoded = base64Encode(JSON.stringify(row));
-                //             return `${meta.row + 1} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
-                //         }
-                // },
-                // { data: "packing_date", name: "packing_date" },
-                { data: "packing_no", name: "packing_no",render: function(data, type, row, meta) {
+                { data: "packing_no", name: "packing_no",
+                defaultContent: '<input type="checkbox" class="row-check">',
+                className: 'dt-body-center checkbox-column',
+                render: function(data, type, row, meta) {
                             const rowDataEncoded = base64Encode(JSON.stringify(row));
-                            return `${row.packing_no} <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
+                            return `${row.packing_no} <i class="bi bi-info-circle-fill" data-placement="bottom" data-toggle="tooltip" title="${row.order_no}"></i> <input type="checkbox" name="checkbox[]" data-row='${rowDataEncoded}' value="${row?.id}" class="row-select checkbox" >`;
                         }
                 },
                 { data: "client_name", name: "client_name" },
@@ -252,7 +256,6 @@
                 { data: "bag_type", name: "bag_type" },
                 { data: "bag_color", name: "bag_color" },
                 { data: "bag_gsm", name: "bag_gsm" },
-                // { data: "units", name: "units" },
                 { data: "packing_weight", name: "packing_weight",render:function(data, type, row, meta){return `${row.packing_weight} (Kg)`} },
                 { data: "packing_bag_pieces", name: "packing_bag_pieces",render:function(data, type, row, meta){return `${row.packing_bag_pieces ? row.packing_bag_pieces +" (Pcs)" : "NA"} `} },
                 { data: "action", name: "action", orderable: false, searchable: false },
@@ -280,6 +283,18 @@
             initComplete: function () {
                 addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1]);
             },
+        });
+        $('#postsTable tbody').on('click', 'td.checkbox-column', function (e) {
+            // Find the checkbox inside the clicked cell
+            const checkbox = $(this).find('input[type="checkbox"]');
+
+            // Prevent double-toggle if the user clicked the actual checkbox
+            if (!$(e.target).is(':checkbox')) {
+                checkbox.prop('checked', !checkbox.prop('checked'));
+            }
+
+            // Optional: Add a 'selected' class to the row for styling
+            $(this).closest('tr').toggleClass('selected', checkbox.prop('checked'));
         });
         $('#bookingForClientId').select2({
             width:"100%",
@@ -430,7 +445,20 @@
         })
     }
 
-    function openTransportModel(transportType) {
+    function showHideAddress(e){ 
+        const selectElement = e.target;
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const itemValue = selectedOption.getAttribute('data-item');
+        if (itemValue === "true") {
+            $('.addressField').show();
+        } else {
+            $('.addressField').hide();
+            $("#address").val("");
+        }
+    }
+
+    function openTransportModel(transportType,godownType='') {
+        const storageType = ["For Godown", "For Factory"];
         let sequence = [];
 
         $(".checkbox").each(function () {
@@ -446,7 +474,7 @@
             return;
         }
         $("#isLocalTransportDiv").show();
-        if(transportType=="For Godown" || transportType=="For Factory"){
+        if(storageType.includes(transportType)){
             $("#isLocalTransportDiv").hide();
             $("#isLocalTransport").attr("checked",true).trigger("click");
         }
@@ -457,11 +485,15 @@
         let client=[];
         let clientId="";
         let rate = "";
+        let has_address_two = false;
 
         // ✅ Fix: Use `forEach` correctly
         sequence.forEach((item) => {            
             rate=item.rate_type_id;
             clientId = item.client_detail_id;
+            if(!has_address_two){
+                has_address_two = item.has_address_two;
+            }
             if (!rateType[item.rate_type_id]) {
                 rateType[item.rate_type_id] = item.rate_type;
             }
@@ -473,6 +505,7 @@
         });
         hidden+=`<input type='hidden' name='rateTypeIdNew' value="${rate}" />`;
         hidden+=`<input type='hidden' id='transPortType' name='transPortType' value="${transportType}" />`;
+        hidden += `<input type='hidden' name="godownTypeId" value="${godownType}" />`;
         
         console.log(rateType);
         if (Object.keys(rateType).length > 1 && transportType=="For Delivery") {
@@ -483,23 +516,30 @@
             popupAlert("Cannot generate Chalan for more then one client");
             return;
         }
+        if(transportType=="For Delivery" && has_address_two){
+            $(".addressField").show();
+        }else{
+            $(".addressField").hide();
+            $("#address").val("");
+        }
+        console.table([transportType,has_address_two,transportType=="For Delivery" && has_address_two]);
         $(".transposerDiv").show();
         $("#rateTypeDiv").show();
         $("#rateTypeId").val(rate);
         $("#transporterId").attr("required",true);
-        if(is_local_order || transportType=="For Godown" || transportType=="For Factory"){
+        if(is_local_order || storageType.includes(transportType)){
             $(".transposerDiv").hide();            
             $("#transporterId").attr("required",false);
             $("#rateTypeDiv").hide();
         }
         $("#bookingForClientId").attr({"disabled":true,"required":false});
         $(".client").hide();
-        if(clientId==1 && !(transportType=="For Godown" || transportType=="For Factory")){
+        if(clientId==1 && !storageType.includes(transportType)){
             $("#bookingForClientId").attr({"disabled":false,"required":true});
             $(".client").show();
         }
         $("#hiddenDiv").html(hidden);
-        $("#transportModelLabel").html(transportType);
+        $("#transportModelLabel").html(transportType+(godownType?(' '+ godownType):""));
         $("#transportModel").modal("show");
 
     }

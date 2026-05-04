@@ -75,6 +75,45 @@
     <!-- Modal -->
     <x-printing-update-form />
     <x-cutting-update-form />
+
+    <div class="modal fade modal-md" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Printing Update <span display_roll_no="roll_no_display" class="text-info"></span> </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editModalForm">
+                        @csrf
+                        <!-- Hidden field for roll ID -->
+                        <input type="hidden" id="rollId" name="rollId" value="">
+
+                        <div class="row">
+                            <div class="row mt-3">
+                                <!-- Roll Name -->                                
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label class="control-label" for="printingWeight">Printing Weight<span class="text-danger">*</span></label>
+                                        <input type="text"  id="printingWeight" name="printingWeight" class="form-control" required onkeypress="return isNumDot(event);" />                                            
+                                        <span class="error-text" id="printingWeight-error"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="row mt-4">
+                            <div class="col-sm-12 text-end">
+                                <button type="submit" class="btn btn-success">Update</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </main>
 <script>
     
@@ -156,6 +195,18 @@
             },
         });
 
+        $("#editModalForm").validate({
+            ignore: [],
+            rules: {
+                rollId: { required: true },
+                printingWeight: { required: true },
+            },
+            submitHandler: function (form) {
+                // If form is valid, submit it
+                showConfirmDialog("Are sure to Edit??",function (){editFormSubmit()});
+            }
+        })
+
     });
 
     function searchData(){
@@ -190,6 +241,58 @@
                 $("#loadingDiv").hide();
             }
         })
+    }
+
+    function editPrinting(roleId){
+        try{
+            $("#loadingDiv").show();
+            $.ajax({
+                url:"{{route('roll.dtl.full',':id')}}".replace(':id', roleId),
+                type:"get",
+                success:function(response){
+                    if(response.status){
+                        $("#editModal").modal("show");
+                        $("#rollId").val(response?.data?.id);
+                        $("#rollId").val(response?.data?.id);
+                        $('[display_roll_no="roll_no_display"]').each(function(index, element) {
+                            // Use jQuery to wrap the raw DOM element
+                            $(element).html(response?.data?.roll_no || '');
+                        });
+                        $("#printingWeight").val(response?.data?.weight_after_print).attr("min",response?.data?.net_weight);
+                    }else{
+                        $("#editModal").modal("hide");
+                    }
+                }
+            })
+
+        }catch(error){
+            console.log("error:",error);
+        }finally{
+            $("#loadingDiv").hide();
+        }
+    }
+
+    function editFormSubmit(){
+        $.ajax({
+            type: "POST",
+            url: "{{ route('roll.production.edit.printing.weight') }}",
+            dataType: "json",
+            data: $("#editModalForm").serialize(),
+            beforeSend: function () {
+                $("#loadingDiv").show();
+                $("#editModal").modal("hide");
+            },
+            success:function(response){
+                $("#loadingDiv").hide();
+                if(response.status){
+                    modelInfo(response?.message);                    
+                    $("#editModalForm").get(0).reset();
+                    searchData();
+                }else{
+                    modelInfo(response?.message,"error");
+                }
+            }
+        });
     }
 </script>
 @include("layout.footer")

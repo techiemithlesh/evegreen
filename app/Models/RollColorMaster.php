@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\Loggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 class RollColorMaster extends Model
 {
@@ -16,7 +17,14 @@ class RollColorMaster extends Model
         "lock_status",
     ];
 
-    public function store($request){        
+    public function store($request){  
+        $test = self::where("color",$request->color)
+                ->first();
+        if($test){
+            $newRequest = new Request(["id"=>$test->id,"lockStatus"=>false]);
+            $this->edit($newRequest);
+            return $test->id;
+        }      
         $inputs = snakeCase($request);
         $id= self::create($inputs->all())->id;
         return $id;

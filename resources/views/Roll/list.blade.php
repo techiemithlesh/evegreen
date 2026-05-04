@@ -23,7 +23,11 @@
                  <div class="form-check form-switch" style="cursor:pointer">
                     <label class="form-check-label" for="printedRollOnly">Only Printed</label> <input class="form-check-input" type="checkbox" id="printedRollOnly" name="printedRollOnly" onclick="searchData()" />
                  </div>
+                 <div class="form-check form-switch" style="cursor:pointer">
+                    <label class="form-check-label" for="notBookedRollOnly">Not Book Only</label> <input class="form-check-input" type="checkbox" id="notBookedRollOnly" name="notBookedRollOnly" onclick="searchData()" />
+                 </div>
                  <button class="btn btn-primary" onclick="swapSelectedRoll()">Swap The Roll</button>
+                 <button class="btn btn-danger" onclick="sellRoll()">Sell The Roll</button>
              </div>
             
         </div>
@@ -67,9 +71,15 @@
     </div>
 
     <!-- Modal -->
+
+    
+    
+
     <x-pending-order-book />
     <x-roll.edit-roll />
     <x-roll.roll-swap />
+    <x-roll.transport-component-model />
+    <x-roll.split-roll />
 </main>
 <script>
     const rules = {
@@ -146,6 +156,9 @@
                     });
                     if($("#printedRollOnly").is(":checked")){
                         d["printedRollOnly"] = $("#printedRollOnly").is(":checked");
+                    }
+                    if($("#notBookedRollOnly").is(":checked")){
+                        d["notBookedRollOnly"] = $("#notBookedRollOnly").is(":checked");
                     }
 
                 },
@@ -777,6 +790,30 @@
         })
     }
 
+    function transferInTransit(id){
+        $.ajax({
+            url:"{{route('roll.stock.to.transit')}}",
+            type:"post",
+            data:{"id":id},
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(data){                
+                $("#loadingDiv").hide();
+                if(data?.status){
+                    $('#postsTable').DataTable().ajax.reload();
+                }else{
+                    modelInfo(data?.message,"warning");
+                }
+            },
+            error:function(errors){
+                console.log(errors);
+                $("#loadingDiv").hide();
+                modelInfo("server error","error")
+            }
+        })
+    }
+
     function updateSelection(event) {
         let id = event.target.value;
         let rollId = $("#selectedRollId").val().split(",").filter(Boolean); // Ensure no empty values
@@ -846,6 +883,28 @@
                 modelInfo("Server error", "error");
             }
         });
+    }
+
+    function sellRoll(){
+        let rollId = $("#selectedRollId").val().split(",").filter(Boolean);
+
+        if (rollId.length < 1) {
+            alert("Please select 1 rolls");
+            return;
+        } 
+        $("#hiddenDiv").empty();
+        // Append hidden inputs for each rollId
+        rollId.forEach(function (id) {
+            $("#hiddenDiv").append(
+                `<input type="hidden" name="rolls[][id]" value="${id}">`
+            );
+        });
+        $("#transportModel").modal("show");
+    }
+
+    function splitRole(rollId){
+        $("#rollSplitId").val(rollId);
+        $("#rollSplitModal").modal("show");
     }
 
 
