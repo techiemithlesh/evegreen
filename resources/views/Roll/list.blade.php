@@ -33,7 +33,7 @@
         </div>
         <div class="panel-body">
             <div class="panel-control justify-content-end">
-                <span class="fw-bold">Total Weight: </span><span id="total_weight">0</span>
+                <span class="fw-bold">Total Weight: </span><span id="total_weight">0</span> <i id="total_weight1" class="text-info"></i>
             </div>
             <input type="hidden" id="selectedRollId">
             <div class="tableStickyDiv">
@@ -41,7 +41,7 @@
                     <thead>
                         
                         <tr>
-                            <th>Roll No</th>
+                            <th onclick="selectAllCheck()">Roll No</th>
                             <th>Quality</th>
                             <th>Roll Size</th>
                             <th>GSM</th>
@@ -185,7 +185,7 @@
                 //         return `${data?.DT_RowIndex} <input type="checkbox" value='${data.id}' onchange='updateSelection(event)' />`
                 //     } 
                 // },
-                { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no + `<input type="checkbox" value='${data.id}' onchange='updateSelection(event)' />` :"N/A")} },
+                { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no + `<input type="checkbox" class="checkbox" value='${data.id}' onchange='updateSelection(event)' />` :"N/A")} },
                 // { data: "purchase_date", name: "purchase_date" ,render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")}},
                 // { data: "vendor_name", name: "vendor_name",render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")} },
                 { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality :"N/A")}},
@@ -255,9 +255,44 @@
             },            
             initComplete: function () {
                 hideColumn(table);
-                addFilter('postsTable',[flag=="history"?0:$('#postsTable thead tr:nth-child(1) th').length - 1]);
+                addFilter('postsTable',[flag=="history"?0:$('#postsTable thead tr:nth-child(1) th').length - 1],sum);
             },     
         });
+
+        function sum(table){
+
+            let total = 0;
+
+            // Check global search
+            let globalSearch = table.search();
+
+            // Check column filters
+            let columnSearch = table.columns().search().toArray();
+
+            // Test if any filter/search applied
+            let isFilterApplied = globalSearch !== '' ||
+                columnSearch.some(val => val !== '');
+
+            console.log("Filter Applied:", isFilterApplied);
+
+            table.rows({ search: 'applied' }).every(function () {
+
+                let data = this.data();
+
+                total += parseFloat(data.net_weight || 0);
+            });
+
+            console.log(total);
+
+            $('#total_weight1').html(total.toFixed(2));
+
+            // Example UI
+            if(isFilterApplied){
+                $('#total_weight1').show();
+            }else{
+                $('#total_weight1').hide();
+            }
+        }
 
         function hideColumn(table){
             // return;
@@ -827,6 +862,20 @@
         $("#selectedRollId").val(rollId.join(",")); // Update the hidden input field
 
         console.log(rollId);
+    }
+
+    let selectAll = false;
+    function selectAllCheck(){
+        if(selectAll)
+        {
+            $('.checkbox').prop("checked",false).trigger('change');             
+            selectAll = false;
+        }
+        else
+        {
+            $('.checkbox').prop("checked",true).trigger('change');;
+            selectAll = true;
+        }
     }
 
     function swapSelectedRoll() {

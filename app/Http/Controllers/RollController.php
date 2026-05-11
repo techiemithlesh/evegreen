@@ -2709,10 +2709,28 @@ class RollController extends Controller
                                     order_punch_details.stereo_type_id,
                                     bag_type_masters.bag_type,
                                     order_punch_details.bag_printing_color::text,
-                                    grade_masters.grade
+                                    grade_masters.grade,
+                                    qualities.roll_quality,
+                                    qualities.roll_ids
                                       ")
                     )
                     ->join("bag_type_masters","bag_type_masters.id","order_punch_details.bag_type_id")
+                    ->leftJoin(DB::raw("(
+                        select order_id, 
+                            string_agg(distinct(roll_quality_masters.quality),',') as roll_quality,
+                            string_agg(distinct(rolls.id)::text,',') as roll_ids 
+                        from order_roll_bag_types
+                        join (
+                            select id,quality_id
+                            from roll_details
+                            union all (
+                                select id,quality_id
+                                from roll_transits
+                            )
+                        ) as rolls on rolls.id = order_roll_bag_types.roll_id
+                        join roll_quality_masters on roll_quality_masters.id = rolls.quality_id
+                        group by order_id
+                        ) as qualities"),"qualities.order_id","order_punch_details.id")
                     ->LeftJoin("grade_masters","grade_masters.id","order_punch_details.grade_id")
                     ->where("order_punch_details.client_detail_id",$request->clientId)
                     ->where("order_punch_details.lock_status",false)
@@ -2735,7 +2753,7 @@ class RollController extends Controller
                     $item->bag_g,
                     //  $item->bag_loop_color, $item->bag_color, $item->bag_type,
                     // $item->grade_id,$item->rate_type_id,$item->fare_type_id,$item->stereo_type_id,
-                    // $item->bag_printing_color,
+                    $item->roll_quality,
                 ]);
             })->values();
 

@@ -691,7 +691,8 @@ class PackingController extends Controller
             }
             $key=$chalanNo;
             $chalanNo .=substr($rateType ? Str::upper($rateType->rate_type) :"O",0,1)."-";
-            $chalanNo .=str_pad((string)$count,4,"0",STR_PAD_LEFT); 
+            // $chalanNo .=str_pad((string)$count,4,"0",STR_PAD_LEFT); 
+            $chalanNo .=$request->chalanNo; 
             
             if($transPortStatus==3){
                 $godownDtl = Config::get("customConfig.godownDtl");

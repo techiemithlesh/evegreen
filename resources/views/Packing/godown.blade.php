@@ -25,13 +25,18 @@
         <div class="panel-body">       
             <div class="panel-control justify-content-end" >
                 <strong>Total Weight:</strong> (<span id="total_weight">0</span>)
+                <span class="filterSum" style="display: none;">
+                    <i id="total_weight1" class="text-info"></i> 
+                    </br>
+                    In Pice: <i id="total_pics1" class="text-info"></i>
+                </span>
             </div>     
             <table class="table table-bordered  table-responsive table-fixed" id="postsTable">
                 <thead>
                     <tr>
                         <!-- <th>#</th> -->
                         <th>Receiving Date</th> 
-                        <th>Packing No</th>
+                        <th onclick="selectAllCheck()">Packing No</th>
                         <th>Client Name</th>
                         <th>Bag Size </th>
                         <th>Bag Type</th>
@@ -111,6 +116,13 @@
                                     <label class="form-label" for="dispatchedDate">Dispatch Date<span class="text-danger">*</span></label>
                                     <input type="date" name="dispatchedDate" id="dispatchedDate" class="form-control" max="{{date('Y-m-d')}}" value="{{date('Y-m-d')}}" required />
                                     <span class="error-text" id="dispatchedDate-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="chalanNo">Chalane No<span class="text-danger">*</span></label>
+                                    <input type="text" name="chalanNo" id="chalanNo" class="form-control"  required onkeypress="return isNum(event);" />
+                                    <span class="error-text" id="chalanNo-error"></span>
                                 </div>
                             </div>
                             <div class="col-sm-4">
@@ -213,6 +225,7 @@
         const table = $('#postsTable').DataTable({
             processing: true,
             serverSide: false,
+            ordering:false,
             ajax: {
                 url: "{{route('packing.godown',':godownTypeId')}}".replace(':godownTypeId', godownTypeId),// The route where you're getting data from
                 data: function(d) {
@@ -271,7 +284,7 @@
 
             }],            
             initComplete: function () {
-                addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1]);
+                addFilter('postsTable',[0,$('#postsTable thead tr:nth-child(1) th').length - 1],sum);
             },
         });
         $('#bookingForClientId').select2({
@@ -306,6 +319,44 @@
             }
         });
     });
+
+    function sum(table){
+
+        let total = 0;
+        let totalPice = 0;
+
+        // Check global search
+        let globalSearch = table.search();
+
+        // Check column filters
+        let columnSearch = table.columns().search().toArray();
+
+        // Test if any filter/search applied
+        let isFilterApplied = globalSearch !== '' ||
+            columnSearch.some(val => val !== '');
+
+        console.log("Filter Applied:", isFilterApplied);
+
+        table.rows({ search: 'applied' }).every(function () {
+
+            let data = this.data();
+
+            total += parseFloat(data.packing_weight || 0);
+            totalPice += parseFloat(data.packing_bag_pieces || 0);
+        });
+
+        console.log(total);
+
+        $('#total_weight1').html(total.toFixed(2));
+        $('#total_pics1').html(totalPice.toFixed(2));
+
+        // Example UI
+        if(isFilterApplied){
+            $('.filterSum').show();
+        }else{
+            $('.filterSum').hide();
+        }
+    }
 
     function toggleTransporterDiv(){
         $(".transposerDiv").show();
@@ -601,5 +652,19 @@
     $("#chalanModal").on("hidden.bs.modal", function () {
         $("#transportBag").prop("disabled", false);
     });
+
+    let selectAll = false;
+    function selectAllCheck(){
+        if(selectAll)
+        {
+            $('.row-select').prop("checked",false).trigger('change');             
+            selectAll = false;
+        }
+        else
+        {
+            $('.row-select').prop("checked",true).trigger('change');;
+            selectAll = true;
+        }
+    }
 </script>
 @include("layout.footer")
