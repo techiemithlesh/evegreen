@@ -63,7 +63,7 @@ class AccountingController extends Controller
                     ->where("garbage_entries.is_verify",false)
                     ->get()
                     ->map(function($val) use($user,$machine){
-                        $val->bag_size = (float)$val->bag_w."X".(float)$val->bag_l.($val->bag_g ? ("X".(float)$val->bag_g):"");
+                        $val->bag_size = (float)$val->bag_w." X ".(float)$val->bag_l.($val->bag_g ? (" X ".(float)$val->bag_g):"");
                         $val->operator_name = $user->where("id",$val->operator_id)->first()->name??"";
                         $val->helper_name = $user->where("id",$val->helper_id)->first()->name??"";
                         $val->machine = $machine->where("id",$val->machine_id)->first()->name??""; 

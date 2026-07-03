@@ -280,9 +280,27 @@ class ReportController extends Controller
             $user = $this->_M_User->all();
             $machine = $this->_M_Machine->all();DB::enableQueryLog();
             $data = $this->_M_GarbageEntry->select("garbage_entries.*","c.client_name",
+                        "order_punch_details.bag_w","order_punch_details.bag_l","order_punch_details.bag_g",
+                        "resistor.roll_no",
                         DB::raw("((garbage/ (CASE WHEN roll_weight=0 THEN 1 ELSE roll_weight END))*100) AS garbage_per")
                     )
                     ->join("client_detail_masters as c","c.id","garbage_entries.client_id")
+                    ->leftJoin("order_punch_details","order_punch_details.id","garbage_entries.order_id")
+                    ->leftJoin(DB::raw("(
+                        select garbage_accept_registers.garbage_entry_id,
+                            string_agg(distinct(rolls.roll_no),',') as roll_no
+                        from garbage_accept_registers
+                        join (
+                                select id,roll_no
+                                from roll_details
+                                union all (
+                                    select id,roll_no
+                                    from roll_transits
+                                )
+                            ) as rolls on rolls.id = garbage_accept_registers.roll_id
+                        where garbage_accept_registers.lock_status = false
+                        group by garbage_accept_registers.garbage_entry_id
+                    ) as resistor"),"resistor.garbage_entry_id","garbage_entries.id")
                     ->where("garbage_entries.lock_status",false)
                     ->where("garbage_entries.is_verify",true);
             if($request->fromDate && $request->uptoDate){
@@ -294,6 +312,7 @@ class ReportController extends Controller
             }
             $data = $data->get()
                     ->map(function($val) use($user,$machine){
+                        $val->bag_size = (float)$val->bag_w." X ".(float)$val->bag_l.($val->bag_g ? (" X ".(float)$val->bag_g):"");
                         $val->operator_name = $user->where("id",$val->operator_id)->first()->name??"";
                         $val->helper_name = $user->where("id",$val->helper_id)->first()->name??"";
                         $val->machine = $machine->where("id",$val->machine_id)->first()->name??""; 
