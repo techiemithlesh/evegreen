@@ -2508,6 +2508,9 @@ class RollController extends Controller
                 $garbageId = $this->_M_GarbageEntry->store($newRequest);
                 $averageGarbage = $val["garbage"]/$rolls->count();
 
+                // deactivate all priv entry
+                $this->_M_GarbageAcceptRegister->whereIn("roll_id",$rolls->pluck("id"))->update(["lock_status"=>true]);
+
                 foreach($rolls as $index=>$val){
                     $roll = $this->_M_RollDetail->find($val->id);
                     $roll->is_cut = true;
