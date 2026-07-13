@@ -53,6 +53,8 @@
                             <th>Client Name</th>
                             <th>Cutting Date</th>
                             <th>Machine</th>
+                            <th>Bag Size</th>
+                            <th>Roll No.</th>
                             <th>Shift</th>
                             <th>Operator</th>
                             <th>Helper</th>
@@ -103,6 +105,8 @@
                 { data: "client_name", name: "client_name" },
                 { data: "cutting_date", name: "cutting_date"},
                 { data: "machine", name: "machine"},
+                { data: "bag_size", name: "bag_size"},
+                { data: "roll_no", name: "roll_no"},
                 { data: "shift", name: "shift"},
                 { data: "operator_name", name: "operator_name"}, 
                 { data: "helper_name", name: "helper_name"},

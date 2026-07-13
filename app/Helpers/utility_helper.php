@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Crypt;
+use App\Models\RollDetail;
+use App\Models\RollTransit;
 
 if (!function_exists("responseMsg")) {
     function responseMsg($status, $message, $data)
@@ -802,4 +804,53 @@ if(!function_exists('flashToast')){
 		}
 		return false;
 	}
+
+    function generateSubRoll($roll_no,$increment=0)
+    {
+        $baseRoll = $roll_no; // e.g., "6/25-470"
+
+        // 1. Find all rolls that start with the base + a dash
+        // This finds 6/25-470-A, 6/25-470-B, etc.
+        $existingSubRolls = RollDetail::where('roll_no', 'LIKE', $baseRoll . '-%')
+            ->pluck('roll_no')
+            ->toArray();
+
+        if (empty($existingSubRolls)) {
+            $existingSubRolls = RollTransit::where('roll_no', 'LIKE', $baseRoll . '-%')
+            ->pluck('roll_no')
+            ->toArray();
+        }
+
+        if (empty($existingSubRolls)) {
+            // If no sub-rolls exist, start with A
+            $lastLetter = "A";
+            for($i=1;$i<=$increment;$i++){
+                $lastLetter = ++$lastLetter;
+            }
+            return $baseRoll . "-".$lastLetter;
+        }
+
+        // 2. Extract the last character from each found roll
+        $letters = array_map(function($item) {
+            return substr($item, -1);
+        }, $existingSubRolls);
+
+        // 3. Sort letters and get the last one
+        sort($letters);
+        $lastLetter = end($letters);
+
+        // 4. Increment the letter (PHP handles 'A'++ as 'B')
+        $nextLetter = ++$lastLetter;
+        for($i=1;$i<=$increment;$i++){
+            $nextLetter = ++$nextLetter;
+        }
+
+        // Handle case where it might go past 'Z' (optional)
+        if (strlen($nextLetter) > 1) {
+            // Logic for AA, AB etc if needed
+        }
+
+
+        return $baseRoll . "-" . $nextLetter;
+    }
 }

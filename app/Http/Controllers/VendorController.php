@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DataExport;
 use App\Models\VendorDetailMaster;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class VendorController extends Controller
@@ -34,6 +36,19 @@ class VendorController extends Controller
         try{
             if($request->ajax()){
                 $data = $this->_M_VendorDetail->where("lock_status",false);
+                if ($request->has('export')) {
+                    $columns = json_decode($request->export_columns, true);
+                    $headings = json_decode($request->export_headings,true);
+                    if(!$headings){
+                        $headings = collect($columns)->map(function ($col) {
+                            return ucwords(str_replace('_', ' ', $col)); // Converts 'auto_name' => 'Auto Name'
+                        })->toArray();
+                    }
+                    $data = $data->get();
+                    if ($request->export === 'excel') {
+                        return Excel::download(new DataExport($data, $headings,$columns), 'Vendor-list.xlsx');
+                    }
+                }
                 return DataTables::of($data)
                     ->addIndexColumn()
                     ->addColumn('action', function ($val) {

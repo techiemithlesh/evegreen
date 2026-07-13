@@ -203,6 +203,231 @@ function addFilter(tableName,indexNo=[]){
   });
 
 }
+
+
+// ==============================================
+
+
+function addFilter(tableName,indexNo=[], callback = null){
+    // Define the table and first row headers
+    var table = $('#'+tableName);
+
+    // Dynamically create the second row in <thead> for dropdown filters
+    var filterRow = $('<tr></tr>'); // Create a new <tr> for filters
+    $("#" + tableName + " tr").has("th.filter-header").remove();
+
+    table.find('thead tr:nth-child(1) th').each(function (index) {
+        // Create <th> and <select> dynamically for each header
+        if (indexNo.includes(index)) {
+            filterRow.append('<th></th>'); // Empty header for non-filterable columns
+        } else {
+            var filterCell = $(`
+                <th class="filter-header">
+                    <select class="filter-select" data-column="${index}" style="width: 100%" multiple="multiple" style="font-size:xx-small; min-width: 100px;">
+                        <option value="">All</option>
+                    </select>
+                </th>
+            `);
+
+            // Append <th> with dropdown to the filter row
+            filterRow.append(filterCell);
+
+        }
+    });
+
+    // Append the filter row to the <thead>
+    table.find('thead').append(filterRow);
+
+    // Initialize DataTable
+    var dataTable = table.DataTable();
+
+    // Populate dropdowns with unique values for each column
+    dataTable.columns().every(function () {
+        var column = this;
+        var select = $('.filter-select[data-column="' + column.index() + '"]');
+
+        // Get unique values for the column and add them as options
+        column.data().unique().sort().each(function (d) {
+            select.append('<option value="' + d + '">' + d + '</option>');
+        });
+
+        // Initialize Select2 for the dropdown
+        select.select2({
+            placeholder: 'Select one or more values',
+            allowClear: false,
+            width: '100%'
+        }).on('select2:open', function () {
+                // Apply min-width styling dynamically when dropdown opens
+                $('.select2-container--open .select2-dropdown').css('min-width', '100px').css('z-index', '9999');
+                $('.select2-container--open .select2-selection').css('min-width', '100px').css('z-index', '9999');
+            }).on('select2:close', function () {
+                // Apply min-width styling dynamically when dropdown opens
+                $('.select2-container .select2-dropdown').css('min-width', '0px').css('z-index', '0');
+                $('.select2-container .select2-selection').css('min-width', '0px').css('z-index', '0');
+            });
+    });
+
+    function reformatFilter(excludeIndex) {
+
+        // Store all filter values
+        let allFilters = {};
+
+        $('.filter-select').each(function () {
+
+            let col = $(this).data('column');
+
+            allFilters[col] = $(this).val() || [];
+        });
+
+        dataTable.columns().every(function () {
+
+            let column = this;
+            let idx = column.index();
+
+            // Skip changed filter
+            if (idx === excludeIndex) return;
+
+            let select = $('.filter-select[data-column="' + idx + '"]');
+
+            if (!select.length) return;
+
+            let currentValues = select.val() || [];
+
+            let uniqueValues = [];
+
+            // Loop all rows
+            dataTable.rows().every(function () {
+
+                let rowIndex = this.index();
+
+                let matched = true;
+
+                // Check all filters EXCEPT current column
+                for (let filterCol in allFilters) {
+
+                    filterCol = parseInt(filterCol);
+
+                    // Ignore current dropdown filter
+                    if (filterCol === idx) continue;
+
+                    let filterValues = allFilters[filterCol];
+
+                    if (filterValues.length) {
+
+                        let cellValue = dataTable
+                            .cell(rowIndex, filterCol)
+                            .data();
+
+                        // Remove HTML
+                        if (typeof cellValue === 'string') {
+                            cellValue = $('<div>')
+                                .html(cellValue)
+                                .text()
+                                .trim();
+                        }
+
+                        if (!filterValues.includes(String(cellValue))) {
+                            matched = false;
+                            break;
+                        }
+                    }
+                }
+
+                // If row matches all other filters
+                if (matched) {
+
+                    let cellData = dataTable
+                        .cell(rowIndex, idx)
+                        .data();
+
+                    // Remove HTML
+                    if (typeof cellData === 'string') {
+                        cellData = $('<div>')
+                            .html(cellData)
+                            .text()
+                            .trim();
+                    }
+
+                    if (
+                        cellData !== undefined &&
+                        cellData !== null &&
+                        cellData !== '' &&
+                        !uniqueValues.includes(cellData)
+                    ) {
+                        uniqueValues.push(cellData);
+                    }
+                }
+            });
+
+            uniqueValues.sort();
+
+            // Rebuild dropdown
+            select.empty();
+
+            select.append('<option value="">All</option>');
+
+            uniqueValues.forEach(function (item) {
+
+                let isSelected =
+                    currentValues.includes(String(item))
+                        ? 'selected'
+                        : '';
+
+                select.append(
+                    `<option value="${item}" ${isSelected}>${item}</option>`
+                );
+            });
+
+            select.trigger('change.select2');
+        });
+    }
+
+
+    dataTable.on('responsive-resize', function (e, datatable, columns) {
+        datatable.columns().every(function (index) {
+            if (columns[index]) {
+                $('.filter-header').eq(index).show();  // Show filter if column is visible
+            } else {
+                $('.filter-header').eq(index).hide();  // Hide filter if column is collapsed
+            }
+        });
+    });
+    // Add filtering functionality for multi-select
+    $('.filter-select').on('change', function () {
+        var columnIndex = $(this).data('column'); // Get column index
+        var selectedValues = $(this).val(); // Get selected values (array)
+
+        // Build regex to match any of the selected values
+        var regex = selectedValues && selectedValues.length > 0
+            ? selectedValues.map((value) => `^${value}$`).join('|') // Join selected values with "|" for OR regex
+            : '';
+
+        // Apply the filter using regex
+        dataTable.column(columnIndex).search(regex, true, false).draw(); // Regex-based search
+        reformatFilter(columnIndex);
+
+        if (typeof callback === 'function') {
+
+            callback(dataTable);
+        }
+
+    });
+
+}
+
+
+
+// ===========================================
+
+
+
+
+
+
+
+
+
+
 /*
     function addFilter(tableName, indexNo = []) {
         var table = $('#' + tableName);
@@ -294,3 +519,76 @@ function base64Encode(str) {
 function base64Decode(str) {
     return decodeURIComponent(escape(atob(str)));
 }
+
+function cssColorToRgb(color) {
+    const temp = document.createElement("div");
+    temp.style.color = color;
+    document.body.appendChild(temp);
+
+    const rgb = getComputedStyle(temp).color;
+    document.body.removeChild(temp);
+
+    const match = rgb.match(/\d+/g);
+    return match ? match.map(Number) : null;
+}
+
+function getContrastTextColor(bgColor) {
+    const rgb = cssColorToRgb(bgColor);
+    if (!rgb) return "#000000";
+
+    // Perceived brightness formula
+    const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
+
+    return brightness > 160 ? "#000000" : "#ffffff";
+}
+
+
+function isValidCssColor(color) {
+    if (!color) return false;
+
+    const s = new Option().style;
+    s.color = '';
+    s.color = color;
+    return s.color !== '';
+}
+
+function normalizeColor(color) {
+    return color.replace(/\s+/g, '');
+}
+
+
+function formatOption(option) {
+    if (!option.id) {
+        return option.text;
+    }
+
+    let rawColor = $(option.element).data('color');
+    let color = normalizeColor(rawColor);
+
+    let isValid = isValidCssColor(color);
+
+    let bgColor = isValid ? color : "#ffffff";
+    let textColor = isValid ? getContrastTextColor(bgColor) : "#000000";
+    let border = isValid ? "none" : "1px solid #ccc";
+
+    return $(`
+        <span style="
+            background-color:${bgColor};
+            color:${textColor};
+            padding:4px 10px;
+            border-radius:4px;
+            display:inline-block;
+            border:${border};
+        ">
+            ${option.text}
+        </span>
+    `);
+}
+function destroySelect2(selector) {
+    $(selector).each(function () {
+        if ($(this).hasClass('select2-hidden-accessible')) {
+            $(this).select2('destroy');
+        }
+    });
+}
+

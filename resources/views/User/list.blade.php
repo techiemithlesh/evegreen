@@ -38,7 +38,8 @@
     </div>
 
     <!-- Modal -->
-     <x-user-form />
+     
+     <x-user-form-add-edit />
 </main>
 
 <script>
@@ -72,6 +73,73 @@
                     searchable: false
                 },
             ],
+            dom: 'lBfrtip', // This enables the buttons
+            language: {
+                lengthMenu: "Show _MENU_" // Removes the "entries" text
+            },
+            lengthMenu: [
+                [10, 25, 50, 100, -1], // The internal values
+                ["10 Row", "25 Row", "50 Row", "100 Row", "All"] // The display values, replace -1 with "All"
+            ],
+            buttons: [
+                {
+                    text: '<i class="bi bi-file-earmark-excel-fill text-success"></i>',
+                    className: 'btn btn-success',
+                    action: function () {
+                        let dt = $('#postsTable').DataTable();
+                        let ajaxUrl = dt.ajax.url(); 
+                        let params = dt.ajax.params();
+
+                        let columns = [];
+                        let headings = [];
+
+
+                        dt.columns().every(function () {
+                            const col = this;
+                            const settings = col.settings()[0].aoColumns[col.index()];
+                            const colData = settings.data;
+
+                            if (col.visible() && colData && colData !== 'action' && colData !== 'DT_RowIndex') {
+                                columns.push(colData);
+                                const thText = $(col.header()).text().trim();
+                                headings.push(thText);
+
+                            }
+                        });
+
+                        params.export = 'excel';
+                        params.export_columns = JSON.stringify(columns);
+                        params.export_headings = JSON.stringify(headings); 
+
+                        // Now trigger an AJAX call to export and handle download
+                        $.ajax({
+                            url: ajaxUrl,
+                            method: 'GET',
+                            data: params,
+                            xhrFields: {
+                                responseType: 'blob' // Important: receive binary
+                            },
+                            success: function (blob, status, xhr) {
+                                const filename = xhr.getResponseHeader('Content-Disposition')
+                                    ?.split('filename=')[1]
+                                    ?.replace(/['"]/g, '') || 'auto-list.xlsx';
+
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = filename;
+                                document.body.appendChild(a);
+                                a.click();
+                                a.remove();
+                                window.URL.revokeObjectURL(url);
+                            },
+                            error: function (xhr) {
+                                alert('Export failed!');
+                            }
+                        });
+                    }
+                }
+            ],
         });
         $("#userForm").validate({
             rules: {
@@ -82,6 +150,7 @@
             submitHandler: function(form) {
                 // If form is valid, prevent default form submission and submit via AJAX                
                 addUser();
+                return false;
             }
         });
         addEventListenersToForm("userForm");
@@ -89,8 +158,13 @@
     function addUser(){
         let url = "{{route('user.add')}}";
         let userId = $("#id").val();
-        if(userId!="" && userId!="undefined"){
-            url = "{{route('user.edit')}}"
+        let form = $("#userForm")[0];
+        let formData = new FormData(form);
+
+        if (userId && userId !== "undefined") {
+            url = "{{ route('user.edit') }}";
+            formData.delete("password");
+            formData.delete("password_confirmation");
         }
         $.ajax({
                 type: "POST",
@@ -98,7 +172,10 @@
                                 
                 "deferRender": true,
                 "dataType": "json",
-                'data': $("#userForm").serialize(),
+                "contentType": false,   // Required for FormData
+                "processData": false,   // Required for FormData
+
+                'data': formData,
                 beforeSend: function () {
                     $("#loadingDiv").show();
                 },
@@ -148,7 +225,8 @@
     }
 
     function resetModelForm(){
-        $("#id").val("");       
+        $("#id").val("");  
+        $("#passwordDiv").show();     
         $("#userForm").get(0).reset();
         document.querySelectorAll("#userForm input, #userForm select, #userForm textarea").forEach(field => {
             if (field.type === "checkbox" || field.type === "radio") {

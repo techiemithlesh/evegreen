@@ -129,6 +129,12 @@ a.sidebar-link:hover {
     }
 }
 
+@media(min-width: 1400px){
+    .container{
+        max-width: 1524px;
+    }
+}
+
 /* Navbar Styling */        
 .error {
     color: red;
@@ -239,6 +245,8 @@ a.sidebar-link:hover {
     background-color: #fff;
     border-radius: 3px;
     margin-top: 20px;
+    margin-left: 0;
+    margin-right: 0;
     padding: 1rem;
 }
 

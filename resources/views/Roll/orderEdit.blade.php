@@ -200,7 +200,7 @@
                     <div class="col-sm-4">
                         <div class="form-group">
                             <label class="form-label" for="totalUnits">QTY</label>
-                            <input value="{{$order->total_units}}" name="totalUnits" id="totalUnits" class="form-control readOnly" required onkeypress="return isNumDot(event);" onchange="getBalance()"/>                                 
+                            <input value="{{$order->total_units}}" name="totalUnits" id="totalUnits" class="form-control {{$order->total_units ? 'readOnly' : ''}} " required onkeypress="return isNumDot(event);" onchange="getBalance()"/>                                 
                             <span class="error-text" id="bookingBagUnits-error"></span>
                         </div>
                     </div>

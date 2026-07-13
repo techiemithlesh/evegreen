@@ -254,5 +254,28 @@
             }
         })
     }
+
+    function sellRollBak(id){
+        $.ajax({
+            url:"{{route('packing.transport.return.sell', ['id' => ':id']) }}".replace(':id', id),
+            type:"get",
+            dataType:"json",
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(response){
+                $("#loadingDiv").hide();
+                modelInfo(response.message);
+                if(response.status){
+                    searchData();
+                }
+            },
+            error: function (xhr, status, error) {
+                $("#loadingDiv").hide();
+                console.error("AJAX error:", error);
+                modelInfo("server error");
+            }
+        });
+    }
 </script>
 @include("layout.footer")

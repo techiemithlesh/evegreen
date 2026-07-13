@@ -23,13 +23,17 @@
                  <div class="form-check form-switch" style="cursor:pointer">
                     <label class="form-check-label" for="printedRollOnly">Only Printed</label> <input class="form-check-input" type="checkbox" id="printedRollOnly" name="printedRollOnly" onclick="searchData()" />
                  </div>
+                 <div class="form-check form-switch" style="cursor:pointer">
+                    <label class="form-check-label" for="notBookedRollOnly">Not Book Only</label> <input class="form-check-input" type="checkbox" id="notBookedRollOnly" name="notBookedRollOnly" onclick="searchData()" />
+                 </div>
                  <button class="btn btn-primary" onclick="swapSelectedRoll()">Swap The Roll</button>
+                 <button class="btn btn-danger" onclick="sellRoll()">Sell The Roll</button>
              </div>
             
         </div>
         <div class="panel-body">
             <div class="panel-control justify-content-end">
-                <span class="fw-bold">Total Weight: </span><span id="total_weight">0</span>
+                <span class="fw-bold">Total Weight: </span><span id="total_weight">0</span> <i id="total_weight1" class="text-info"></i>
             </div>
             <input type="hidden" id="selectedRollId">
             <div class="tableStickyDiv">
@@ -37,7 +41,7 @@
                     <thead>
                         
                         <tr>
-                            <th>Roll No</th>
+                            <th onclick="selectAllCheck()">Roll No</th>
                             <th>Quality</th>
                             <th>Roll Size</th>
                             <th>GSM</th>
@@ -67,9 +71,15 @@
     </div>
 
     <!-- Modal -->
+
+    
+    
+
     <x-pending-order-book />
     <x-roll.edit-roll />
     <x-roll.roll-swap />
+    <x-roll.transport-component-model />
+    <x-roll.split-roll />
 </main>
 <script>
     const rules = {
@@ -147,6 +157,9 @@
                     if($("#printedRollOnly").is(":checked")){
                         d["printedRollOnly"] = $("#printedRollOnly").is(":checked");
                     }
+                    if($("#notBookedRollOnly").is(":checked")){
+                        d["notBookedRollOnly"] = $("#notBookedRollOnly").is(":checked");
+                    }
 
                 },
                 dataSrc: function (json) {
@@ -172,7 +185,7 @@
                 //         return `${data?.DT_RowIndex} <input type="checkbox" value='${data.id}' onchange='updateSelection(event)' />`
                 //     } 
                 // },
-                { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no + `<input type="checkbox" value='${data.id}' onchange='updateSelection(event)' />` :"N/A")} },
+                { data: "roll_no", name: "roll_no" ,render:function(row,type,data){return (data.roll_no ? data.roll_no + `<input type="checkbox" class="checkbox" value='${data.id}' onchange='updateSelection(event)' />` :"N/A")} },
                 // { data: "purchase_date", name: "purchase_date" ,render:function(row,type,data){return (data.purchase_date ? data.purchase_date :"N/A")}},
                 // { data: "vendor_name", name: "vendor_name",render:function(row,type,data){return (data.vendor_name ? data.vendor_name :"N/A")} },
                 { data : "quality", name: "quality" ,render:function(row,type,data){return (data.quality ? data.quality :"N/A")}},
@@ -242,9 +255,44 @@
             },            
             initComplete: function () {
                 hideColumn(table);
-                addFilter('postsTable',[flag=="history"?0:$('#postsTable thead tr:nth-child(1) th').length - 1]);
+                addFilter('postsTable',[flag=="history"?0:$('#postsTable thead tr:nth-child(1) th').length - 1],sum);
             },     
         });
+
+        function sum(table){
+
+            let total = 0;
+
+            // Check global search
+            let globalSearch = table.search();
+
+            // Check column filters
+            let columnSearch = table.columns().search().toArray();
+
+            // Test if any filter/search applied
+            let isFilterApplied = globalSearch !== '' ||
+                columnSearch.some(val => val !== '');
+
+            console.log("Filter Applied:", isFilterApplied);
+
+            table.rows({ search: 'applied' }).every(function () {
+
+                let data = this.data();
+
+                total += parseFloat(data.net_weight || 0);
+            });
+
+            console.log(total);
+
+            $('#total_weight1').html(total.toFixed(2));
+
+            // Example UI
+            if(isFilterApplied){
+                $('#total_weight1').show();
+            }else{
+                $('#total_weight1').hide();
+            }
+        }
 
         function hideColumn(table){
             // return;
@@ -777,6 +825,30 @@
         })
     }
 
+    function transferInTransit(id){
+        $.ajax({
+            url:"{{route('roll.stock.to.transit')}}",
+            type:"post",
+            data:{"id":id},
+            beforeSend:function(){
+                $("#loadingDiv").show();
+            },
+            success:function(data){                
+                $("#loadingDiv").hide();
+                if(data?.status){
+                    $('#postsTable').DataTable().ajax.reload();
+                }else{
+                    modelInfo(data?.message,"warning");
+                }
+            },
+            error:function(errors){
+                console.log(errors);
+                $("#loadingDiv").hide();
+                modelInfo("server error","error")
+            }
+        })
+    }
+
     function updateSelection(event) {
         let id = event.target.value;
         let rollId = $("#selectedRollId").val().split(",").filter(Boolean); // Ensure no empty values
@@ -790,6 +862,20 @@
         $("#selectedRollId").val(rollId.join(",")); // Update the hidden input field
 
         console.log(rollId);
+    }
+
+    let selectAll = false;
+    function selectAllCheck(){
+        if(selectAll)
+        {
+            $('.checkbox').prop("checked",false).trigger('change');             
+            selectAll = false;
+        }
+        else
+        {
+            $('.checkbox').prop("checked",true).trigger('change');;
+            selectAll = true;
+        }
     }
 
     function swapSelectedRoll() {
@@ -846,6 +932,28 @@
                 modelInfo("Server error", "error");
             }
         });
+    }
+
+    function sellRoll(){
+        let rollId = $("#selectedRollId").val().split(",").filter(Boolean);
+
+        if (rollId.length < 1) {
+            alert("Please select 1 rolls");
+            return;
+        } 
+        $("#hiddenDiv").empty();
+        // Append hidden inputs for each rollId
+        rollId.forEach(function (id) {
+            $("#hiddenDiv").append(
+                `<input type="hidden" name="rolls[][id]" value="${id}">`
+            );
+        });
+        $("#transportModel").modal("show");
+    }
+
+    function splitRole(rollId){
+        $("#rollSplitId").val(rollId);
+        $("#rollSplitModal").modal("show");
     }
 
 

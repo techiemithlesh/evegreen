@@ -18,7 +18,15 @@ class LoopStock extends Model
         'lock_status',
     ];
 
-    public function store($request){        
+    public function store($request){  
+        $test = self::where("loop_color",$request->loopColor)
+                ->first();
+        if($test){
+            $newRequest = new Request(["id"=>$test->id,"lockStatus"=>false]);
+            $newRequest->merge($request->all());
+            $this->edit($newRequest);
+            return $test->id;
+        }      
         $inputs = snakeCase($request);
         $id= self::create($inputs->all())->id;
         return $id;

@@ -1,24 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
-    <style>        
+    <title>Chalan</title>
+    <style>
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
+            page-break-inside: auto;
         }
+
         th, td {
             border: 1px solid black;
             padding: 5px;
             text-align: left;
+            word-wrap: break-word;
+            background-color: transparent; /* prevent black/white bug */
         }
+
         th {
-            background-color: #f2f2f2;
+            background-color: #f2f2f2 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tfoot {
+            display: table-row-group;
+        }
+
+        .no-border {
+            border: none !important;
         }
     </style>
-
 </head>
 <body>
+    {{-- Header Info --}}
     <table style="border: 1.5px black dotted;">
         <tr>
             <td></td>
@@ -52,45 +81,42 @@
                 @endif
             </td>
         </tr>
-        <tr>
-            <td colspan="6">
-                <table>
-                    <tr>
-                        <th>Bag Type</th>
-                        <th>Size</th>
-                        <th>Color</th>
-                        <th>Qtr</th>
-                    </tr>
-                    
-                    @foreach($table["row"] as $item)
-                        @php $index = 0; @endphp
-
-                        @foreach($item["bags"] as $bags)                                 
-                            <tr>
-                                @if($index==0)
-                                    <td rowspan="{{$index==0 ? $item['count'] :''}}">{{$index==0 ? $item['bag_type']:""}}</td>
-                                @endif                                
-                                <td >{{$bags['bag_size']}}</td>
-                                <td >{{$bags['bag_color']}}</td>
-                                <td >{{$bags['packing_weight']}}</td>
-                                @php 
-                                    $index++; 
-                                @endphp
-                            </tr>
-                        @endforeach
+    </table>
+    @foreach($table as $unit=> $unitTable)
+        {{-- Bag Details --}}
+        <table style="margin-top:20px">
+            <thead>
+                <tr>
+                    <th>Bag Type</th>
+                    <th>Size</th>
+                    <th>Color</th>
+                    <th>QTY</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($unitTable["row"] as $item)
+                    @foreach($item["bags"] as $bags)
                         <tr>
-                            <td  colspan="3"></td>
-                            <td>{{$item['total_weight']}}</td>
+                            <td>{{ $item['bag_type'] }}</td>
+                            <td>{{ $bags['bag_size'] }}</td>
+                            <td>{{ $bags['bag_color'] }}</td>
+                            <td>{{ $unit=="Kg" ? $bags['packing_weight'] : $bags['packing_bag_pieces'] }} {{$unit}}</td>
                         </tr>
                     @endforeach
                     <tr>
-                        <th colspan="2">Grand Total</th>
-                        <th>{{$table["grand_total"]["total"] }}</th>
-                        <th>{{$table["grand_total"]["total_weight"] }}</th>
+                        <td colspan="3"></td>
+                        <td><strong>{{ $item['total_unit'] }} {{$unit}}</strong></td>
                     </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="2">Grand Total</th>
+                    <th>{{ $unitTable["grand_total"]["total"] }}</th>
+                    <th>{{ $unitTable["grand_total"]["total_unit"] }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    @endforeach
 </body>
 </html>

@@ -15,8 +15,12 @@
     <div class="container">
         <div class="panel-heading">
             <h5 class="panel-title">List</h5>
+            <div class="panel-control">
+                 <button class="btn btn-danger" onclick="sellLoop()">Sell The Loop</button>
+             </div>
         </div>
         <div class="panel-body">
+            <input type="hidden" id="selectedLoop">
             <table id="postsTable" class="table table-striped table-bordered" style="text-align: center;">
                 <thead>
                     <tr>
@@ -35,7 +39,9 @@
                     @foreach($loop as $key=> $val)
                     <tr>
                         <td>{{$key+1}}</td>
-                        <td>{{$val->loop_color}}</td>
+                        <td style="text-align: left">                            
+                            {{$val->loop_color}} 
+                        </td>
                         <td>{{$val->opening_balance}}</td>
                         <td>{{$val->book_loop}}</td>
                         <td>{{$val->balance}}</td>

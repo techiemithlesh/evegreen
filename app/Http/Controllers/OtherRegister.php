@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AutoDetail;
+use App\Models\ClientDetailMaster;
 use App\Models\GarbageAcceptRegister;
 use App\Models\GarbageNotAcceptRegister;
 use App\Models\LoopStock;
+use App\Models\RateTypeMaster;
+use App\Models\TransporterDetail;
+use App\Models\VendorDetailMaster;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -68,13 +73,13 @@ class OtherRegister extends Controller
                         (
                             select id
                             from roll_details
-                            where is_cut = false
+                            where is_cut = false and is_roll_sell=false
                                 and lock_status = false
                         )
                         UNION(
                             select id
                             from roll_details
-                            where is_cut = false
+                            where is_cut = false and is_roll_sell=false
                                 and lock_status = false
                         )
                     )as roll on roll.id = loop_usage_accounts.roll_id
@@ -86,6 +91,11 @@ class OtherRegister extends Controller
         ->orderBy("loop_stocks.loop_color","ASC")
         ->get();
         $data["total_balance"] = $data["loop"]->sum("balance");
+        $data["autoList"] =AutoDetail::where("lock_status",false)->orderBy("id","ASC")->get();
+        $data["transporterList"] = TransporterDetail::where("lock_status",false)->where("is_bus",false)->orderBy("id","ASC")->get();
+        $data["rateType"] = RateTypeMaster::all();
+        $data["clientList"] = (new ClientDetailMaster())->getClientListOrm()->where("id","<>",1)->orderBy("client_name","ASC")->get();
+        $data["vendorList"] = (new VendorDetailMaster())->getVenderListOrm()->orderBy("vendor_name","ASC")->get();
 
         return view("Register/loop_stock_status",$data);
     }

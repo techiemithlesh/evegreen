@@ -56,6 +56,7 @@
                             <th>Purchase Date</th>
                             <th>Vendor Name</th>
                             <th>Hardness</th>
+                            <th>Quality</th>
                             <th>Roll Type</th>
                             <th>Roll Size</th>
                             <th>GSM </th>
@@ -73,6 +74,8 @@
                             <th>Customer</th>
                             <th>Printing Color</th>
                             <th>Loop Color</th>
+                            <th>Printing Machine</th>
+                            <th>Cutting Machine</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -120,6 +123,7 @@
                 { data: "purchase_date", name: "purchase_date" },
                 { data: "vendor_name", name: "vendor_name" },
                 { data: "hardness", name: "hardness" },
+                { data: "quality", name: "quality" },
                 { data: "roll_type", name: "roll_type" },
                 { data: "size", name: "size" },
                 { data: "gsm", name: "gsm" },
@@ -137,6 +141,8 @@
                 { data : "client_name", name: "client_name" },
                 { data : "print_color", name: "print_color" },
                 { data : "loop_color", name: "loop_color" },
+                { data : "printing_machine_name", name: "printing_machine_name" },
+                { data : "cutting_machine_name", name: "cutting_machine_name" },
                 // { data: "action", name: "action", orderable: false, searchable: false },
             ],
             dom: 'lBfrtip', // This enables the buttons
@@ -160,7 +166,7 @@
                     orientation: 'portrait',
                     pageSize: 'A4',
                     exportOptions: {
-                        columns: [0, 1,2, 3,4,5,6,7,8,9,10]  // Export only Name, Position, and Age columns
+                        columns: [0, 1,2, 3,4,5,6,7,8,9,10,11]  // Export only Name, Position, and Age columns
                     }
 
                 },
@@ -191,6 +197,9 @@
             },
         });
         if(flag=="history"){
+            table.column(24).visible(false);
+            table.column(23).visible(false);
+            table.column(22).visible(false);
             table.column(21).visible(false);
             table.column(20).visible(false);
             table.column(19).visible(false);
@@ -202,7 +211,6 @@
             table.column(13).visible(false);
             table.column(12).visible(false);
             table.column(11).visible(false);
-            table.column(10).visible(false);
 
         }
 
